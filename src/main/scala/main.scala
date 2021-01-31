@@ -1,15 +1,23 @@
-import scala.swing._
+import scalafx.Includes._
+import scalafx.application.JFXApp
+import scalafx.scene.Scene
+import scalafx.scene.paint.Color._
+import scalafx.scene.shape.Rectangle
 
-class UI extends MainFrame {
-  title = "Fenetre"
-  preferredSize = new Dimension(800, 600)
-  contents = new Label("Bite")
-}
-
-object RogueLikeProgram {
-  def main(args:Array[String]) {
-    val ui = new UI
-    ui.visible = true
+object HelloStageDemo extends JFXApp {
+  stage = new JFXApp.PrimaryStage {
+    title.value = "Hello Stage"
+    width = 600
+    height = 450
+    scene = new Scene {
+      fill = LightGreen
+      content = new Rectangle {
+        x = 25
+        y = 40
+        width = 100
+        height = 100
+        fill <== when (hover) choose Green otherwise Red
+      }
+    }
   }
 }
-
