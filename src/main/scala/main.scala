@@ -80,7 +80,7 @@ object ExtendedTest extends JFXApp {
     }
     val animateTimer2 = AnimationTimer
     {
-        t=>image.setRotate(image.getRotate() -3)
+        t=>image.setRotate(image.getRotate() - 3)
     }
     animateTimer.start()
     animateTimer2.start()
