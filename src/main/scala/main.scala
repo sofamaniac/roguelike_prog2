@@ -55,33 +55,33 @@ object ImageTest extends JFXApp {
 */
 
 object ExtendedTest extends JFXApp {
-  val canvasH = 600
-  val canvasW = 800
+    val canvasH = 600
+    val canvasW = 800
 
-  val gameCanvas = new Canvas(canvasW, canvasH)
+    val gameCanvas = new Canvas(canvasW, canvasH)
 
-  val ressource_folder = "file:src/main/ressources/"
-  val image = new ImageView(ressource_folder + "dome.png")
-  val gc = gameCanvas.graphicsContext2D
+    val ressource_folder = "file:src/main/ressources/"
+    val image = new ImageView(ressource_folder + "dome.png")
+    val gc = gameCanvas.graphicsContext2D
 
-  stage = new JFXApp.PrimaryStage
-  stage.height = canvasH
-  stage.width = canvasW 
-  val scene = new Scene
-  scene.fill = Black
-  scene.root = new Pane {children = List(gameCanvas)}
-  scene.content = image
+    stage = new JFXApp.PrimaryStage
+    stage.height = canvasH
+    stage.width = canvasW 
+    val scene = new Scene
+    scene.fill = Black
+    scene.root = new Pane {children = List(gameCanvas)}
+    scene.content = image
 
-  stage.setScene(scene)
+    stage.setScene(scene)
 
-  val animateTimer = AnimationTimer { t=>
-
-    image.setRotate(image.getRotate() + 2)
-  }
-  val animateTimer2 = AnimationTimer { t=>
-
-    image.setRotate(image.getRotate() -3)
-  }
-  animateTimer.start()
-  animateTimer2.start()
+    val animateTimer = AnimationTimer
+    {
+        t=>image.setRotate(image.getRotate() + 2)
+    }
+    val animateTimer2 = AnimationTimer
+    {
+        t=>image.setRotate(image.getRotate() -3)
+    }
+    animateTimer.start()
+    animateTimer2.start()
 }
