@@ -1,7 +1,8 @@
-import game._
+import graphics._
 import scalafx.application.JFXApp
 
 object Program extends JFXApp
 {
-    val test = Game
+    System.setProperty("quantum.multithreaded", "false");
+    Game.test()
 }
