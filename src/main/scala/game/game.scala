@@ -9,4 +9,3 @@ class Board(val player:Player, dest:GraphicsContext)
         // actions des entités en jeu (attaques...)
     }
 }
-
