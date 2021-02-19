@@ -19,13 +19,14 @@ import scalafx.scene.image._
 
 import position._
 
-class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: GraphicsContext){
+class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: GraphicsContext)
+{
 
   var animationDuration : Int = 60 // duration in frame of the entire cycle
   var currentFrame = 0
   var frameLength = animationDuration / animation.size
   var frameCounter = 0 // keep count of how many frames the current frame has been displayed
-  var _freeze = if (animation.size == 1) true else false
+  var _freeze : Boolean = (animation.size == 1)
 
   def show() : Unit =
   {
@@ -56,10 +57,54 @@ class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: G
   }
 }
 
-object AnimationLoader { 
+object AnimationLoader 
+{ 
   val ressource_folder = "file:src/main/ressources/"
   def load_animation(s:String):Array[ImageView]=
   {
     return Array(new ImageView(ressource_folder + "dome.png"))
+  }
+}
+
+object Game
+{
+
+  def test ():Unit =
+  {
+      val window = new JFXApp.PrimaryStage
+      val width = 800
+      val height = 600
+      window.height = height
+      window.width  = width
+      
+      val groupMenu = new Group
+      val groupGame = new Group
+      val sceneMenu = new Scene(groupMenu)
+      val sceneGame = new Scene(groupGame)
+
+      val canvasGame = new Canvas(width, height)
+      val canvasMenu = new Canvas(width, height)
+      val context = canvasGame.getGraphicsContext2D
+      
+      groupMenu.getChildren().add(canvasMenu)
+      groupGame.getChildren().add(canvasGame)
+
+      window.setScene(sceneGame)
+
+      val ressource_folder = "file:src/main/ressources/"
+      val image = new ImageView(ressource_folder + "dome.png")
+      val imag2 = new ImageView(ressource_folder + "shipGreen.png")
+
+
+      context.setFill(Black)
+      val entit2 = new GraphicEntity(Array(imag2), new Point(200, 100), context)
+      val animation = new GraphicEntity(Array(image, imag2), new Point(100, 200), context)
+
+      val timer = AnimationTimer
+      {
+          t=>context.fillRect(0, 0, canvasGame.getWidth, canvasGame.getHeight)
+             animation.show()
+      }
+      timer.start()
   }
 }

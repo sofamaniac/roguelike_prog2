@@ -16,19 +16,22 @@ abstract class Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContex
 abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
   extends Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
 {
-  var max_hp:Int// health points
-  var hp:Int    // current hp
-  var wis:Int   // wisdom
-  var kno:Int   // knowledge
-  var cons:Int  // constitution
-  var char:Int  // charisma
+  var baseHp:Int    // health points
+  var hp:Int        // current hp
+  var wis:Int
+  var baseWis:Int   // wisdom
+  var kno:Int       // knowledge
+  var baseKno:Int
+  var cons:Int      
+  var baseCons:Int  // constitution
+  var char:Int      // charisma
   
   def attack()
   def speak()
   def loot() // Generat loot on death
 }
 
-class Player(dest:GraphicsContext)
+abstract class Player(dest:GraphicsContext)
   extends SentientEntity(AnimationLoader.load_animation("ressources/player_animation"), new Point(0,0), dest:GraphicsContext)
 {
   val name="Player"
