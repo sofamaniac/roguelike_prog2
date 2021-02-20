@@ -25,6 +25,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
   var cons:Int      
   var baseCons:Int  // constitution
   var char:Int      // charisma
+  var baseChar:Int
   
   def attack()
   def speak()
@@ -32,7 +33,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 }
 
 abstract class Player(dest:GraphicsContext)
-  extends SentientEntity(AnimationLoader.load_animation("ressources/player_animation"), new Point(0,0), dest:GraphicsContext)
+  extends SentientEntity(AnimationLoader.load("ressources/player_animation", 1), new Point(0,0), dest:GraphicsContext)
 {
   val name="Player"
   var max_hp = 100
