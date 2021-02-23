@@ -124,7 +124,7 @@ object GameWindow
 
   window.setScene(scene)
 
-  def menuHandler(kc: KeyCode)={}
+  def menuHandler(kc: KeyCode)={animation.pos.add(new Point (100, 0))}
   def gameHandler(kc: KeyCode)={}
   var currentHandler = "Menu"
 
