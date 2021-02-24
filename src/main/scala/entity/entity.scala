@@ -32,8 +32,6 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     }
 
     def attack()
-    def dodge()
-    def speak()
     def loot() // Generate loot on death
 }
 
@@ -69,10 +67,7 @@ class Player(dest:GraphicsContext)
     {
         // free action, once per turn
     }
-    def loot() =
-    {
-
-    }
+    def loot() = {}
 }
   
 class Chest(dest:GraphicsContext)

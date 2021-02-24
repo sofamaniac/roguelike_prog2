@@ -7,7 +7,7 @@ import position._
 
 class Tile(val coord:Point)
 {
-    var adjArr:List[Tile] = List()
+    var isWalkable:Boolean = false
 
     var item:Option[Item] = None
     var entity:Option[SentientEntity] = None

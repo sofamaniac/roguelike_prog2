@@ -1,21 +1,23 @@
 package item
-import entity._
-import graphics._
-import position._
 
-abstract class Item extends Entity(AnimationLoader.load("ressource/default", 1), new Point(0, 0), GameWindow.contextGame)
-
-class MeleeWeapon extends Item
+abstract class Item(val price:Int, val rarity:Int)
+    extends Entity(AnimationLoader.load("ressources/item_base", 1), new Point(0,0), dest:GraphicsContext)
 {
 
 }
 
-class RangedWeapon extends Item
+class MeleeWeapon()
+    extends Item()
 {
 
 }
 
-class CasterWeapon extends Item
+class RangedWeapon()
+{
+
+}
+
+class CasterWeapon()
 {
     
 }

@@ -25,7 +25,7 @@ object Game
 
     def loop()
     {
-      while (player.hp > 0)
+        while (player.hp > 0)
         {
             // get action(s) from player
             // resolve actions (dodge from ennemies)
