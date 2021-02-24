@@ -72,15 +72,15 @@ class Player(dest:GraphicsContext)
 
     override def show() =
     {
-      super.show()
       arrow.show()
+      super.show()
     }
 
 
     def rotate(rot:Int) = 
     {
       currentDir = (currentDir + rot + dirArray.size) % dirArray.size
-      arrow.animation(0).setRotate((arrow.animation(0).getRotate() + 60*rot)%360)
+      arrow.animation(arrow.currentFrame).setRotate((arrow.animation(arrow.currentFrame).getRotate() + 60*rot)%360)
     }
 
     def getDir(dir: Int):Point = 
