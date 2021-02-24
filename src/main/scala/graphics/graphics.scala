@@ -6,6 +6,7 @@ import scalafx.application.JFXApp
 import scalafx.stage.Stage
 import scalafx.event.EventHandler
 import scalafx.scene.Scene
+import scalafx.scene.SnapshotParameters
 import scalafx.scene.input.KeyCode
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout._
@@ -34,14 +35,19 @@ class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: G
   var frameLength = animationDuration / animation.size
   var frameCounter = 0 // keep count of how many frames the current frame has been displayed
   var _freeze : Boolean = (animation.size == 1)
+  val params = new SnapshotParameters() // necessary for image rotation
+  params.setFill(Transparent)
 
   def show() : Unit =
   {
     val viewport = animation(currentFrame).getViewport()
-    val frame = animation(currentFrame).getImage()
+    //params.setViewport(viewport)
+    val frame = animation(currentFrame).snapshot(params, null)
     val x = GameWindow.tileSize * (sqrt(3) * pos.x  +  sqrt(3)/2 * pos.y)
     val y = GameWindow.tileSize * (                        3.0/2 * pos.y)
-    dest.drawImage(frame, viewport.getMinX(), viewport.getMinY(), viewport.getWidth(), viewport.getHeight(), x, y, viewport.getWidth(), viewport.getHeight())
+    val offsetX = frame.width.value  / 2.0d  // x and y are the coordinates of the center of the frame
+    val offsetY = frame.height.value / 2.0d  // so we need to offset the draw
+    dest.drawImage(frame, x-offsetX, y-offsetY)
     updateFrame()
 
   }
@@ -89,7 +95,7 @@ object AnimationLoader
     {
       val frame = new ImageView
       frame.image = image
-      frame.setViewport(new Rectangle2D(x, 0, _sizeX, _sizeY))
+      frame.setViewport(new Rectangle2D(x, 0, _sizeX, _sizeY)) // we use viewport to define sub pictures
       animation(i) = frame
       x = x + _sizeX + marginX
     }
