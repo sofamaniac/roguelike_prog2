@@ -4,21 +4,13 @@ import entity._
 import map._
 import position._
 import graphics._
-import scalafx.scene.input.KeyCode
 
 object Game
 {
     val player = new Player(GameWindow.contextGame)
 
-    def eventHandler(kc:KeyCode)
+    def eventHandler()
     {
-        kc.getName match
-        {
-            case "Right" => player.rotate(1)
-            case "Left"  => player.rotate(-1)
-            case "Up"    => player.move(player.getDir(1))
-            case "Down"  => player.move(player.getDir(-1))
-        }
 
     }
 

@@ -5,8 +5,6 @@ import scalafx.Includes._
 import scalafx.scene.image._
 import scalafx.scene.canvas._
 import position._
-import map._
-import game._
 
 abstract class Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
     extends GraphicEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
@@ -30,14 +28,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     def move(dir:Point):Unit = 
     {
-        val nextX = pos.x + dir.x
-        val nextY = pos.y + dir.y
-        if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
-        {
-            Map.tileArray(pos.x)(pos.y).entity = None
-            pos.add(dir)
-            Map.tileArray(pos.x)(pos.y).entity = Some(this)
-        }
+        pos.add(dir)
     }
 
     def attack()
@@ -45,7 +36,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 }
 
 class Player(dest:GraphicsContext)
-    extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=32), new Point(0,0), dest:GraphicsContext)
+    extends SentientEntity(AnimationLoader.load("ressources/player_animation", 1), new Point(0,0), dest:GraphicsContext)
 {
     val name = "Player"
     var maxHp = 100
@@ -60,36 +51,11 @@ class Player(dest:GraphicsContext)
     val baseDex = 100
     var modifDex = 0
     var weapon = "insert weapon object"
-    val arrow = new GraphicEntity(AnimationLoader.load("arrow.png",1), pos, GameWindow.contextGame)
 
-
-    val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
-    var currentDir = 0
-
-    Map.tileArray(pos.x)(pos.y).entity = Some(this)
-
-    override def show() =
+    def move(dir:Point):Unit = 
     {
-        super.show()
-        arrow.show()
+        pos.add(dir)
     }
-
-
-    def rotate(rot:Int) = 
-    {
-        currentDir = (currentDir + rot + dirArray.size) % dirArray.size
-        arrow.animation(0).setRotate((arrow.animation(0).getRotate() + 60*rot)%360)
-    }
-
-    def getDir(dir: Int):Point = 
-    {
-        dir match
-        {
-            case 1  => return dirArray(currentDir)
-            case -1 => return dirArray((currentDir + 3) % dirArray.size)
-        }
-    }
-
 
     def attack() = 
     {
@@ -104,7 +70,6 @@ class Player(dest:GraphicsContext)
     def loot() = {}
 }
   
-/*
 class Chest(dest:GraphicsContext)
     extends SentientEntity(AnimationLoader.load("ressources/chest_animation", 1), new Point(0,0), dest:GraphicsContext)
 {
@@ -113,4 +78,3 @@ class Chest(dest:GraphicsContext)
         
     }
 }
-*/

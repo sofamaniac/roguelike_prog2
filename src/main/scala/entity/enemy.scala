@@ -6,7 +6,6 @@ import position._
 import scalafx.scene.canvas._
 import graphics._
 
-/*
 class MeleeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseSpd:Int, modifSpd:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
     extends SentientEntity(AnimationLoader.load("ressources/melee_enemy_animation", 1), pos, dest)
 {
@@ -65,5 +64,3 @@ class CasterEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:In
 }
 // Définir les caractéristiques des ennemis (caractéristiques, path vers les animations, ...) dans un format
 // de fichier type Json, cependant json n'est par défaut pas supporté par Scala
-
-*/
