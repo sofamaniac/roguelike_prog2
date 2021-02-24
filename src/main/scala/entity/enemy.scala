@@ -2,9 +2,12 @@ package enemy
 
 import entity._
 import item._
+import position._
+import scalafx.scene.canvas._
+import graphics._
 
-class MeleeEnemy(var pos:Point, val dest:GraphicsContext, val name:String, var maxHp:Int, var hp:Int, var armorClass:Int, val baseSpd:Int, var modifSpd:Int, val baseStr:Int, var modifStr:Int, val baseDex:Int, var modifDex:Int, weapon:MeleeWeapon)
-    extends SentientEntity(AnimationLoader.load_animation("ressources/melee_enemy_animation"), pos, dest)
+class MeleeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseSpd:Int, modifSpd:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
+    extends SentientEntity(AnimationLoader.load("ressources/melee_enemy_animation", 1), pos, dest)
 {
     def attack() = 
     {
@@ -22,8 +25,8 @@ class MeleeEnemy(var pos:Point, val dest:GraphicsContext, val name:String, var m
     }
 }
 
-class RangedEnemy(var pos:Point, val dest:GraphicsContext, val name:String, var maxHp:Int, var hp:Int, var armorClass:Int, val baseSpd:Int, var modifSpd:Int, val baseStr:Int, var modifStr:Int, val baseDex:Int, var modifDex:Int, weapon:RangedWeapon)
-    extends SentientEntity(AnimationLoader.load_animation("ressources/melee_enemy_animation"), pos, dest)
+class RangeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseSpd:Int, modifSpd:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
+    extends SentientEntity(AnimationLoader.load("ressources/melee_enemy_animation", 1), pos, dest)
 {
     def attack() = 
     {
@@ -41,8 +44,8 @@ class RangedEnemy(var pos:Point, val dest:GraphicsContext, val name:String, var 
     }
 }
 
-class CasterEnemy(var pos:Point, val dest:GraphicsContext, val name:String, var maxHp:Int, var hp:Int, var armorClass:Int, val baseSpd:Int, var modifSpd:Int, val baseStr:Int, var modifStr:Int, val baseDex:Int, var modifDex:Int, weapon:CasterWeapon)
-    extends SentientEntity(AnimationLoader.load_animation("ressources/melee_enemy_animation"), pos, dest)
+class CasterEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseSpd:Int, modifSpd:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
+    extends SentientEntity(AnimationLoader.load("ressources/melee_enemy_animation", 1), pos, dest)
 {
     def attack() = 
     {

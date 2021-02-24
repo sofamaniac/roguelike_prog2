@@ -1,20 +1,13 @@
 package game
 
-import entity.AC_enemy
+import entity._
+import map._
+import position._
+import graphics._
 
-class Tile(val coord:Point)
+object Game
 {
-    var adjArr:List[Tile] = List()
-
-    var item:Option[Item] = None
-    var entity:Option[SentientEntity] = None
-
-    val texture:Option[GraphicEntity] = None        // TODO : to change
-}
-
-object Game(val player:Player)
-{
-    val player = new Player()
+    val player = new Player(GameWindow.contextGame)
 
     def eventHandler()
     {
@@ -32,7 +25,7 @@ object Game(val player:Player)
 
     def loop()
     {
-        while (player.hp)
+      while (player.hp > 0)
         {
             // get action(s) from player
             // resolve actions (dodge from ennemies)
