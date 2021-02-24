@@ -4,18 +4,21 @@ import scalafx.animation.AnimationTimer
 import scalafx.Includes._
 import scalafx.application.JFXApp
 import scalafx.stage.Stage
+import scalafx.event.EventHandler
 import scalafx.scene.Scene
-import scalafx.scene.Group
-import scalafx.scene.layout.Pane
+import scalafx.scene.input.KeyCode
+import scalafx.scene.input.KeyEvent
+import scalafx.scene.layout._
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.canvas.GraphicsContext
-import scalafx.scene.paint.Color
 import scalafx.scene.text.Font
 import scalafx.scene.text.FontWeight
 import scalafx.scene.text.FontPosture;
 import scalafx.scene.paint.Color._
 import scalafx.scene.image.Image
 import scalafx.scene.image._
+import scalafx.beans.property._
+import scalafx.geometry.Rectangle2D
 
 import position._
 
@@ -30,7 +33,9 @@ class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: G
 
   def show() : Unit =
   {
-    dest.drawImage(animation(currentFrame).getImage(), pos.x, pos.y)
+    val viewport = animation(currentFrame).getViewport()
+    val frame = animation(currentFrame).getImage()
+    dest.drawImage(frame, viewport.getMinX(), viewport.getMinY(), viewport.getWidth(), viewport.getHeight(), pos.x, pos.y, viewport.getWidth(), viewport.getHeight())
     updateFrame()
 
   }
@@ -60,51 +65,99 @@ class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: G
 object AnimationLoader 
 { 
   val ressource_folder = "file:src/main/ressources/"
-  def load_animation(s:String):Array[ImageView]=
+  def load(s:String, nbFrame: Int, sizeX:Int = -1, sizeY:Int = -1, marginX:Int = 0, marginY:Int = 0):Array[ImageView]=
   {
-    return Array(new ImageView(ressource_folder + "dome.png"))
+    var _sizeX = sizeX
+    var _sizeY = sizeY
+    val image = new Image(ressource_folder + s)
+    if(sizeX < 0){
+      _sizeX = image.getWidth().toInt / nbFrame
+    }
+    if(sizeY < 0){
+      _sizeY = (image.getHeight()).toInt
+    }
+    val animation = new Array[ImageView](nbFrame) // Array of length [nbFrame]
+    var x = 0
+    var i = 0
+    for (i <- 0 until nbFrame)
+    {
+      val frame = new ImageView
+      frame.image = image
+      frame.setViewport(new Rectangle2D(x, 0, _sizeX, _sizeY))
+      animation(i) = frame
+      x = x + _sizeX + marginX
+    }
+    return animation
   }
 }
 
-object Game
+object GameWindow
 {
 
-  def test ():Unit =
+  val window = new JFXApp.PrimaryStage
+  val width = 800
+  val height = 600
+  window.height = height
+  window.width  = width
+  
+  val canvasGame = new Canvas
   {
-      val window = new JFXApp.PrimaryStage
-      val width = 800
-      val height = 600
-      window.height = height
-      window.width  = width
-      
-      val groupMenu = new Group
-      val groupGame = new Group
-      val sceneMenu = new Scene(groupMenu)
-      val sceneGame = new Scene(groupGame)
+    width  <== DoubleProperty(0.70)*window.width // we link the canvas' size to the window's size using properties
+    height <== window.height
+  }
+  val canvasMenu = new Canvas
+  {
+    width  <== window.width - canvasGame.width
+    height <== window.height
+  }
 
-      val canvasGame = new Canvas(width, height)
-      val canvasMenu = new Canvas(width, height)
-      val context = canvasGame.getGraphicsContext2D
-      
-      groupMenu.getChildren().add(canvasMenu)
-      groupGame.getChildren().add(canvasGame)
+  val contextGame = canvasGame.getGraphicsContext2D
+  val contextMenu = canvasMenu.getGraphicsContext2D
+  contextGame.setFill(Black)
+  contextMenu.setFill(Grey)
+  
+  val grid = new GridPane
+  grid.add(canvasGame, 0, 0)
+  grid.add(canvasMenu, 1, 0)
 
-      window.setScene(sceneGame)
+  val scene = new Scene { root = grid}
 
-      val ressource_folder = "file:src/main/ressources/"
-      val image = new ImageView(ressource_folder + "dome.png")
-      val imag2 = new ImageView(ressource_folder + "shipGreen.png")
+  window.setScene(scene)
 
+  def menuHandler(kc: KeyCode)={animation.pos.add(new Point (100, 0))}
+  def gameHandler(kc: KeyCode)={}
+  var currentHandler = "Menu"
 
-      context.setFill(Black)
-      val entit2 = new GraphicEntity(Array(imag2), new Point(200, 100), context)
-      val animation = new GraphicEntity(Array(image, imag2), new Point(100, 200), context)
+  def eventHandle(kc: KeyCode):Unit =
+  {
+    kc.getName match
+    {
+      case "Esc" => currentHandler = if(currentHandler == "Menu") "Game" else "Menu"
+      case _ => if(currentHandler == "Menu") menuHandler(kc) else gameHandler(kc)
+    }
+  }
 
-      val timer = AnimationTimer
-      {
-          t=>context.fillRect(0, 0, canvasGame.getWidth, canvasGame.getHeight)
-             animation.show()
-      }
-      timer.start()
+  scene.onKeyPressed = (e: KeyEvent) => eventHandle(e.getCode)
+
+  // Temporary code
+  val animation = new GraphicEntity(AnimationLoader.load("character.png", 4, sizeY=32), new Point(100, 200), contextGame)
+  // =================== //
+
+  val loop = AnimationTimer
+  {
+    t=>
+      clearScreen()
+      animation.show()
+  }
+
+  def clearScreen():Unit =
+  {
+    contextGame.fillRect(0, 0, canvasGame.getWidth, canvasGame.getHeight)
+    contextMenu.fillRect(0, 0, canvasMenu.getWidth, canvasMenu.getHeight)
+  }
+
+  def start():Unit =
+  {
+    loop.start()
   }
 }

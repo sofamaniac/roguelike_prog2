@@ -39,6 +39,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
 class Player(dest:GraphicsContext)
     extends SentientEntity(AnimationLoader.load_animation("ressources/player_animation"), new Point(0,0), dest:GraphicsContext)
+
 {
     val name = "Player"
     var maxHp = 100
