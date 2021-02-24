@@ -111,8 +111,8 @@ object GameWindow
     height <== window.height
   }
 
-  val contextGame = canvasGame.getGraphicsContext2D
-  val contextMenu = canvasMenu.getGraphicsContext2D
+  val contextGame = canvasGame.graphicsContext2D
+  val contextMenu = canvasMenu.graphicsContext2D
   contextGame.setFill(Black)
   contextMenu.setFill(Grey)
   
@@ -124,7 +124,7 @@ object GameWindow
 
   window.setScene(scene)
 
-  def menuHandler(kc: KeyCode)={animation.pos.add(new Point (100, 0))}
+  def menuHandler(kc: KeyCode)={animation.pos.add(new Point (10, 0))}
   def gameHandler(kc: KeyCode)={}
   var currentHandler = "Menu"
 

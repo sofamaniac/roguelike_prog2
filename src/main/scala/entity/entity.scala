@@ -38,8 +38,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 }
 
 class Player(dest:GraphicsContext)
-    extends SentientEntity(AnimationLoader.load_animation("ressources/player_animation"), new Point(0,0), dest:GraphicsContext)
-
+    extends SentientEntity(AnimationLoader.load("ressources/player_animation", 1), new Point(0,0), dest:GraphicsContext)
 {
     val name = "Player"
     var maxHp = 100
@@ -77,7 +76,7 @@ class Player(dest:GraphicsContext)
 }
   
 class Chest(dest:GraphicsContext)
-    extends SentientEntity(AnimationLoader.load_animation("ressources/chest_animation"), new Point(0,0), dest:GraphicsContext)
+    extends SentientEntity(AnimationLoader.load("ressources/chest_animation", 1), new Point(0,0), dest:GraphicsContext)
 {
     def loot() =
     {
