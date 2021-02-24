@@ -20,7 +20,11 @@ import scalafx.scene.image._
 import scalafx.beans.property._
 import scalafx.geometry.Rectangle2D
 
+import scala.math.sqrt
+
 import position._
+import game._
+import map._
 
 class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: GraphicsContext)
 {
@@ -35,7 +39,9 @@ class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: G
   {
     val viewport = animation(currentFrame).getViewport()
     val frame = animation(currentFrame).getImage()
-    dest.drawImage(frame, viewport.getMinX(), viewport.getMinY(), viewport.getWidth(), viewport.getHeight(), pos.x, pos.y, viewport.getWidth(), viewport.getHeight())
+    val x = GameWindow.tileSize * (sqrt(3) * pos.x  +  sqrt(3)/2 * pos.y)
+    val y = GameWindow.tileSize * (                        3.0/2 * pos.y)
+    dest.drawImage(frame, viewport.getMinX(), viewport.getMinY(), viewport.getWidth(), viewport.getHeight(), x, y, viewport.getWidth(), viewport.getHeight())
     updateFrame()
 
   }
@@ -99,6 +105,7 @@ object GameWindow
   val height = 600
   window.height = height
   window.width  = width
+  val tileSize = 32
   
   val canvasGame = new Canvas
   {
@@ -124,9 +131,9 @@ object GameWindow
 
   window.setScene(scene)
 
-  def menuHandler(kc: KeyCode)={animation.pos.add(new Point (10, 0))}
-  def gameHandler(kc: KeyCode)={}
-  var currentHandler = "Menu"
+  def menuHandler(kc: KeyCode)={}
+  def gameHandler(kc: KeyCode)={Game.eventHandler(kc)}
+  var currentHandler = "Game"
 
   def eventHandle(kc: KeyCode):Unit =
   {
@@ -139,15 +146,11 @@ object GameWindow
 
   scene.onKeyPressed = (e: KeyEvent) => eventHandle(e.getCode)
 
-  // Temporary code
-  val animation = new GraphicEntity(AnimationLoader.load("character.png", 4, sizeY=32), new Point(100, 200), contextGame)
-  // =================== //
-
   val loop = AnimationTimer
   {
     t=>
       clearScreen()
-      animation.show()
+      Map.show()
   }
 
   def clearScreen():Unit =
