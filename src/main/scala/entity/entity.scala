@@ -45,7 +45,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 }
 
 class Player(dest:GraphicsContext)
-    extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=32), new Point(0,0), dest:GraphicsContext)
+    extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=64), new Point(0,0), dest:GraphicsContext)
 {
     val name = "Player"
     var maxHp = 100
@@ -70,15 +70,15 @@ class Player(dest:GraphicsContext)
 
     override def show() =
     {
-        super.show()
         arrow.show()
+        super.show()
     }
 
 
     def rotate(rot:Int) = 
     {
         currentDir = (currentDir + rot + dirArray.size) % dirArray.size
-        arrow.animation(0).setRotate((arrow.animation(0).getRotate() + 60*rot)%360)
+        arrow.animation(arrow.currentFrame).setRotate((arrow.animation(arrow.currentFrame).getRotate() + 60*rot)%360)
     }
 
     def getDir(dir: Int):Point = 
