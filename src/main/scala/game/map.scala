@@ -4,26 +4,58 @@ import item._
 import graphics._
 import entity._
 import position._
+import game._
 
 class Tile(val coord:Point)
 {
     var item:Option[Item] = None
     var entity:Option[SentientEntity] = None
+    var walkable:Boolean = true   // can be useful to implement doors
+    var seeThrough:Boolean = true // for exemple walls are not see through
+    var selected:Boolean = false  // if a tile is selected dipslay info on what it contains
+    var highlight:Boolean = false // indicates if the tile should be "highlighted"
 
-    val texture:GraphicEntity = new GraphicEntity(AnimationLoader.load("tileDirt_tile.png", 1), new Point(coord.x, coord.y), GameWindow.contextGame)
+    val texture:GraphicEntity = new GraphicEntity(AnimationLoader.load("tileDirt_tile.png", 1), coord, GameWindow.contextGame)
+    val hideTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("hide_texture.png", 1), coord, GameWindow.contextGame)
+    val infoDest = GameWindow.contextMenu
+
     def show() = 
     {
       texture.show()
-      item match
+
+      if(isVisible())
       {
-        case None => ()
-        case Some(i) => i.show()
+        if(selected)
+        {
+          displayInfo()
+        }
+        item match
+        {
+          case None => ()
+          case Some(i) => i.show()
+        }
+        entity match
+        {
+          case None => ()
+          case Some(e) => e.show()
+        }
       }
-      entity match
+      else
       {
-        case None => ()
-        case Some(e) => e.show()
+        hideTexture.show()
       }
+    }
+
+    def displayInfo() =
+    {
+      infoDest.fillText(s"Tile at ($coord.x, $coord.y) : Nothing to display", 0, 0)
+    }
+
+    def isVisible():Boolean = 
+    {
+      val d = coord.distance(Game.player.pos)
+      return d <= Game.player.getSeeRange() // TODO : update such that non see through tiles obscure the view 
+      //(just find a straight line to the player and check if every tile on it is see through)
     }
 }
 

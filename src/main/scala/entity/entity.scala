@@ -15,8 +15,43 @@ abstract class Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContex
     def move(dir:Point):Unit
 }
 
+abstract class ControlledEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
+  extends Entity(animation, pos, dest)
+{
+  val arrow = new GraphicEntity(AnimationLoader.load("arrow.png", 6), pos, dest)
+  arrow.freeze()
+
+  val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
+  var currentDir = 0
+
+  def rotate(rot:Int) = 
+  {
+    currentDir = (currentDir + rot + dirArray.size) % dirArray.size
+    arrow.currentFrame = (arrow.currentFrame + rot + dirArray.size) % arrow.animation.size
+  }
+
+  def getDir(dir: Int):Point = 
+  {
+    dir match
+    {
+      case 1  => return dirArray(currentDir)
+      case -1 => return dirArray((currentDir + 3) % dirArray.size)
+    }
+  }
+
+  def move(dir:Point):Unit = 
+  {
+      val nextX = pos.x + dir.x
+      val nextY = pos.y + dir.y
+      if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
+      {
+        pos.add(dir)
+      }
+  }
+}
+
 abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
-    extends Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
+    extends ControlledEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
 {
     var maxHp:Int           // health points
     var hp:Int              // current hp
@@ -28,22 +63,48 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     val baseDex:Int 
     var modifDex:Int
 
-    def move(dir:Point):Unit = 
+    override def move(dir:Point):Unit = 
     {
-        val nextX = pos.x + dir.x
-        val nextY = pos.y + dir.y
-        if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
-        {
-          Map.tileArray(pos.x)(pos.y).entity = None
-          pos.add(dir)
-          Map.tileArray(pos.x)(pos.y).entity = Some(this)
-        }
+      val nextX = pos.x + dir.x
+      val nextY = pos.y + dir.y
+      if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
+      {
+        Map.tileArray(pos.x)(pos.y).entity = None
+        pos.add(dir)
+        Map.tileArray(pos.x)(pos.y).entity = Some(this)
+      }
     }
 
     def attack()
     def dodge()
     def speak()
     def loot() // Generate loot on death
+}
+
+
+class Cursor(dest:GraphicsContext)
+  extends ControlledEntity(AnimationLoader.load("cursor.png", 1), new Point(0,0), dest:GraphicsContext)
+{
+  val name = "cursor"
+
+  override def show() = 
+  {
+    arrow.show()
+    super.show()
+  }
+
+  override def move(dir:Point) =
+  {
+    val nextX = pos.x + dir.x
+    val nextY = pos.y + dir.y
+    if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
+    {
+      Map.tileArray(pos.x)(pos.y).selected = false
+      pos.add(dir)
+      Map.tileArray(pos.x)(pos.y).selected = true
+    }
+  }
+
 }
 
 class Player(dest:GraphicsContext)
@@ -62,36 +123,14 @@ class Player(dest:GraphicsContext)
     val baseDex = 100
     var modifDex = 0
     var weapon = "insert weapon object"
-    val arrow = new GraphicEntity(AnimationLoader.load("arrow.png",1), pos, GameWindow.contextGame)
-
-
-    val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
-    var currentDir = 0
-
-    Map.tileArray(pos.x)(pos.y).entity = Some(this)
+    val seeRange = 5
+    var modifSee = 0
 
     override def show() =
     {
       arrow.show()
       super.show()
     }
-
-
-    def rotate(rot:Int) = 
-    {
-      currentDir = (currentDir + rot + dirArray.size) % dirArray.size
-      arrow.animation(arrow.currentFrame).setRotate((arrow.animation(arrow.currentFrame).getRotate() + 60*rot)%360)
-    }
-
-    def getDir(dir: Int):Point = 
-    {
-      dir match
-      {
-        case 1  => return dirArray(currentDir)
-        case -1 => return dirArray((currentDir + 3) % dirArray.size)
-      }
-    }
-
 
     def attack() = 
     {
@@ -108,6 +147,11 @@ class Player(dest:GraphicsContext)
 
     }
     def dodge() = {}
+
+    def getSeeRange() : Int = 
+    {
+      return seeRange + modifSee
+    }
 }
   
 /*
