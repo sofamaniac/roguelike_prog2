@@ -9,18 +9,24 @@ import scalafx.scene.input.KeyCode
 object Game
 {
     val player = new Player(GameWindow.contextGame)
+    var currentPhase = "move"
+    var currentActor:ControlledEntity= player
+    val cursor = new Cursor(GameWindow.contextGame)
 
     def eventHandler(kc:KeyCode)
     {
-
       kc.getName match
       {
-        case "Right" => player.rotate(1)
-        case "Left"  => player.rotate(-1)
-        case "Up"    => player.move(player.getDir(1))
-        case "Down"  => player.move(player.getDir(-1))
+        case "Right"  => currentActor.rotate(1)
+        case "Left"   => currentActor.rotate(-1)
+        case "Up"     => currentActor.move(currentActor.getDir(1))
+        case "Down"   => currentActor.move(currentActor.getDir(-1))
+        case "A"      => cursor.pos.x = player.pos.x
+                         cursor.pos.y = player.pos.y
+                         currentActor = if(currentPhase == "attack") player else cursor
+                         currentPhase = if(currentPhase == "attack") "move"  else "attack"
+        case _        => ()
       }
-
     }
 
     def initialization()
