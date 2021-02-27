@@ -26,7 +26,7 @@ import position._
 import game._
 import map._
 
-class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: GraphicsContext)
+class GraphicEntity(val animation:Array[ImageView], val pos:Point, var dest:GraphicsContext)
 {
 
   var animationDuration : Int = 60 // duration in frame of the entire cycle
@@ -179,6 +179,7 @@ object GameWindow
 
   def start():Unit =
   {
+    Game.initialization()
     loop.start()
   }
 }

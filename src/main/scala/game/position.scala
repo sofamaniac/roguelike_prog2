@@ -1,13 +1,12 @@
 package position
 
-class Point(xc:Int, yd:Int)
+class Point(var x:Int, var y:Int)
 {
-  var x = xc
-  var y = yd
-  def add(b:Point) = {
-    x = b.x + x
-    y = b.y + y
-  }
+    def add(b:Point) =
+    {
+        x = b.x + x
+        y = b.y + y
+    }
 
   def distance(b:Point):Int =
   {

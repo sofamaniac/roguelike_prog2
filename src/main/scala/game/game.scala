@@ -1,6 +1,8 @@
 package game
 
+import enemy._
 import entity._
+import item._
 import map._
 import position._
 import graphics._
@@ -13,6 +15,8 @@ object Game
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
     setPhase("move", true)
+
+    var enemiesArray:Vector[Enemy] = Vector()
 
     def eventHandler(kc:KeyCode) =
     {
@@ -76,6 +80,13 @@ object Game
 
     def initialization() =
     {
+      // generate map : already done for now
+
+      // creating and placing enemies :
+      enemiesArray = enemiesArray :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, new MeleeWeapon("OldKnife", 0, 0, 0, 0))
+      enemiesArray(0).move(enemiesArray(0).pos)
+
+      // creating and placing items :
     }
 
     def loop() = 

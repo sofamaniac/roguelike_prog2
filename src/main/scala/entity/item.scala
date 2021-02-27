@@ -1,13 +1,14 @@
 package item
+
 import entity._
 import graphics._
 import position._
 import map._
 
-abstract class Item extends Entity(AnimationLoader.load("ressource/default", 1), new Point(0, 0), GameWindow.contextGame)
-
-abstract class Weapon extends Item
+abstract class Item
+    extends Entity(AnimationLoader.load("ressources/default", 1), new Point(0,0), GameWindow.contextGame)
 {
+  val name:String
   val innerRange:Int
   val outerRange:Int
   val damageRoll:Int
@@ -18,10 +19,15 @@ abstract class Weapon extends Item
   {
     scala.util.Random.nextInt(max)
   }
+    
+  val price:Int
+  val rarity:Int
+
 }
 
-class MeleeWeapon extends Weapon
+abstract class Weapon(name:String, price:Int, rarity:Int) extends Item
 {
+
   val name = "MeleeWeapon"
   val innerRange = 1
   val outerRange = 1
@@ -49,27 +55,26 @@ class MeleeWeapon extends Weapon
     }
 
   }
-
+  def move(dir:Point) {}
 }
 
-class RangedWeapon extends Weapon
+class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
 {
-  val name = "RangedWeapon"
-  val innerRange = 1
-  val outerRange = 3
+    
+}
 
   val damageRoll = 4
   val numberRoll = 2
 
   def attack(dest:Point, str:Int, dex:Int) = {}
 
+class RangedWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
+{
+    
 }
 
-class CasterWeapon extends Weapon
+class CasterWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
 {
-  val name = "CasterWeapon"
-  val innerRange = 3
-  val outerRange = 6
     
   val damageRoll = 4
   val numberRoll = 2

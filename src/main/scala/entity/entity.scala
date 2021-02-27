@@ -10,7 +10,7 @@ import game._
 import item._
 
 abstract class Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
-    extends GraphicEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
+    extends GraphicEntity(animation, pos, dest)
 {
     val name:String
     def move(dir:Point):Unit
@@ -31,7 +31,7 @@ abstract class ControlledEntity(animation:Array[ImageView], pos:Point, dest:Grap
     arrow.currentFrame = (arrow.currentFrame + rot + dirArray.size) % dirArray.size
   }
 
-  def getDir(dir: Int):Point = 
+  def getDir(dir:Int):Point = 
   {
     dir match
     {
@@ -52,13 +52,16 @@ abstract class ControlledEntity(animation:Array[ImageView], pos:Point, dest:Grap
 }
 
 abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
-    extends Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
+    extends Entity(animation, pos, dest)
 {
+    val name:String
     var maxHP:Int           // health points
-    var curHP:Int              // current hp
+    var curHP:Int           // current hp
+
     var armorClass:Int      // AC
-    val baseSpd:Int         // Speed in tiles
-    var modifSpd:Int
+    val baseAP:Int          // Action Points
+    var modifAP:Int
+    var curAP:Int
     val baseStr:Int         // starting value
     var modifStr:Int        // relative modifications
     val baseDex:Int 
@@ -70,7 +73,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     var weapon:Weapon       // equipped weapon
 
-    override def move(next:Point):Unit = 
+    def move(next:Point):Unit = 
     {
       if (isMoveValid(next))
       {
@@ -100,12 +103,13 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     def dodge():Boolean
     def speak()
+
     def loot() // Generate loot on death
 }
 
 
 class Cursor(dest:GraphicsContext)
-  extends ControlledEntity(AnimationLoader.load("cursor.png", 1), new Point(0,0), dest:GraphicsContext)
+  extends ControlledEntity(AnimationLoader.load("cursor.png", 1), new Point(0,0), dest)
 {
   val name = "cursor"
   var limitation = false  // indicates if the cursor is restricted to highlighted tiles
@@ -139,16 +143,16 @@ class Cursor(dest:GraphicsContext)
 }
 
 class Player(dest:GraphicsContext)
-    extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=32), new Point(0,0), dest:GraphicsContext)
+    extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=64), new Point(0,0), dest)
 {
     val name = "Player"
     var maxHP = 100
     var curHP = 100
-    var maxSanity:Int = 100
-    var sanity:Int = 100
+    var maxSanity = 100
+    var sanity = 100
     var armorClass = 30
-    val baseSpd = 5
-    var modifSpd = 0
+    val baseAP = 5
+    var modifAP = 0
     val baseStr = 100
     var modifStr = 0
     val baseDex = 100
@@ -160,27 +164,28 @@ class Player(dest:GraphicsContext)
     var modifAP = 0
     var curAP = 5
 
-    var weapon:Weapon = new CasterWeapon
+    var weapon:Weapon = new CasterWeapon("FireBall", 0, 0, 2, 4)
 
-    def attack() = 
+    def attack()
     {
         // roll 1d100
         // if roll > AC_enemy -> touch
         // roll damage
     }
-    def speak() = 
+    def speak()
     {
         // free action, once per turn
     }
-    def loot() =
+    def loot()
     {
 
     }
+
     def dodge():Boolean = {return false}
 
-    def getSeeRange() : Int = 
+    def getSeeRange():Int = 
     {
-      return seeRange + modifSee
+        return seeRange + modifSee
     }
 }
   
