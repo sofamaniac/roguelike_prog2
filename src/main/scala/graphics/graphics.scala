@@ -105,8 +105,8 @@ object GameWindow
 {
 
   val window = new JFXApp.PrimaryStage
-  val width = 800
-  val height = 600
+  val width = 1920
+  val height = 1080
   window.height = height
   window.width  = width
   val tileSize = 30
@@ -131,7 +131,7 @@ object GameWindow
   grid.add(canvasGame, 0, 0)
   grid.add(canvasMenu, 1, 0)
 
-  val scene = new Scene { root = grid}
+  val scene = new Scene { root = grid }
 
   window.setScene(scene)
 
@@ -157,8 +157,9 @@ object GameWindow
       addInfo("Use Space to select the current tile")
       addInfo("Use 'Esc' to go back in movement mode")
       addInfo("To use item, use the key indicated next to it")
+      addInfo("Player: %d/%d HP; %d/%d(+%d) AP".format(Game.player.curHP, Game.player.maxHP, Game.player.curAP, Game.player.baseAP, Game.player.modifAP))
       Map.show()
-      Game.currentActor.show()
+      Game.cursor.show()
   }
 
   def clearScreen():Unit =

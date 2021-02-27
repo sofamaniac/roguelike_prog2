@@ -54,8 +54,8 @@ abstract class ControlledEntity(animation:Array[ImageView], pos:Point, dest:Grap
 abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
     extends Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
 {
-    var maxHp:Int           // health points
-    var hp:Int              // current hp
+    var maxHP:Int           // health points
+    var curHP:Int              // current hp
     var armorClass:Int      // AC
     val baseSpd:Int         // Speed in tiles
     var modifSpd:Int
@@ -64,28 +64,41 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     val baseDex:Int 
     var modifDex:Int
     
-    var maxAP:Int           // action points
+    var baseAP:Int          // action points
+    var modifAP:Int 
     var curAP:Int
+
+    var weapon:Weapon       // equipped weapon
 
     override def move(next:Point):Unit = 
     {
-      val nextX = next.x
-      val nextY = next.y
-      if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
+      if (isMoveValid(next))
       {
-        Map.tileArray(pos.x)(pos.y).entity = None
-        Map.tileArray(nextX)(nextY).entity = Some(this)
+        Map.fromPoint(next).entity = None
+        Map.fromPoint(next).entity = Some(this)
+        curAP -= pos.distance(next)
         pos.setPoint(next)
       }
     }
 
-    def getInfo():String =
+    def isMoveValid(next:Point):Boolean =
     {
-      return "%s : %s/%s HP".format(name, hp, maxHp)
+      return (next.x >= 0 && next.y >= 0 && next.x < Map.tileArray.size && next.y < Map.tileArray(next.y).size
+            && Map.tileArray(next.x)(next.y).entity == None && Map.tileArray(next.x)(next.y).walkable)
     }
 
-    def attack()
-    def dodge()
+
+    def getInfo():String =
+    {
+      return "%s : %s/%s HP".format(name, curHP, maxHP)
+    }
+
+    def attack(dest:Point):Unit =
+    {
+      weapon.attack(dest, baseStr+modifStr, baseDex+modifDex)
+    }
+
+    def dodge():Boolean
     def speak()
     def loot() // Generate loot on death
 }
@@ -116,14 +129,21 @@ class Cursor(dest:GraphicsContext)
     }
   }
 
+  def setPos(dest:Point)
+  {
+    Map.tileArray(pos.x)(pos.y).selected = false
+    pos.setPoint(dest)
+    Map.tileArray(pos.x)(pos.y).selected = true
+  }
+
 }
 
 class Player(dest:GraphicsContext)
     extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=32), new Point(0,0), dest:GraphicsContext)
 {
     val name = "Player"
-    var maxHp = 100
-    var hp = 100
+    var maxHP = 100
+    var curHP = 100
     var maxSanity:Int = 100
     var sanity:Int = 100
     var armorClass = 30
@@ -136,10 +156,11 @@ class Player(dest:GraphicsContext)
     val seeRange = 5
     var modifSee = 0
 
-    var maxAP = 5
+    var baseAP = 5
+    var modifAP = 0
     var curAP = 5
 
-    var weapon = new CasterWeapon
+    var weapon:Weapon = new CasterWeapon
 
     def attack() = 
     {
@@ -155,7 +176,7 @@ class Player(dest:GraphicsContext)
     {
 
     }
-    def dodge() = {}
+    def dodge():Boolean = {return false}
 
     def getSeeRange() : Int = 
     {

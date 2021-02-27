@@ -13,16 +13,15 @@ object Game
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
     setPhase("move", true)
-    var currentActor:ControlledEntity= cursor
 
-    def eventHandler(kc:KeyCode)
+    def eventHandler(kc:KeyCode) =
     {
       kc.getName match
       {
         case "Right"  => cursor.rotate(1)
         case "Left"   => cursor.rotate(-1)
-        case "Up"     => cursor.move(currentActor.getDir(1))
-        case "Down"   => cursor.move(currentActor.getDir(-1))
+        case "Up"     => cursor.move(cursor.getDir(1))
+        case "Down"   => cursor.move(cursor.getDir(-1))
         case "A"      => setPhase("attack", true)
         case "I"      => setPhase("info", true)
         case "Space"  => handleSelection()
@@ -35,7 +34,7 @@ object Game
     {
       if(isSelectionPhase && phase != currentPhase)
       {
-        cursor.pos.setPoint(player.pos)
+        cursor.setPos(player.pos)
       }
       if(phase == "move")
       {
@@ -62,28 +61,28 @@ object Game
       {
         case "move"   => player.move(cursor.pos)
                          setPhase("move", true)
-        case "attack" => () // TODO : implement attack
+                         if(player.curAP < 1)
+                         {
+                           loop()
+                           setPhase("move", true)
+                         }
+
+        case "attack" => player.attack(cursor.pos)
+                         loop()
+                         setPhase("move", true)
         case "info"   => ()
       }
     }
 
-    def initialization()
+    def initialization() =
     {
-        // generate map :
-        val origin:Tile = new Tile(new Point(0,0))
-        // create Player
-        // create and place enemies
-        // create and place items
     }
 
-    def loop()
+    def loop() = 
     {
-      while (player.hp > 0)
-        {
-            // get action(s) from player
-            // resolve actions (dodge from ennemies)
-            // ennemies turn
-            // dodge for the player
-        }
+      player.curAP = player.baseAP + player.modifAP
+      // resolve actions (dodge from ennemies)
+      // ennemies turn
+      // dodge for the player
     }
 }
