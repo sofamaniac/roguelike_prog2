@@ -34,18 +34,20 @@ class GraphicEntity(val animation:Array[ImageView], val pos:Point, var dest:Grap
   var frameLength = animationDuration / animation.size
   var frameCounter = 0 // keep count of how many frames the current frame has been displayed
   var _freeze : Boolean = (animation.size == 1)
+  val w = GameWindow.canvasGame.width
+  val h = GameWindow.canvasGame.height
+
 
   def show() : Unit =
   {
     val viewport = animation(currentFrame).getViewport()
     val frame = animation(currentFrame).getImage()
-    val x = GameWindow.tileSize * (sqrt(3) * pos.x  +  sqrt(3)/2 * pos.y)
-    val y = GameWindow.tileSize * (                        3.0/2 * pos.y)
-    val offsetX = frame.width.value  / 2.0d  // x and y are the coordinates of the center of the frame
-    val offsetY = frame.height.value / 2.0d  // so we need to offset the draw
+    val xOff = Game.player.pos.x
+    val yOff = Game.player.pos.y
+    val x = w.value/2 + GameWindow.tileSize * (sqrt(3) * (pos.x-xOff)  +  sqrt(3)/2 * (pos.y - yOff))
+    val y = h.value/2 + GameWindow.tileSize * (                               3.0/2 * (pos.y - yOff))
     dest.drawImage(frame, viewport.getMinX(), viewport.getMinY(), viewport.getWidth(), viewport.getHeight(), x, y, viewport.getWidth(), viewport.getHeight())
     updateFrame()
-
   }
   def updateFrame() : Unit = 
   {
@@ -129,21 +131,19 @@ object GameWindow
   grid.add(canvasGame, 0, 0)
   grid.add(canvasMenu, 1, 0)
 
-  val scene = new Scene { root = grid}
+  val scene = new Scene {root = grid}
 
   window.setScene(scene)
 
-  def menuHandler(kc: KeyCode)={}
   def gameHandler(kc: KeyCode)={Game.eventHandler(kc)}
   var currentHandler = "Game"
 
+  var displayInfoY = 20
+
   def eventHandle(kc: KeyCode):Unit =
   {
-    kc.getName match
-    {
-      case "Esc" => currentHandler = if(currentHandler == "Menu") "Game" else "Menu"
-      case _ => if(currentHandler == "Menu") menuHandler(kc) else gameHandler(kc)
-    }
+    // for now the menu does not handle any keyboard event
+    gameHandler(kc)
   }
 
   scene.onKeyPressed = (e: KeyEvent) => eventHandle(e.getCode)
@@ -152,6 +152,11 @@ object GameWindow
   {
     t=>
       clearScreen()
+      addInfo("Use Left/Right arrow to change orientation and Up/Down to move")
+      addInfo("Use 'A' to go in attack mode, 'I' to go in information mode")
+      addInfo("Use Space to select the current tile")
+      addInfo("Use 'Esc' to go back in movement mode")
+      addInfo("To use item, use the key indicated next to it")
       Map.show()
       Game.currentActor.show()
   }
@@ -160,10 +165,20 @@ object GameWindow
   {
     contextGame.fillRect(0, 0, canvasGame.getWidth, canvasGame.getHeight)
     contextMenu.fillRect(0, 0, canvasMenu.getWidth, canvasMenu.getHeight)
+    displayInfoY = 20
+  }
+
+  def addInfo(s:String):Unit =
+  {
+    contextMenu.setFill(Black)
+    contextMenu.fillText(s, 0, displayInfoY)
+    displayInfoY += 20
+    contextMenu.setFill(Grey)
   }
 
   def start():Unit =
   {
+    Game.initialization()
     loop.start()
   }
 }

@@ -28,7 +28,7 @@ abstract class ControlledEntity(animation:Array[ImageView], pos:Point, dest:Grap
   def rotate(rot:Int) = 
   {
     currentDir = (currentDir + rot + dirArray.size) % dirArray.size
-    arrow.currentFrame = (arrow.currentFrame + rot + dirArray.size) % arrow.animation.size
+    arrow.currentFrame = (arrow.currentFrame + rot + dirArray.size) % dirArray.size
   }
 
   def getDir(dir:Int):Point = 
@@ -42,39 +42,45 @@ abstract class ControlledEntity(animation:Array[ImageView], pos:Point, dest:Grap
 
   def move(dir:Point):Unit = 
   {
-      val nextX = pos.x + dir.x
-      val nextY = pos.y + dir.y
-      if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
-      {
-        pos.add(dir)
-      }
+    val nextX = pos.x + dir.x
+    val nextY = pos.y + dir.y
+    if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
+    {
+      pos.add(dir)
+    }
   }
 }
 
 abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
-    extends ControlledEntity(animation, pos, dest)
+    extends Entity(animation, pos, dest)
 {
     val name:String
-    var maxHp:Int           // health points
-    var hp:Int              // current hp
+    var maxHP:Int           // health points
+    var curHP:Int           // current hp
     var armorClass:Int      // AC
     val baseAP:Int          // Action Points
     var modifAP:Int
+    var curAP:Int
     val baseStr:Int         // starting value
     var modifStr:Int        // relative modifications
     val baseDex:Int 
     var modifDex:Int
 
-    override def move(dir:Point):Unit = 
+    def move(next:Point):Unit = 
     {
-      val nextX = pos.x + dir.x
-      val nextY = pos.y + dir.y
+      val nextX = next.x
+      val nextY = next.y
       if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
       {
         Map.tileArray(pos.x)(pos.y).entity = None
-        pos.add(dir)
-        Map.tileArray(pos.x)(pos.y).entity = Some(this)
+        Map.tileArray(nextX)(nextY).entity = Some(this)
+        pos.setPoint(next)
       }
+    }
+
+    def getInfo():String =
+    {
+      return "%s : %s/%s HP".format(name, curHP, maxHP)
     }
 
     def attack()
@@ -86,6 +92,7 @@ class Cursor(dest:GraphicsContext)
   extends ControlledEntity(AnimationLoader.load("cursor.png", 1), new Point(0,0), dest)
 {
   val name = "cursor"
+  var limitation = false  // indicates if the cursor is restricted to highlighted tiles
 
   override def show() = 
   {
@@ -97,7 +104,8 @@ class Cursor(dest:GraphicsContext)
   {
     val nextX = pos.x + dir.x
     val nextY = pos.y + dir.y
-    if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
+    if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size
+        && Map.tileArray(nextX)(nextY).isVisible() && (!limitation || Map.tileArray(nextX)(nextY).highlight))
     {
       Map.tileArray(pos.x)(pos.y).selected = false
       pos.add(dir)
@@ -111,10 +119,10 @@ class Player(dest:GraphicsContext)
     extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=64), new Point(0,0), dest)
 {
     val name = "Player"
-    var maxHp = 100
-    var hp = 100
-    var maxSanity:Int = 100
-    var sanity:Int = 100
+    var maxHP = 100
+    var curHP = 100
+    var maxSanity = 100
+    var sanity = 100
     var armorClass = 30
     val baseAP = 5
     var modifAP = 0
@@ -122,36 +130,31 @@ class Player(dest:GraphicsContext)
     var modifStr = 0
     val baseDex = 100
     var modifDex = 0
-    // var weapon:Item
-    val seeRange:Int = 3
-    var modifSee:Int = 0
-    var inventory:Vector[Item] = Vector()
+    val seeRange = 5
+    var modifSee = 0
 
-    override def show() =
-    {
-        arrow.show()
-        super.show()
-    }
+    var maxAP = 4
+    var curAP = 4
 
-    def attack() = 
+    var weapon = new CasterWeapon("FireBall", 0, 0, 2, 4)
+
+    def attack()
     {
         // roll 1d100
         // if roll > AC_enemy -> touch
         // roll damage
     }
-    def speak() = 
+    def speak()
     {
         // free action, once per turn
     }
-    def loot() =
+    def loot()
     {
 
     }
-    def dodge() = {}
-
-    def getSeeRange() : Int = 
+    def getSeeRange():Int = 
     {
-      return seeRange + modifSee
+        return seeRange + modifSee
     }
 }
   

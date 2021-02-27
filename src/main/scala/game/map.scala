@@ -5,6 +5,7 @@ import graphics._
 import entity._
 import position._
 import game._
+import scalafx.scene.paint.Color._
 
 class Tile(val coord:Point)
 {
@@ -17,6 +18,7 @@ class Tile(val coord:Point)
 
     val texture:GraphicEntity = new GraphicEntity(AnimationLoader.load("invisigrid_white.png", 1), coord, GameWindow.contextGame)
     val hideTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("hide_texture.png", 1), coord, GameWindow.contextGame)
+    val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlight.png", 1), coord, GameWindow.contextGame)
     val infoDest = GameWindow.contextMenu
 
     def show() = 
@@ -28,6 +30,10 @@ class Tile(val coord:Point)
         if(selected)
         {
           displayInfo()
+        }
+        if(highlight)
+        {
+          highlightTexture.show()
         }
         item match
         {
@@ -48,7 +54,13 @@ class Tile(val coord:Point)
 
     def displayInfo() =
     {
-      infoDest.fillText(s"Tile at ($coord.x, $coord.y) : Nothing to display", 0, 0)
+      var s = ""
+      entity match
+      {
+        case None    => s = "Nothing to display"
+        case Some(e) => s = e.getInfo()
+      }
+      GameWindow.addInfo("Tile at (%d, %d) : %s".format(coord.x, coord.y, s))
     }
 
     def isVisible():Boolean = 
@@ -81,7 +93,8 @@ object Map
             }
         }
     }
-    createMap(5)
+
+    createMap(20)
 
     def show() = 
     {
@@ -94,5 +107,40 @@ object Map
                 tileArray(i)(j).show()
             }
         }
+    }
+
+    def setHighlight(in:Int, out:Int):Unit =
+    {
+        var i = 0
+        var j = 0
+        for (i<-0 until tileArray.size)
+        {
+            for(j<-0 until tileArray(i).size)
+            {
+                tileArray(i)(j).highlight = false // erase previous highlight
+                val d = tileArray(i)(j).coord.distance(Game.player.pos) 
+                if ( d >= in && d <= out && tileArray(i)(j).isVisible())
+                {
+                    tileArray(i)(j).highlight = true
+                }
+            }
+        }
+    }
+
+    def findHighlight():Point =
+    {
+        var i = 0
+        var j = 0
+        for (i<-0 until tileArray.size)
+        {
+            for(j<-0 until tileArray(i).size)
+            {
+                if (tileArray(i)(j).highlight)
+                {
+                    return tileArray(i)(j).coord
+                }
+            }
+        }
+        return new Point(-1, -1)
     }
 }
