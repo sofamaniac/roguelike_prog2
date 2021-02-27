@@ -6,7 +6,6 @@ import scalafx.application.JFXApp
 import scalafx.stage.Stage
 import scalafx.event.EventHandler
 import scalafx.scene.Scene
-import scalafx.scene.SnapshotParameters
 import scalafx.scene.input.KeyCode
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout._
@@ -27,7 +26,7 @@ import position._
 import game._
 import map._
 
-class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: GraphicsContext)
+class GraphicEntity(val animation:Array[ImageView], val pos:Point, var dest:GraphicsContext)
 {
 
   var animationDuration : Int = 60 // duration in frame of the entire cycle
@@ -35,19 +34,16 @@ class GraphicEntity(val animation: Array[ImageView], val pos: Point, var dest: G
   var frameLength = animationDuration / animation.size
   var frameCounter = 0 // keep count of how many frames the current frame has been displayed
   var _freeze : Boolean = (animation.size == 1)
-  val params = new SnapshotParameters() // necessary for image rotation
-  params.setFill(Transparent)
 
   def show() : Unit =
   {
     val viewport = animation(currentFrame).getViewport()
-    //params.setViewport(viewport)
-    val frame = animation(currentFrame).snapshot(params, null)
+    val frame = animation(currentFrame).getImage()
     val x = GameWindow.tileSize * (sqrt(3) * pos.x  +  sqrt(3)/2 * pos.y)
     val y = GameWindow.tileSize * (                        3.0/2 * pos.y)
     val offsetX = frame.width.value  / 2.0d  // x and y are the coordinates of the center of the frame
     val offsetY = frame.height.value / 2.0d  // so we need to offset the draw
-    dest.drawImage(frame, x-offsetX, y-offsetY)
+    dest.drawImage(frame, viewport.getMinX(), viewport.getMinY(), viewport.getWidth(), viewport.getHeight(), x, y, viewport.getWidth(), viewport.getHeight())
     updateFrame()
 
   }
@@ -111,7 +107,7 @@ object GameWindow
   val height = 600
   window.height = height
   window.width  = width
-  val tileSize = 32
+  val tileSize = 30
   
   val canvasGame = new Canvas
   {
@@ -157,6 +153,7 @@ object GameWindow
     t=>
       clearScreen()
       Map.show()
+      Game.currentActor.show()
   }
 
   def clearScreen():Unit =

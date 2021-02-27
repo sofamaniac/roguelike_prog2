@@ -7,7 +7,7 @@ import scalafx.scene.canvas._
 import graphics._
 
 /*
-class MeleeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseSpd:Int, modifSpd:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
+class MeleeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseAP:Int, modifAP:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
     extends SentientEntity(AnimationLoader.load("ressources/melee_enemy_animation", 1), pos, dest)
 {
     def attack() = 
@@ -26,7 +26,7 @@ class MeleeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int
     }
 }
 
-class RangeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseSpd:Int, modifSpd:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
+class RangeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseAP:Int, modifAP:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
     extends SentientEntity(AnimationLoader.load("ressources/melee_enemy_animation", 1), pos, dest)
 {
     def attack() = 
@@ -45,7 +45,7 @@ class RangeEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int
     }
 }
 
-class CasterEnemy(pos:Point, dest:GraphicsContext, name:String, maxHp:Int, hp:Int, armorClass:Int, baseSpd:Int, modifSpd:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
+class CasterEnemy(pos, dest, name:String, maxHp:Int, hp:Int, armorClass:Int, baseAP:Int, modifAP:Int, baseStr:Int, modifStr:Int, baseDex:Int, modifDex:Int, var weapon:MeleeWeapon)
     extends SentientEntity(AnimationLoader.load("ressources/melee_enemy_animation", 1), pos, dest)
 {
     def attack() = 
