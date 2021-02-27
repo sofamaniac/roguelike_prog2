@@ -25,9 +25,10 @@ abstract class Item
 
 }
 
-abstract class Weapon(name:String, price:Int, rarity:Int) extends Item
-{
+abstract class Weapon(name:String, price:Int, rarity:Int) extends Item {}
 
+class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
+{
   val name = "MeleeWeapon"
   val innerRange = 1
   val outerRange = 1
@@ -55,22 +56,14 @@ abstract class Weapon(name:String, price:Int, rarity:Int) extends Item
     }
 
   }
-  def move(dir:Point) {}
 }
-
-class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
-{
-    
-}
-
-  val damageRoll = 4
-  val numberRoll = 2
-
-  def attack(dest:Point, str:Int, dex:Int) = {}
 
 class RangedWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
 {
-    
+    val damageRoll = 4
+    val numberRoll = 2
+
+    def attack(dest:Point, str:Int, dex:Int) = {}
 }
 
 class CasterWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
