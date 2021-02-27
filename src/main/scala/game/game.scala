@@ -15,75 +15,85 @@ object Game
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
     setPhase("move", true)
-    var currentActor:ControlledEntity = cursor
 
     var enemiesArray:Vector[Enemy] = Vector()
 
-    def eventHandler(kc:KeyCode)
+    def eventHandler(kc:KeyCode) =
     {
-        kc.getName match
-        {
-            case "Right"  => cursor.rotate(1)
-            case "Left"   => cursor.rotate(-1)
-            case "Up"     => cursor.move(currentActor.getDir(1))
-            case "Down"   => cursor.move(currentActor.getDir(-1))
-            case "A"      => setPhase("attack", true)
-            case "I"      => setPhase("info", true)
-            case "Space"  => handleSelection()
-            case "Esc"    => setPhase("move", true)
-            case _        => ()
-        }
+      kc.getName match
+      {
+        case "Right"  => cursor.rotate(1)
+        case "Left"   => cursor.rotate(-1)
+        case "Up"     => cursor.move(cursor.getDir(1))
+        case "Down"   => cursor.move(cursor.getDir(-1))
+        case "A"      => setPhase("attack", true)
+        case "I"      => setPhase("info", true)
+        case "Space"  => handleSelection()
+        case "Esc"    => setPhase("move", true)
+        case _        => ()
+      }
     }
 
     def setPhase(phase:String, isSelectionPhase:Boolean) = 
     {
-        if(isSelectionPhase && phase != currentPhase)
-        {
-            cursor.pos.setPoint(player.pos)
-        }
-        if(phase == "move")
-        {
-            Map.setHighlight(0, player.curAP)
-            cursor.limitation = true
-        }
-        else if(phase == "attack")
-        {
-            Map.setHighlight(player.weapon.innerRange, player.weapon.outerRange)
-            cursor.limitation = true
-            cursor.pos.setPoint(Map.findHighlight())
-        }
-        else if(phase == "info")
-        {
-            cursor.limitation = false
-            Map.setHighlight(-1, -1)
-        }
-        currentPhase = phase
+      if(isSelectionPhase && phase != currentPhase)
+      {
+        cursor.setPos(player.pos)
+      }
+      if(phase == "move")
+      {
+        Map.setHighlight(0, player.curAP)
+        cursor.limitation = true
+      }
+      else if(phase == "attack")
+      {
+        Map.setHighlight(player.weapon.innerRange, player.weapon.outerRange)
+        cursor.limitation = true
+        cursor.pos.setPoint(Map.findHighlight())
+      }
+      else if(phase == "info")
+      {
+        cursor.limitation = false
+        Map.setHighlight(-1, -1)
+      }
+      currentPhase = phase
     }
 
     def handleSelection() =
     {
-        currentPhase match
-        {
-            case "move"   => player.move(cursor.pos)
-                            setPhase("move", true)
-            case "attack" => () // TODO : implement attack
-            case "info"   => ()
-        }
+      currentPhase match
+      {
+        case "move"   => player.move(cursor.pos)
+                         setPhase("move", true)
+                         if(player.curAP < 1)
+                         {
+                           loop()
+                           setPhase("move", true)
+                         }
+
+        case "attack" => player.attack(cursor.pos)
+                         loop()
+                         setPhase("move", true)
+        case "info"   => ()
+      }
     }
 
-    def initialization()
+    def initialization() =
     {
-        // generate map : already done for now
+      // generate map : already done for now
 
-        // creating and placing enemies :
-        enemiesArray = enemiesArray :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, new MeleeWeapon("OldKnife", 0, 0, 0, 0))
-        enemiesArray(0).move(enemiesArray(0).pos)
+      // creating and placing enemies :
+      enemiesArray = enemiesArray :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))
+      enemiesArray(0).move(enemiesArray(0).pos)
 
-        // creating and placing items :
+      // creating and placing items :
     }
 
-    def loop() =
+    def loop() = 
     {
-
+      player.curAP = player.baseAP + player.modifAP
+      // resolve actions (dodge from ennemies)
+      // ennemies turn
+      // dodge for the player
     }
 }

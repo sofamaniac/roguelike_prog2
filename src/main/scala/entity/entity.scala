@@ -57,33 +57,52 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     val name:String
     var maxHP:Int           // health points
     var curHP:Int           // current hp
+
     var armorClass:Int      // AC
-    val baseAP:Int          // Action Points
+    
+    var baseAP:Int          // Action Points
     var modifAP:Int
     var curAP:Int
-    val baseStr:Int         // starting value
+    
+    var baseStr:Int         // starting value
     var modifStr:Int        // relative modifications
-    val baseDex:Int 
+    
+    var baseDex:Int 
     var modifDex:Int
+
+    var weapon:Weapon       // equipped weapon
 
     def move(next:Point):Unit = 
     {
-      val nextX = next.x
-      val nextY = next.y
-      if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
+      if (isMoveValid(next))
       {
-        Map.tileArray(pos.x)(pos.y).entity = None
-        Map.tileArray(nextX)(nextY).entity = Some(this)
+        Map.fromPoint(next).entity = None
+        Map.fromPoint(next).entity = Some(this)
+        curAP -= pos.distance(next)
         pos.setPoint(next)
       }
     }
+
+    def isMoveValid(next:Point):Boolean =
+    {
+      return (next.x >= 0 && next.y >= 0 && next.x < Map.tileArray.size && next.y < Map.tileArray(next.y).size
+            && Map.tileArray(next.x)(next.y).entity == None && Map.tileArray(next.x)(next.y).walkable)
+    }
+
 
     def getInfo():String =
     {
       return "%s : %s/%s HP".format(name, curHP, maxHP)
     }
 
-    def attack()
+    def attack(dest:Point):Unit =
+    {
+      weapon.attack(dest, baseStr+modifStr, baseDex+modifDex)
+    }
+
+    def dodge():Boolean
+    def speak()
+
     def loot() // Generate loot on death
 }
 
@@ -113,30 +132,43 @@ class Cursor(dest:GraphicsContext)
     }
   }
 
+  def setPos(dest:Point)
+  {
+    Map.tileArray(pos.x)(pos.y).selected = false
+    pos.setPoint(dest)
+    Map.tileArray(pos.x)(pos.y).selected = true
+  }
+
 }
 
 class Player(dest:GraphicsContext)
     extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=64), new Point(0,0), dest)
 {
     val name = "Player"
+
     var maxHP = 100
     var curHP = 100
+    
     var maxSanity = 100
     var sanity = 100
+    
     var armorClass = 30
-    val baseAP = 5
+    
+    var baseAP = 5
     var modifAP = 0
-    val baseStr = 100
+    var curAP = baseAP
+    
+    var baseStr = 100
     var modifStr = 0
-    val baseDex = 100
+    
+    var baseDex = 100
     var modifDex = 0
-    val seeRange = 5
+    
+    var seeRange = 5
     var modifSee = 0
 
-    var maxAP = 4
-    var curAP = 4
 
-    var weapon = new CasterWeapon("FireBall", 0, 0, 2, 4)
+    var weapon:Weapon = new CasterWeapon("FireBall", 0, 0, 2, 4, 4, 2)
 
     def attack()
     {
@@ -152,6 +184,9 @@ class Player(dest:GraphicsContext)
     {
 
     }
+
+    def dodge():Boolean = {return false}
+
     def getSeeRange():Int = 
     {
         return seeRange + modifSee
