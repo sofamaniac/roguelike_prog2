@@ -57,6 +57,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     val name:String
     var maxHP:Int           // health points
     var curHP:Int           // current hp
+
     var armorClass:Int      // AC
     val baseAP:Int          // Action Points
     var modifAP:Int
@@ -65,25 +66,44 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     var modifStr:Int        // relative modifications
     val baseDex:Int 
     var modifDex:Int
+    
+    var baseAP:Int          // action points
+    var modifAP:Int 
+    var curAP:Int
+
+    var weapon:Weapon       // equipped weapon
 
     def move(next:Point):Unit = 
     {
-      val nextX = next.x
-      val nextY = next.y
-      if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
+      if (isMoveValid(next))
       {
-        Map.tileArray(pos.x)(pos.y).entity = None
-        Map.tileArray(nextX)(nextY).entity = Some(this)
+        Map.fromPoint(next).entity = None
+        Map.fromPoint(next).entity = Some(this)
+        curAP -= pos.distance(next)
         pos.setPoint(next)
       }
     }
+
+    def isMoveValid(next:Point):Boolean =
+    {
+      return (next.x >= 0 && next.y >= 0 && next.x < Map.tileArray.size && next.y < Map.tileArray(next.y).size
+            && Map.tileArray(next.x)(next.y).entity == None && Map.tileArray(next.x)(next.y).walkable)
+    }
+
 
     def getInfo():String =
     {
       return "%s : %s/%s HP".format(name, curHP, maxHP)
     }
 
-    def attack()
+    def attack(dest:Point):Unit =
+    {
+      weapon.attack(dest, baseStr+modifStr, baseDex+modifDex)
+    }
+
+    def dodge():Boolean
+    def speak()
+
     def loot() // Generate loot on death
 }
 
@@ -113,6 +133,13 @@ class Cursor(dest:GraphicsContext)
     }
   }
 
+  def setPos(dest:Point)
+  {
+    Map.tileArray(pos.x)(pos.y).selected = false
+    pos.setPoint(dest)
+    Map.tileArray(pos.x)(pos.y).selected = true
+  }
+
 }
 
 class Player(dest:GraphicsContext)
@@ -133,10 +160,11 @@ class Player(dest:GraphicsContext)
     val seeRange = 5
     var modifSee = 0
 
-    var maxAP = 4
-    var curAP = 4
+    var baseAP = 5
+    var modifAP = 0
+    var curAP = 5
 
-    var weapon = new CasterWeapon("FireBall", 0, 0, 2, 4)
+    var weapon:Weapon = new CasterWeapon("FireBall", 0, 0, 2, 4)
 
     def attack()
     {
@@ -152,6 +180,9 @@ class Player(dest:GraphicsContext)
     {
 
     }
+
+    def dodge():Boolean = {return false}
+
     def getSeeRange():Int = 
     {
         return seeRange + modifSee

@@ -143,4 +143,11 @@ object Map
         }
         return new Point(-1, -1)
     }
+  }
+
+  def fromPoint(p:Point):Tile =
+  {
+    return tileArray(p.x)(p.y)
+  }
+
 }
