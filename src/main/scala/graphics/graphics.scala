@@ -13,7 +13,7 @@ import scalafx.scene.canvas.Canvas
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.text.Font
 import scalafx.scene.text.FontWeight
-import scalafx.scene.text.FontPosture;
+import scalafx.scene.text.FontPosture
 import scalafx.scene.paint.Color._
 import scalafx.scene.image.Image
 import scalafx.scene.image._
