@@ -101,6 +101,45 @@ object AnimationLoader
   }
 }
 
+object MessageHandler
+{
+  var messages = Vector[String]()
+  var cellMessage = ""
+  def addInfo(s:String):Unit =
+  {
+    messages = messages :+ s
+  }
+  def cellInfo(s:String):Unit =
+  {
+    cellMessage = s
+  }
+
+  def show():Unit =
+  {
+    var displayInfoY = 20
+    GameWindow.contextMenu.setFill(Black)
+    for(i <- messages)
+    {
+      GameWindow.contextMenu.fillText(i, 0, displayInfoY)
+      displayInfoY += 20
+    }
+    GameWindow.contextMenu.fillText(cellMessage, 0, displayInfoY)
+    GameWindow.contextMenu.setFill(Grey)
+  }
+
+  def clear():Unit =
+  {
+    messages = Vector[String]()
+
+    addInfo("Use Left/Right arrow to change orientation and Up/Down to move")
+    addInfo("Use 'A' to go in attack mode, 'I' to go in information mode")
+    addInfo("Use Space to select the current tile")
+    addInfo("Use 'Esc' to go back in movement mode")
+    addInfo("To use item, use the key indicated next to it")
+    addInfo("Player: %d/%d HP; %d/%d(+%d) AP".format(Game.player.curHP, Game.player.maxHP, Game.player.curAP, Game.player.baseAP, Game.player.modifAP))
+  }
+}
+
 object GameWindow
 {
 
@@ -109,7 +148,7 @@ object GameWindow
   val height = 1080
   window.height = height
   window.width  = width
-  val tileSize = 30
+  val tileSize = 32
   
   val canvasGame = new Canvas
   {
@@ -138,7 +177,6 @@ object GameWindow
   def gameHandler(kc: KeyCode)={Game.eventHandler(kc)}
   var currentHandler = "Game"
 
-  var displayInfoY = 20
 
   def eventHandle(kc: KeyCode):Unit =
   {
@@ -152,30 +190,17 @@ object GameWindow
   {
     t=>
       clearScreen()
-      addInfo("Use Left/Right arrow to change orientation and Up/Down to move")
-      addInfo("Use 'A' to go in attack mode, 'I' to go in information mode")
-      addInfo("Use Space to select the current tile")
-      addInfo("Use 'Esc' to go back in movement mode")
-      addInfo("To use item, use the key indicated next to it")
-      addInfo("Player: %d/%d HP; %d/%d(+%d) AP".format(Game.player.curHP, Game.player.maxHP, Game.player.curAP, Game.player.baseAP, Game.player.modifAP))
       Map.show()
       Game.cursor.show()
+      MessageHandler.show()
   }
 
   def clearScreen():Unit =
   {
     contextGame.fillRect(0, 0, canvasGame.getWidth, canvasGame.getHeight)
     contextMenu.fillRect(0, 0, canvasMenu.getWidth, canvasMenu.getHeight)
-    displayInfoY = 20
   }
 
-  def addInfo(s:String):Unit =
-  {
-    contextMenu.setFill(Black)
-    contextMenu.fillText(s, 0, displayInfoY)
-    displayInfoY += 20
-    contextMenu.setFill(Grey)
-  }
 
   def start():Unit =
   {

@@ -16,7 +16,7 @@ class Tile(val coord:Point)
     var selected:Boolean = false  // if a tile is selected dipslay info on what it contains
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
 
-    val texture:GraphicEntity = new GraphicEntity(AnimationLoader.load("invisigrid_white.png", 1), coord, GameWindow.contextGame)
+    val texture:GraphicEntity = new GraphicEntity(AnimationLoader.load("ground.png", 1), coord, GameWindow.contextGame)
     val hideTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("hide_texture.png", 1), coord, GameWindow.contextGame)
     val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlight.png", 1), coord, GameWindow.contextGame)
     val infoDest = GameWindow.contextMenu
@@ -60,7 +60,7 @@ class Tile(val coord:Point)
         case None    => s = "Nothing to display"
         case Some(e) => s = e.getInfo()
       }
-      GameWindow.addInfo("Tile at (%d, %d) : %s".format(coord.x, coord.y, s))
+      MessageHandler.cellInfo("Tile at (%d, %d) : %s".format(coord.x, coord.y, s))
     }
 
     def isVisible():Boolean = 
@@ -109,7 +109,7 @@ object Map
         }
     }
 
-    def setHighlight(in:Int, out:Int):Unit =
+    def setHighlight(in:Int, out:Int, source:Point):Unit =
     {
         var i = 0
         var j = 0
@@ -118,7 +118,7 @@ object Map
             for(j<-0 until tileArray(i).size)
             {
                 tileArray(i)(j).highlight = false // erase previous highlight
-                val d = tileArray(i)(j).coord.distance(Game.player.pos) 
+                val d = tileArray(i)(j).coord.distance(source) 
                 if ( d >= in && d <= out && tileArray(i)(j).isVisible())
                 {
                     tileArray(i)(j).highlight = true

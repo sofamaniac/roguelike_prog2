@@ -76,7 +76,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     {
       if (isMoveValid(next))
       {
-        Map.fromPoint(next).entity = None
+        Map.fromPoint(pos).entity = None
         Map.fromPoint(next).entity = Some(this)
         curAP -= pos.distance(next)
         pos.setPoint(next)
@@ -168,7 +168,7 @@ class Player(dest:GraphicsContext)
     var modifSee = 0
 
 
-    var weapon:Weapon = new CasterWeapon("FireBall", 0, 0, 2, 4, 4, 2)
+    var weapon:Weapon = new MeleeWeapon("FireBall", 0, 0, 2, 4, 4, 2)
 
     def attack()
     {

@@ -11,7 +11,6 @@ import scalafx.scene.input.KeyCode
 object Game
 {
     val player = new Player(GameWindow.contextGame)
-    player.move(new Point(0,0))
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
     setPhase("move", true)
@@ -38,23 +37,29 @@ object Game
     {
       if(isSelectionPhase && phase != currentPhase)
       {
-        cursor.setPos(player.pos)
+        if(!Map.fromPoint(cursor.pos).highlight)
+        {
+          cursor.setPos(player.pos)
+        }
       }
       if(phase == "move")
       {
-        Map.setHighlight(0, player.curAP)
+        Map.setHighlight(0, player.curAP, player.pos)
         cursor.limitation = true
       }
       else if(phase == "attack")
       {
-        Map.setHighlight(player.weapon.innerRange, player.weapon.outerRange)
+        Map.setHighlight(player.weapon.innerRange, player.weapon.outerRange, player.pos)
         cursor.limitation = true
-        cursor.pos.setPoint(Map.findHighlight())
+        if(!Map.fromPoint(cursor.pos).highlight)
+        {
+          cursor.pos.setPoint(Map.findHighlight())
+        }
       }
       else if(phase == "info")
       {
         cursor.limitation = false
-        Map.setHighlight(-1, -1)
+        Map.setHighlight(-1, -1, player.pos)
       }
       currentPhase = phase
     }
@@ -71,7 +76,8 @@ object Game
                            setPhase("move", true)
                          }
 
-        case "attack" => player.attack(cursor.pos)
+        case "attack" => MessageHandler.clear()
+                         player.attack(cursor.pos)
                          loop()
                          setPhase("move", true)
         case "info"   => ()
@@ -81,6 +87,8 @@ object Game
     def initialization() =
     {
       // generate map : already done for now
+      player.move(new Point(0, 0))
+      MessageHandler.clear()
 
       // creating and placing enemies :
       enemiesArray = enemiesArray :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))

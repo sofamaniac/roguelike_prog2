@@ -47,6 +47,11 @@ class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange
             damage+=roll(damageRoll)
           }
           e.curHP -= damage+(str/10)
+          MessageHandler.addInfo("Hit %s and dealt %d damage.".format(e.name, damage+(str/10)))
+        }
+        else
+        {
+          MessageHandler.addInfo("Missed")
         }
     }
 
