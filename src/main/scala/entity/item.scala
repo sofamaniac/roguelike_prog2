@@ -9,6 +9,14 @@ abstract class Item
     extends Entity(AnimationLoader.load("ressources/default", 1), new Point(0,0), GameWindow.contextGame)
 {
   val name:String
+    
+  val price:Int
+  val rarity:Int
+
+}
+
+abstract class Weapon(name:String, price:Int, rarity:Int) extends Item 
+{
   val innerRange:Int
   val outerRange:Int
   val damageRoll:Int
@@ -19,23 +27,10 @@ abstract class Item
   {
     scala.util.Random.nextInt(max)
   }
-    
-  val price:Int
-  val rarity:Int
-
 }
 
-abstract class Weapon(name:String, price:Int, rarity:Int) extends Item {}
-
-class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
+class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int, val damageRoll:Int, val numberRoll:Int) extends Weapon(name, price, rarity)
 {
-  val name = "MeleeWeapon"
-  val innerRange = 1
-  val outerRange = 1
-
-  val damageRoll = 4
-  val numberRoll = 2
-
   def attack(dest:Point, str:Int, dex:Int) =
   {
     Map.fromPoint(dest).entity match
@@ -58,19 +53,13 @@ class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange
   }
 }
 
-class RangedWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
+class RangedWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int, val damageRoll:Int, val numberRoll:Int) extends Weapon(name, price, rarity)
 {
-    val damageRoll = 4
-    val numberRoll = 2
-
     def attack(dest:Point, str:Int, dex:Int) = {}
 }
 
-class CasterWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int) extends Weapon(name, price, rarity)
+class CasterWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int, val damageRoll:Int, val numberRoll:Int) extends Weapon(name, price, rarity)
 {
-    
-  val damageRoll = 4
-  val numberRoll = 2
   def attack(dest:Point, str:Int, dex:Int) = {}
 }
 

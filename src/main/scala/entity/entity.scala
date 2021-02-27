@@ -59,17 +59,16 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     var curHP:Int           // current hp
 
     var armorClass:Int      // AC
-    val baseAP:Int          // Action Points
+    
+    var baseAP:Int          // Action Points
     var modifAP:Int
     var curAP:Int
-    val baseStr:Int         // starting value
-    var modifStr:Int        // relative modifications
-    val baseDex:Int 
-    var modifDex:Int
     
-    var baseAP:Int          // action points
-    var modifAP:Int 
-    var curAP:Int
+    var baseStr:Int         // starting value
+    var modifStr:Int        // relative modifications
+    
+    var baseDex:Int 
+    var modifDex:Int
 
     var weapon:Weapon       // equipped weapon
 
@@ -146,25 +145,30 @@ class Player(dest:GraphicsContext)
     extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=64), new Point(0,0), dest)
 {
     val name = "Player"
+
     var maxHP = 100
     var curHP = 100
+    
     var maxSanity = 100
     var sanity = 100
+    
     var armorClass = 30
-    val baseAP = 5
-    var modifAP = 0
-    val baseStr = 100
-    var modifStr = 0
-    val baseDex = 100
-    var modifDex = 0
-    val seeRange = 5
-    var modifSee = 0
-
+    
     var baseAP = 5
     var modifAP = 0
-    var curAP = 5
+    var curAP = baseAP
+    
+    var baseStr = 100
+    var modifStr = 0
+    
+    var baseDex = 100
+    var modifDex = 0
+    
+    var seeRange = 5
+    var modifSee = 0
 
-    var weapon:Weapon = new CasterWeapon("FireBall", 0, 0, 2, 4)
+
+    var weapon:Weapon = new CasterWeapon("FireBall", 0, 0, 2, 4, 4, 2)
 
     def attack()
     {
