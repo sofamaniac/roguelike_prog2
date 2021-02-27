@@ -9,7 +9,7 @@ import graphics._
 
 abstract class Enemy(animation:Array[ImageView], pos:Point, dest:GraphicsContext) extends SentientEntity(animation, pos, dest) {}
 
-class MeleeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, val baseAP:Int, var modifAP:Int, var curAP:Int, val baseStr:Int, var modifStr:Int, val baseDex:Int, var modifDex:Int, var weapon:MeleeWeapon)
+class MeleeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var weapon:Weapon)
     extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
 {
     def attack()
@@ -26,9 +26,10 @@ class MeleeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int
     {
         
     }
+    def dodge():Boolean = {return false}
 }
 
-class RangeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, val baseAP:Int, var modifAP:Int, var curAP:Int, val baseStr:Int, var modifStr:Int, val baseDex:Int, var modifDex:Int, var weapon:RangedWeapon)
+class RangeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var weapon:Weapon)
     extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
 {
     def attack()
@@ -45,9 +46,10 @@ class RangeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int
     {
 
     }
+    def dodge():Boolean = {return false}
 }
 
-class CasterEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, val baseAP:Int, var modifAP:Int, var curAP:Int, val baseStr:Int, var modifStr:Int, val baseDex:Int, var modifDex:Int, var weapon:CasterWeapon)
+class CasterEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var weapon:Weapon)
     extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
 {
     def attack()
@@ -64,6 +66,7 @@ class CasterEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:In
     {
 
     }
+    def dodge():Boolean = {return false}
 }
 // Définir les caractéristiques des ennemis (caractéristiques, path vers les animations, ...) dans un format
 // de fichier type Json, cependant json n'est par défaut pas supporté par Scala
