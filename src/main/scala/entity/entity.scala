@@ -186,14 +186,3 @@ class Player(dest:GraphicsContext)
         return seeRange + modifSee
     }
 }
-  
-/*
-class Chest(dest:GraphicsContext)
-    extends SentientEntity(AnimationLoader.load("ressources/chest_animation", 1), new Point(0,0), dest:GraphicsContext)
-{
-    def loot() =
-    {
-        
-    }
-}
-*/

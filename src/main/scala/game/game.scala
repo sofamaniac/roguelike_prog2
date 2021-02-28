@@ -16,7 +16,7 @@ object Game
     var currentPhase = ""
     setPhase("move", true)
 
-    var enemiesArray:Vector[Enemy] = Vector()
+    var enemiesVector:Vector[Enemy] = Vector()
 
     def eventHandler(kc:KeyCode) =
     {
@@ -30,6 +30,7 @@ object Game
         case "I"      => setPhase("info", true)
         case "Space"  => handleSelection()
         case "Esc"    => setPhase("move", true)
+        case "E"      => setPhase("inventory", false)
         case _        => ()
       }
     }
@@ -56,44 +57,51 @@ object Game
         cursor.limitation = false
         Map.setHighlight(-1, -1)
       }
+      else if(phase == "inventory")
+      {
+
+      }
       currentPhase = phase
     }
 
     def handleSelection() =
     {
-      currentPhase match
-      {
-        case "move"   => player.move(cursor.pos)
-                         setPhase("move", true)
-                         if(player.curAP < 1)
-                         {
-                           loop()
-                           setPhase("move", true)
-                         }
+        currentPhase match
+        {
+            case "move"         => player.move(cursor.pos)
+                                   setPhase("move", true)
+                                   if(player.curAP < 1)
+                                   {
+                                       loop()
+                                       setPhase("move", true)
+                                   }
 
-        case "attack" => player.attack(cursor.pos)
-                         loop()
-                         setPhase("move", true)
-        case "info"   => ()
-      }
+            case "attack"       => player.attack(cursor.pos)
+                                   loop()
+                                   setPhase("move", true)
+            case "info"         => ()
+            case "inventory"    => ()
+        }
     }
 
     def initialization() =
     {
-      // generate map : already done for now
+        // generate map : already done for now
 
-      // creating and placing enemies :
-      enemiesArray = enemiesArray :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))
-      enemiesArray(0).move(enemiesArray(0).pos)
+        // creating and placing enemies :
+        enemiesVector = enemiesVector :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))
+        enemiesVector(0).move(enemiesVector(0).pos)
 
-      // creating and placing items :
+        // creating and placing items :
     }
 
     def loop() = 
     {
-      player.curAP = player.baseAP + player.modifAP
-      // resolve actions (dodge from ennemies)
-      // ennemies turn
-      // dodge for the player
+        player.curAP = player.baseAP + player.modifAP
+        // ennemis morts -> array.filter (hp > 0) !!!
+        enemiesVector.foreach
+        {
+            case _ =>
+        }
     }
 }

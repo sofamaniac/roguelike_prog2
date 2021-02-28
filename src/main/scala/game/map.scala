@@ -110,7 +110,7 @@ object Map
         }
     }
 
-    createMap(20)
+    createMap(10)
 
     def show() = 
     {
