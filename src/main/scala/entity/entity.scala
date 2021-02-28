@@ -110,7 +110,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     def attack(dest:Point):Unit =
     {
-        weapon.attack(dest, baseStr+modifStr, baseDex+modifDex, basePow+modifPow)
+        weapon.attack(dest, this)
     }
 
     def dodge():Boolean
