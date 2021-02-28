@@ -103,7 +103,9 @@ object AnimationLoader
 object MessageHandler
 {
   var messages = Vector[String]()
+  var inventory = Vector[String]()
   var cellMessage = ""
+  val textSize = 20
   def addInfo(s:String):Unit =
   {
     messages = messages :+ s
@@ -115,14 +117,22 @@ object MessageHandler
 
   def show():Unit =
   {
-    var displayInfoY = 20
+    var displayInfoY = textSize
     GameWindow.contextMenu.setFill(Black)
+
     for(i <- messages)
     {
       GameWindow.contextMenu.fillText(i, 0, displayInfoY)
-      displayInfoY += 20
+      displayInfoY += textSize
     }
     GameWindow.contextMenu.fillText(cellMessage, 0, displayInfoY)
+    displayInfoY += textSize
+
+    for(i<- inventory)
+    {
+      GameWindow.contextMenu.fillText(i, 0, displayInfoY)
+      displayInfoY += textSize
+    }
     GameWindow.contextMenu.setFill(Grey)
   }
 
@@ -134,8 +144,19 @@ object MessageHandler
     addInfo("Use 'A' to go in attack mode, 'I' to go in information mode")
     addInfo("Use Space to select the current tile")
     addInfo("Use 'Esc' to go back in movement mode")
-    addInfo("To use item, use the key indicated next to it")
+    addInfo("To use item, press 'E' to go into inventory mode, select item using arrow keys, and press 'Space'")
     addInfo("Player: %d/%d HP; %d/%d(+%d) AP".format(Game.player.curHP, Game.player.maxHP, Game.player.curAP, Game.player.baseAP, Game.player.modifAP))
+  }
+
+  def clearInventory():Unit =
+  {
+    inventory = Vector[String]()
+    addInventory("Inventory:")
+  }
+
+  def addInventory(s:String):Unit = 
+  {
+    inventory = inventory :+ s
   }
 }
 

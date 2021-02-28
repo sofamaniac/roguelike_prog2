@@ -177,10 +177,10 @@ object Zones
         {
             case 0 => (dx == 0) && (dy == 0)
             case 1 => (dx >= 0) && (dy >= 0) && (weapon.innerRange <= (-dx-dy).abs) && ((-dx-dy).abs <= weapon.range)
-            case 2 => (dx == 0) && (dy == 0)
-            case 3 => (dx == 0) && (dy == 0)
-            case 4 => (dx == 0) && (dy == 0)
-            case 5 => (dx == 0) && (dy == 0)
+            case 2 => false
+            case 3 => false
+            case 4 => false
+            case 5 => false
         }
     }
 }

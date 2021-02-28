@@ -13,6 +13,11 @@ abstract class Item
     
   val price:Int
   val rarity:Int
+
+  def getInfo():String =
+  {
+    return "%s".format(name)
+  }
 }
 
 // outerRange à 0 pour les sorts qui ne translatent pas
@@ -32,13 +37,13 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
             case Some(e) =>
                 if (roll() >= e.armorClass && !e.dodge())
                 {
-                    var dmg = 0
+                    var dmg = bonus
                     var i = 0
                     for(i<-1 to numberRoll)
                     {
                         dmg += roll(damageRoll)
                     }
-                    e.damage(dmg + bonus, attacker)
+                    e.damage(dmg, attacker)
                     MessageHandler.addInfo("Hit %s and dealt %d damage.".format(e.name, dmg))
                 }
                 else
@@ -62,7 +67,7 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
             {
                 if (zone(this, Game.cursor.currentDir, attacker.pos, Map.tileArray(i)(j).coord))
                 {
-                    _attack(Map.tileArray(i)(j).coord, attacker, bonus)
+                    _attack(Map.tileArray(i)(j).coord, attacker, bonus/10)
                 }
             }
         }

@@ -184,6 +184,15 @@ class Player(dest:GraphicsContext)
 
     var weapon:Weapon = new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
 
+    var inventory:Vector[Item] = Vector()
+    var invStart = 0  // index of first element to be displayed
+    var invSize = 10  // number of element to display at once
+    var curInv = 0    // index of currently selected item
+    var nbItem = 0    // number of item in inventory
+
+    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+    nbItem += 2
     def loot()
     {
 
@@ -194,5 +203,43 @@ class Player(dest:GraphicsContext)
     def getSeeRange():Int = 
     {
         return seeRange + modifSee
+    }
+
+    def displayInventory():Unit =
+    {
+      MessageHandler.clearInventory()
+      var i = 0
+      for(j <- inventory)
+      {
+        if (invStart <= i && i < invStart+invSize)
+        {
+          if (i == curInv) 
+            MessageHandler.addInventory("> "+j.getInfo()) 
+          else 
+            MessageHandler.addInventory(j.getInfo())
+        }
+        i+=1
+      }
+      MessageHandler.show()
+    }
+
+
+    def prevInv():Unit =
+    {
+      if (invStart != 0)
+        invStart -= invSize
+      displayInventory()
+    }
+    def nextInv():Unit =
+    {
+      if (invStart+invSize < nbItem)
+        invStart += invSize
+      displayInventory()
+    }
+    def moveInv(d:Int):Unit =
+    {
+      if (invStart <= curInv + d && curInv + d < nbItem.min(invStart + invSize))
+        curInv += d
+      displayInventory()
     }
 }
