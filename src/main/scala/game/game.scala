@@ -92,9 +92,12 @@ object Game
                              }
 
             case "attack" => MessageHandler.clear()
-                             player.attack(cursor.pos)
-                             loop()
-                             setPhase("move", true)
+                             if(Map.fromPoint(cursor.pos).highlight)
+                             {
+                                player.attack(cursor.pos)
+                                loop()
+                                setPhase("move", true)
+                             }
             case "info"   => ()
       }
     }
