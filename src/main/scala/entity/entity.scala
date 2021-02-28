@@ -179,18 +179,19 @@ class Player(dest:GraphicsContext)
     var basePow = 100
     var modifPow = 0
     
-    var seeRange = 5
+    var seeRange = 50
     var modifSee = 0
 
-    var weapon:Weapon = new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
+    var weapon:Weapon = new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+
     var inventory:Vector[Item] = Vector()
     var invStart = 0  // index of first element to be displayed
     var invSize = 10  // number of element to display at once
     var curInv = 0    // index of currently selected item
     var nbItem = 0    // number of item in inventory
 
-    inventory = inventory :+ new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
-    inventory = inventory :+ new MeleeWeapon("Fire Hands", 0, 0, 1, 1, 1, 4)
+    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
     nbItem += 2
     def loot()
     {
