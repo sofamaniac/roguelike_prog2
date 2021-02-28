@@ -183,7 +183,15 @@ class Player(dest:GraphicsContext)
     var modifSee = 0
 
     var weapon:Weapon = new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
+    var inventory:Vector[Item] = Vector()
+    var invStart = 0  // index of first element to be displayed
+    var invSize = 10  // number of element to display at once
+    var curInv = 0    // index of currently selected item
+    var nbItem = 0    // number of item in inventory
 
+    inventory = inventory :+ new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
+    inventory = inventory :+ new MeleeWeapon("Fire Hands", 0, 0, 1, 1, 1, 4)
+    nbItem += 2
     def loot()
     {
 
@@ -194,5 +202,43 @@ class Player(dest:GraphicsContext)
     def getSeeRange():Int = 
     {
         return seeRange + modifSee
+    }
+
+    def displayInventory():Unit =
+    {
+      MessageHandler.clearInventory()
+      var i = 0
+      for(j <- inventory)
+      {
+        if (invStart <= i && i < invStart+invSize)
+        {
+          if (i == curInv) 
+            MessageHandler.addInventory("> "+j.getInfo()) 
+          else 
+            MessageHandler.addInventory(j.getInfo())
+        }
+        i+=1
+      }
+      MessageHandler.show()
+    }
+
+
+    def prevInv():Unit =
+    {
+      if (invStart != 0)
+        invStart -= invSize
+      displayInventory()
+    }
+    def nextInv():Unit =
+    {
+      if (invStart+invSize < nbItem)
+        invStart += invSize
+      displayInventory()
+    }
+    def moveInv(d:Int):Unit =
+    {
+      if (invStart <= curInv + d && curInv + d < nbItem.min(invStart + invSize))
+        curInv += d
+      displayInventory()
     }
 }

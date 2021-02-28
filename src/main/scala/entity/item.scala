@@ -12,6 +12,11 @@ abstract class Item
     
   val price:Int
   val rarity:Int
+
+  def getInfo():String =
+  {
+    return "%s".format(name)
+  }
 }
 
 abstract class Weapon(name:String, price:Int, rarity:Int) extends Item 
