@@ -14,42 +14,53 @@ class Tile(val coord:Point)
     var walkable:Boolean = true   // can be useful to implement doors
     var seeThrough:Boolean = true // for exemple walls are not see through
     var selected:Boolean = false  // if a tile is selected dipslay info on what it contains
+    var seen:Boolean = false      // if a tile has been seen the texture changes accordingly
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
-
-    val texture:GraphicEntity = new GraphicEntity(AnimationLoader.load("ground.png", 1), coord, GameWindow.contextGame)
-    val hideTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("hide_texture.png", 1), coord, GameWindow.contextGame)
-    val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlight.png", 1), coord, GameWindow.contextGame)
+  
+    val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
+    val texture:GraphicEntity = new GraphicEntity(AnimationLoader.load("texture.png", 1), coord, GameWindow.contextGame)
+    val seenTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("seenTexture.png", 1), coord, GameWindow.contextGame)
+    val unseenTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("unseenTexture.png", 1), coord, GameWindow.contextGame)
+    
     val infoDest = GameWindow.contextMenu
 
     def show() = 
     {
-      texture.show()
+        if(isVisible())
+        {
+            if(selected)
+            {
+                displayInfo()
+            }
 
-      if(isVisible())
-      {
-        if(selected)
-        {
-          displayInfo()
+            if(highlight)
+            {
+                highlightTexture.show()
+            }
+            else
+            {
+                texture.show()
+            }
+
+            item match
+            {
+                case None => ()
+                case Some(i) => i.show()
+            }
+            entity match
+            {
+                case None => ()
+                case Some(e) => e.show()
+            }
         }
-        if(highlight)
+        else if(seen)
         {
-          highlightTexture.show()
+            seenTexture.show()
         }
-        item match
+        else
         {
-          case None => ()
-          case Some(i) => i.show()
+            unseenTexture.show()
         }
-        entity match
-        {
-          case None => ()
-          case Some(e) => e.show()
-        }
-      }
-      else
-      {
-        hideTexture.show()
-      }
     }
 
     def displayInfo() =
@@ -65,9 +76,14 @@ class Tile(val coord:Point)
 
     def isVisible():Boolean = 
     {
-      val d = coord.distance(Game.player.pos)
-      return d <= Game.player.getSeeRange() // TODO : update such that non see through tiles obscure the view 
-      //(just find a straight line to the player and check if every tile on it is see through)
+        val d = coord.distance(Game.player.pos)
+        val b:Boolean = d <= Game.player.getSeeRange()
+        if(!seen && b)
+        {
+            seen = true
+        }
+        return b // TODO : update such that non see through tiles obscure the view 
+        //(just find a straight line to the player and check if every tile on it is see through)
     }
 }
 
@@ -94,7 +110,7 @@ object Map
         }
     }
 
-    createMap(20)
+    createMap(10)
 
     def show() = 
     {
@@ -118,8 +134,9 @@ object Map
             for(j<-0 until tileArray(i).size)
             {
                 tileArray(i)(j).highlight = false // erase previous highlight
-                val d = tileArray(i)(j).coord.distance(source) 
-                if ( d >= in && d <= out && tileArray(i)(j).isVisible())
+              
+                val d = tileArray(i)(j).coord.distance(Game.player.pos) 
+                if (d >= in && d <= out && tileArray(i)(j).isVisible())
                 {
                     tileArray(i)(j).highlight = true
                 }

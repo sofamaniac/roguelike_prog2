@@ -13,7 +13,7 @@ import scalafx.scene.canvas.Canvas
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.text.Font
 import scalafx.scene.text.FontWeight
-import scalafx.scene.text.FontPosture;
+import scalafx.scene.text.FontPosture
 import scalafx.scene.paint.Color._
 import scalafx.scene.image.Image
 import scalafx.scene.image._
@@ -36,7 +36,6 @@ class GraphicEntity(val animation:Array[ImageView], val pos:Point, var dest:Grap
   var _freeze : Boolean = (animation.size == 1)
   val w = GameWindow.canvasGame.width
   val h = GameWindow.canvasGame.height
-
 
   def show() : Unit =
   {
@@ -174,17 +173,17 @@ object GameWindow
 
   window.setScene(scene)
 
-  def gameHandler(kc: KeyCode)={Game.eventHandler(kc)}
+  def gameHandler(kc:KeyCode)={Game.eventHandler(kc)}
   var currentHandler = "Game"
 
 
-  def eventHandle(kc: KeyCode):Unit =
+  def eventHandle(kc:KeyCode):Unit =
   {
     // for now the menu does not handle any keyboard event
     gameHandler(kc)
   }
 
-  scene.onKeyPressed = (e: KeyEvent) => eventHandle(e.getCode)
+  scene.onKeyPressed = (e:KeyEvent) => eventHandle(e.getCode)
 
   val loop = AnimationTimer
   {
