@@ -22,7 +22,7 @@ abstract class Weapon(name:String, price:Int, rarity:Int) extends Item
   val damageRoll:Int
   val numberRoll:Int
   def move(dir:Point) = {}
-  def attack(dest:Point, str:Int, dex:Int)
+  def attack(dest:Point, attacker:SentientEntity)
   def roll(max:Int=100) = 
   {
     scala.util.Random.nextInt(max)
@@ -31,7 +31,7 @@ abstract class Weapon(name:String, price:Int, rarity:Int) extends Item
 
 class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int, val damageRoll:Int, val numberRoll:Int) extends Weapon(name, price, rarity)
 {
-  def attack(dest:Point, str:Int, dex:Int) =
+  def attack(dest:Point, attacker:SentientEntity) =
   {
     Map.fromPoint(dest).entity match
     {
@@ -46,7 +46,7 @@ class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange
           {
             damage+=roll(damageRoll)
           }
-          e.curHP -= damage+(str/10)
+          e.damage(damage+(str/10), attacker)
           MessageHandler.addInfo("Hit %s and dealt %d damage.".format(e.name, damage+(str/10)))
         }
         else
@@ -60,11 +60,11 @@ class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange
 
 class RangedWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int, val damageRoll:Int, val numberRoll:Int) extends Weapon(name, price, rarity)
 {
-    def attack(dest:Point, str:Int, dex:Int) = {}
+    def attack(dest:Point, attacker:SentientEntity) = {}
 }
 
 class CasterWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int, val damageRoll:Int, val numberRoll:Int) extends Weapon(name, price, rarity)
 {
-  def attack(dest:Point, str:Int, dex:Int) = {}
+  def attack(dest:Point, attacker:SentientEntity) = {}
 }
 

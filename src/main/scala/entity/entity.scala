@@ -95,6 +95,16 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
       return "%s : %s/%s HP".format(name, curHP, maxHP)
     }
 
+    def damage(dam:Int, from:SentientEntity):Unit=
+    {
+      // [from] can be used to apply a thorn-like effect
+      curHP -= dam
+      if(curHP <= 0)
+      {
+        Map.fromPoint(pos).entity = None
+      }
+    }
+
     def attack(dest:Point):Unit =
     {
       weapon.attack(dest, baseStr+modifStr, baseDex+modifDex)
@@ -170,12 +180,6 @@ class Player(dest:GraphicsContext)
 
     var weapon:Weapon = new MeleeWeapon("FireBall", 0, 0, 2, 4, 4, 2)
 
-    def attack()
-    {
-        // roll 1d100
-        // if roll > AC_enemy -> touch
-        // roll damage
-    }
     def speak()
     {
         // free action, once per turn
