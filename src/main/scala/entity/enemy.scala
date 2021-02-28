@@ -9,7 +9,7 @@ import graphics._
 
 abstract class Enemy(animation:Array[ImageView], pos:Point, dest:GraphicsContext) extends SentientEntity(animation, pos, dest) {}
 
-class MeleeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var weapon:Weapon)
+class MeleeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var weapon:Weapon)
     extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
 {
     def attack()
@@ -17,10 +17,6 @@ class MeleeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int
         // roll 1d100
         // if roll > AC_enemy -> touch
         // roll damage
-    }
-    def speak()
-    {
-        // free action, once per turn
     }
     def loot()
     {
@@ -29,7 +25,7 @@ class MeleeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int
     def dodge():Boolean = {return false}
 }
 
-class RangeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var weapon:Weapon)
+class RangeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var weapon:Weapon)
     extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
 {
     def attack()
@@ -37,10 +33,6 @@ class RangeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int
         // roll 1d100
         // if roll > AC_enemy -> touch
         // roll damage
-    }
-    def speak()
-    {
-        // free action, once per turn
     }
     def loot()
     {
@@ -49,7 +41,7 @@ class RangeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int
     def dodge():Boolean = {return false}
 }
 
-class CasterEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var weapon:Weapon)
+class CasterEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var weapon:Weapon)
     extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
 {
     def attack()
@@ -57,10 +49,6 @@ class CasterEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:In
         // roll 1d100
         // if roll > AC_enemy -> touch
         // roll damage
-    }
-    def speak()
-    {
-        // free action, once per turn
     }
     def loot()
     {

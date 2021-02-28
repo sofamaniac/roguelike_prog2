@@ -119,7 +119,7 @@ object Map
             {
                 tileArray(i)(j).highlight = false // erase previous highlight
                 val d = tileArray(i)(j).coord.distance(Game.player.pos) 
-                if ( d >= in && d <= out && tileArray(i)(j).isVisible())
+                if (d >= in && d <= out && tileArray(i)(j).isVisible())
                 {
                     tileArray(i)(j).highlight = true
                 }

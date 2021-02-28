@@ -83,7 +83,7 @@ object Game
       // generate map : already done for now
 
       // creating and placing enemies :
-      enemiesArray = enemiesArray :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))
+      enemiesArray = enemiesArray :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))
       enemiesArray(0).move(enemiesArray(0).pos)
 
       // creating and placing items :

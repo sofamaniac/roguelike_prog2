@@ -70,13 +70,16 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     var baseDex:Int 
     var modifDex:Int
 
+    var basePow:Int 
+    var modifPow:Int
+
     var weapon:Weapon       // equipped weapon
 
     def move(next:Point):Unit = 
     {
       if (isMoveValid(next))
       {
-        Map.fromPoint(next).entity = None
+        Map.fromPoint(pos).entity = None
         Map.fromPoint(next).entity = Some(this)
         curAP -= pos.distance(next)
         pos.setPoint(next)
@@ -97,11 +100,10 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     def attack(dest:Point):Unit =
     {
-      weapon.attack(dest, baseStr+modifStr, baseDex+modifDex)
+        weapon.attack(dest, baseStr+modifStr, baseDex+modifDex, basePow+modifPow)
     }
 
     def dodge():Boolean
-    def speak()
 
     def loot() // Generate loot on death
 }
@@ -158,28 +160,20 @@ class Player(dest:GraphicsContext)
     var modifAP = 0
     var curAP = baseAP
     
-    var baseStr = 100
+    var baseStr = 5
     var modifStr = 0
     
     var baseDex = 100
     var modifDex = 0
+
+    var basePow = 100
+    var modifPow = 0
     
     var seeRange = 5
     var modifSee = 0
 
+    var weapon:Weapon = new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
 
-    var weapon:Weapon = new CasterWeapon("FireBall", 0, 0, 2, 4, 4, 2)
-
-    def attack()
-    {
-        // roll 1d100
-        // if roll > AC_enemy -> touch
-        // roll damage
-    }
-    def speak()
-    {
-        // free action, once per turn
-    }
     def loot()
     {
 
