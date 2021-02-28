@@ -182,7 +182,7 @@ class Player(dest:GraphicsContext)
     var seeRange = 50
     var modifSee = 0
 
-    var weapon:Weapon = new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+    var weapon:Weapon = new Weapon("Ice Blow", 1000000, 5, "pow", Zones.classic, 3, 5, 0, 5, 8)
 
     var inventory:Vector[Item] = Vector()
     var invStart = 0  // index of first element to be displayed
