@@ -16,7 +16,7 @@ class Tile(val coord:Point)
     var selected:Boolean = false  // if a tile is selected dipslay info on what it contains
     var seen:Boolean = false      // if a tile has been seen the texture changes accordingly
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
-
+  
     val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
     val texture:GraphicEntity = new GraphicEntity(AnimationLoader.load("texture.png", 1), coord, GameWindow.contextGame)
     val seenTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("seenTexture.png", 1), coord, GameWindow.contextGame)
@@ -71,7 +71,7 @@ class Tile(val coord:Point)
         case None    => s = "Nothing to display"
         case Some(e) => s = e.getInfo()
       }
-      GameWindow.addInfo("Tile at (%d, %d) : %s".format(coord.x, coord.y, s))
+      MessageHandler.cellInfo("Tile at (%d, %d) : %s".format(coord.x, coord.y, s))
     }
 
     def isVisible():Boolean = 
@@ -125,7 +125,7 @@ object Map
         }
     }
 
-    def setHighlight(in:Int, out:Int):Unit =
+    def setHighlight(in:Int, out:Int, source:Point):Unit =
     {
         var i = 0
         var j = 0
@@ -134,6 +134,7 @@ object Map
             for(j<-0 until tileArray(i).size)
             {
                 tileArray(i)(j).highlight = false // erase previous highlight
+              
                 val d = tileArray(i)(j).coord.distance(Game.player.pos) 
                 if (d >= in && d <= out && tileArray(i)(j).isVisible())
                 {
