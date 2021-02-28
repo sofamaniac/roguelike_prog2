@@ -21,10 +21,7 @@ object Game
     {
       kc.getName match
       {
-        case "Right"  => cursor.rotate(1)
-        case "Left"   => cursor.rotate(-1)
-        case "Up"     => cursor.move(cursor.getDir(1))
-        case "Down"   => cursor.move(cursor.getDir(-1))
+        case "Right" | "Left" | "Up" | "Down" => handleArrow(kc.getName)
         case "A"      => setPhase("attack", true)
         case "I"      => setPhase("info", true)
         case "Space"  => handleSelection()
@@ -64,7 +61,11 @@ object Game
       }
       else if(phase == "inventory")
       {
-
+        player.curInv = 0
+      }
+      if (phase != "inventory")
+      {
+        player.curInv = -1
       }
       currentPhase = phase
     }
@@ -73,19 +74,43 @@ object Game
     {
         currentPhase match
         {
-            case "move"         => player.move(cursor.pos)
-                                   setPhase("move", true)
-                                   if(player.curAP < 1)
-                                   {
-                                       loop()
-                                       setPhase("move", true)
-                                   }
+            case "move"   => player.move(cursor.pos)
+                             setPhase("move", true)
+                             if(player.curAP < 1)
+                             {
+                                 loop()
+                                 setPhase("move", true)
+                             }
 
-        case "attack" => MessageHandler.clear()
-                         player.attack(cursor.pos)
-                         loop()
-                         setPhase("move", true)
-        case "info"   => ()
+            case "attack" => MessageHandler.clear()
+                             player.attack(cursor.pos)
+                             loop()
+                             setPhase("move", true)
+            case "info"   => ()
+      }
+    }
+
+    def handleArrow(event:String):Unit = 
+    {
+      if(currentPhase == "inventory")
+      {
+        event match
+        {
+          case "Right"  => player.nextInv()
+          case "Left"   => player.prevInv()
+          case "Up"     => player.moveInv(-1)
+          case "Down"   => player.moveInv(1)
+        }
+      }
+      else
+      {
+        event match
+        {
+          case "Right"  => cursor.rotate(1)
+          case "Left"   => cursor.rotate(-1)
+          case "Up"     => cursor.move(cursor.getDir(1))
+          case "Down"   => cursor.move(cursor.getDir(-1))
+        }
       }
     }
 
@@ -94,6 +119,7 @@ object Game
         // generate map : already done for now
         player.move(new Point(0, 0))
         MessageHandler.clear()
+        player.displayInventory()
 
         // creating and placing enemies :
         enemiesVector = enemiesVector :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))
@@ -105,6 +131,7 @@ object Game
     def loop() = 
     {
         player.curAP = player.baseAP + player.modifAP
+        player.displayInventory()
         // ennemis morts -> array.filter (hp > 0) !!!
         enemiesVector.foreach
         {
