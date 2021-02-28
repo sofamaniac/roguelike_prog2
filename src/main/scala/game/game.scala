@@ -45,22 +45,22 @@ object Game
       }
       if(phase == "move")
       {
-        Map.setHighlight(0, player.curAP, player.pos)
+        Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
         cursor.limitation = true
       }
       else if(phase == "attack")
       {
-        Map.setHighlight(player.weapon.innerRange, player.weapon.outerRange, player.pos)
+        Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p))
         cursor.limitation = true
         if(!Map.fromPoint(cursor.pos).highlight)
         {
-          cursor.pos.setPoint(Map.findHighlight())
+          cursor.pos.setPoint(player.pos)
         }
       }
       else if(phase == "info")
       {
         cursor.limitation = false
-        Map.setHighlight(-1, -1, player.pos)
+        Map.setHighlight((p:Point)=>false)
       }
       else if(phase == "inventory")
       {
@@ -96,7 +96,7 @@ object Game
         MessageHandler.clear()
 
         // creating and placing enemies :
-        enemiesVector = enemiesVector :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))
+        enemiesVector = enemiesVector :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8))
         enemiesVector(0).move(enemiesVector(0).pos)
 
         // creating and placing items :

@@ -125,7 +125,7 @@ object Map
         }
     }
 
-    def setHighlight(in:Int, out:Int, source:Point):Unit =
+    def setHighlight(zone:(Point=>Boolean)):Unit =
     {
         var i = 0
         var j = 0
@@ -135,8 +135,7 @@ object Map
             {
                 tileArray(i)(j).highlight = false // erase previous highlight
               
-                val d = tileArray(i)(j).coord.distance(Game.player.pos) 
-                if (d >= in && d <= out && tileArray(i)(j).isVisible())
+                if (zone(tileArray(i)(j).coord) && tileArray(i)(j).isVisible())
                 {
                     tileArray(i)(j).highlight = true
                 }
@@ -166,4 +165,22 @@ object Map
     return tileArray(p.x)(p.y)
   }
 
+}
+
+object Zones
+{
+    def cone(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    {
+        val dx = dest.x - start.x
+        val dy = dest.y - start.y
+        dir match
+        {
+            case 0 => (dx == 0) && (dy == 0)
+            case 1 => (dx >= 0) && (dy >= 0) && (weapon.innerRange <= (-dx-dy).abs) && ((-dx-dy).abs <= weapon.range)
+            case 2 => (dx == 0) && (dy == 0)
+            case 3 => (dx == 0) && (dy == 0)
+            case 4 => (dx == 0) && (dy == 0)
+            case 5 => (dx == 0) && (dy == 0)
+        }
+    }
 }
