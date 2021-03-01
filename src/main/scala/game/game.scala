@@ -119,7 +119,7 @@ object Game
 
       if(currentPhase == "attack")
       {
-          Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, Game.cursor.currentDir, player.pos, p))
+          Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p))
       }
     }
 
