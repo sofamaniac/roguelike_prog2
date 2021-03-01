@@ -13,7 +13,6 @@ object Game
     val player = new Player(GameWindow.contextGame)
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
-    setPhase("move", true)
 
     var enemiesVector:Vector[Enemy] = Vector()
 
@@ -27,6 +26,8 @@ object Game
         case "Space"  => handleSelection()
         case "Esc"    => setPhase("move", true)
         case "E"      => setPhase("inventory", false)
+        case "F"      => player.inventory.drop()
+        case "G"      => pickUp()
         case _        => ()
       }
     }
@@ -99,6 +100,8 @@ object Game
                                 setPhase("move", true)
                              }
             case "info"   => ()
+            case "inventory" => player.inventory.useItem()
+            case _ => println(currentPhase)
       }
     }
 
@@ -108,10 +111,10 @@ object Game
       {
         event match
         {
-          case "Right"  => player.nextInv()
-          case "Left"   => player.prevInv()
-          case "Up"     => player.moveInv(-1)
-          case "Down"   => player.moveInv(1)
+          case "Right"  => player.inventory.nextPage()
+          case "Left"   => player.inventory.prevPage()
+          case "Up"     => player.inventory.moveItem(-1)
+          case "Down"   => player.inventory.moveItem(1)
         }
       }
       else
@@ -135,8 +138,10 @@ object Game
     {
         // generate map : already done for now
         player.move(new Point(0, 0))
+        setPhase("move", true)
         MessageHandler.clear()
-        player.displayInventory()
+        player.inventory.display()
+        player.inventory.curInv = 0
 
         // creating and placing enemies :
         enemiesVector = enemiesVector :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8))
@@ -148,11 +153,21 @@ object Game
     def loop() = 
     {
         player.curAP = player.baseAP + player.modifAP
-        player.displayInventory()
+        player.inventory.display()
         // ennemis morts -> array.filter (hp > 0) !!!
         enemiesVector.foreach
         {
             case _ =>
         }
+    }
+
+    def pickUp() =
+    {
+      Map.fromPoint(player.pos).item match
+      {
+        case None    => ()
+        case Some(i) => player.inventory.add(i)
+                        Map.fromPoint(player.pos).item = None
+      }
     }
 }

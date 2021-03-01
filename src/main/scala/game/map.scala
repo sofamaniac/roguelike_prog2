@@ -65,13 +65,20 @@ class Tile(val coord:Point)
 
     def displayInfo() =
     {
-      var s = ""
+      var se = ""
       entity match
       {
-        case None    => s = "Nothing to display"
-        case Some(e) => s = e.getInfo()
+        case None    => se = "No entity here."
+        case Some(e) => se = e.getInfo()
       }
-      MessageHandler.cellInfo("Tile at (%d, %d) : %s".format(coord.x, coord.y, s))
+      var si = ""
+      item match
+      {
+        case None    => si = "No item here."
+        case Some(i) => si = i.getInfo()
+      }
+
+      MessageHandler.cellInfo("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
     }
 
     def isVisible():Boolean = 
