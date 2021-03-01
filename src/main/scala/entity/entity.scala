@@ -129,6 +129,25 @@ class Cursor(dest:GraphicsContext)
       pos.add(dir)
       Map.tileArray(pos.x)(pos.y).selected = true
     }
+    else 
+      findNext(dir)
+  }
+
+  def findNext(dir:Point):Unit =
+  {
+    // If the highlighted zone is not connex we must try to find the next component
+    var i = pos.x+dir.x
+    var j = pos.y+dir.y
+    while( 0 <= i && i < Map.tileArray.size && 0 <= j && j < Map.tileArray(i).size)
+    {
+      if (Map.tileArray(i)(j).isVisible() && (!limitation || Map.tileArray(i)(j).highlight))
+      {
+        setPos(new Point(i, j))
+        return
+      }
+      i += dir.x
+      j += dir.y
+    }
   }
 
   def setPos(dest:Point)
@@ -166,7 +185,7 @@ class Player(dest:GraphicsContext)
     var basePow = 100
     var modifPow = 0
     
-    var seeRange = 50
+    var seeRange = 5
     var modifSee = 0
 
 
