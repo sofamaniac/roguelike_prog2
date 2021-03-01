@@ -16,41 +16,6 @@ abstract class Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContex
     def move(dir:Point):Unit
 }
 
-abstract class ControlledEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext)
-  extends Entity(animation, pos, dest)
-{
-  val arrow = new GraphicEntity(AnimationLoader.load("arrow.png", 6), pos, dest)
-  arrow.freeze()
-
-  val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
-  var currentDir = 0
-
-  def rotate(rot:Int) = 
-  {
-    currentDir = (currentDir + rot + dirArray.size) % dirArray.size
-    arrow.currentFrame = (arrow.currentFrame + rot + dirArray.size) % dirArray.size
-  }
-
-  def getDir(dir:Int):Point = 
-  {
-    dir match
-    {
-      case 1  => return dirArray(currentDir)
-      case -1 => return dirArray((currentDir + 3) % dirArray.size)
-    }
-  }
-
-  def move(dir:Point):Unit = 
-  {
-    val nextX = pos.x + dir.x
-    val nextY = pos.y + dir.y
-    if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size)
-    {
-      pos.add(dir)
-    }
-  }
-}
-
 abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
     extends Entity(animation, pos, dest)
 {
@@ -75,6 +40,8 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     var weapon:Weapon       // equipped weapon
     var inventory:Inventory = new Inventory(this)
+    
+    val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
 
     def move(next:Point):Unit = 
     {
@@ -109,9 +76,9 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
       }
     }
 
-    def attack(dest:Point):Unit =
+    def attack(dest:Point, dir:Int):Unit =
     {
-        weapon.attack(dest, this)
+        weapon.attack(dest, this, dir)
     }
 
     def dodge():Boolean
@@ -121,11 +88,30 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
 
 class Cursor(dest:GraphicsContext)
-  extends ControlledEntity(AnimationLoader.load("cursor.png", 1), new Point(0,0), dest)
+  extends Entity(AnimationLoader.load("cursor.png", 1), new Point(0,0), dest)
 {
+  val arrow = new GraphicEntity(AnimationLoader.load("arrow.png", 6), pos, dest)
+  arrow.freeze()
+
+  val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
+  var currentDir = 0
   val name = "cursor"
   var limitation = false  // indicates if the cursor is restricted to highlighted tiles
 
+  def rotate(rot:Int) = 
+  {
+    currentDir = (currentDir + rot + dirArray.size) % dirArray.size
+    arrow.currentFrame = (arrow.currentFrame + rot + dirArray.size) % dirArray.size
+  }
+
+  def getDir(dir:Int):Point = 
+  {
+    dir match
+    {
+      case 1  => return dirArray(currentDir)
+      case -1 => return dirArray((currentDir + 3) % dirArray.size)
+    }
+  }
   override def show() = 
   {
     arrow.show()
@@ -195,6 +181,11 @@ class Player(dest:GraphicsContext)
     def getSeeRange():Int = 
     {
         return seeRange + modifSee
+    }
+
+    def attack(dest:Point):Unit =
+    {
+      super.attack(dest, Game.cursor.currentDir)
     }
 }
 

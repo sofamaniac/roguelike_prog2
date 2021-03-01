@@ -144,9 +144,11 @@ object Game
         player.curAP = player.baseAP + player.modifAP
         player.inventory.display()
         // ennemis morts -> array.filter (hp > 0) !!!
+        enemiesVector.filter(_.curHP > 0)
         enemiesVector.foreach
-        {
-            case _ =>
+        { e =>
+            e.curAP = e.baseAP + e.modifAP
+            e.IA()
         }
     }
 
