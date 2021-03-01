@@ -69,14 +69,6 @@ object Game
             cursor.limitation = false
             Map.setHighlight((p:Point)=>false)
         }
-        else if(phase == "inventory")
-        {
-            player.curInv = 0
-        }
-        if (phase != "inventory")
-        {
-            player.curInv = -1
-        }
         currentPhase = phase
     }
 
@@ -93,12 +85,9 @@ object Game
                              }
 
             case "attack" => MessageHandler.clear()
-                             if(Map.fromPoint(cursor.pos).highlight)
-                             {
-                                player.attack(cursor.pos)
-                                loop()
-                                setPhase("move", true)
-                             }
+                             player.attack(cursor.pos)
+                             loop()
+                             setPhase("move", true)
             case "info"   => ()
             case "inventory" => player.inventory.useItem()
             case _ => println(currentPhase)
