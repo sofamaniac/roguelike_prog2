@@ -59,7 +59,7 @@ class Enemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var
   def dodge():Boolean = {return false}
   def loot():Unit = 
   {
-    val item = new Bandages
+    val item = new Key
     item.pos.setPoint(pos)
     Map.fromPoint(pos).item = Some(item)
   }

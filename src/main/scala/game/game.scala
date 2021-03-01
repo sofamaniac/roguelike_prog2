@@ -41,6 +41,7 @@ object Game
             cursor.setPos(player.pos)
             }
         }
+        currentPhase = phase
         if(phase == "move")
         {
             Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
@@ -48,18 +49,17 @@ object Game
         }
         else if(phase == "attack")
         {
-            Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p))
-            if (!Map.fromPoint(cursor.pos).highlight)
+            Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p), true)
+            // We set the selection of the case to attack for weapon with non-0 outer range
+            Map.setHighlight((p:Point)=>p.distance(player.pos) >= player.weapon.innerRange && p.distance(player.pos) <= player.weapon.outerRange)
+            val p = Map.findHighlight()
+            if(p.x == -1) // if no solution is found
             {
-              val p = Map.findHighlight()
-              if(p.x == -1) // if no solution is found
-              {
-                  cursor.setPos(player.pos)
-              }
-              else
-              {
-                  cursor.setPos(p)
-              }
+                cursor.setPos(player.pos)
+            }
+            else
+            {
+                cursor.setPos(p)
             }
             cursor.limitation = true
         }
@@ -68,7 +68,6 @@ object Game
             cursor.limitation = false
             Map.setHighlight((p:Point)=>false)
         }
-        currentPhase = phase
     }
 
     def handleSelection() =
@@ -77,6 +76,8 @@ object Game
         {
             case "move"   => player.move(cursor.pos)
                              setPhase("move", true)
+                             MessageHandler.clear()
+                             MessageHandler.show()
                              if(player.curAP < 1)
                              {
                                  loop()
@@ -85,6 +86,7 @@ object Game
 
             case "attack" => MessageHandler.clear()
                              player.attack(cursor.pos)
+                             MessageHandler.show()
                              loop()
                              setPhase("move", true)
             case "info"   => ()
@@ -115,6 +117,12 @@ object Game
           case "Down"   => cursor.move(cursor.getDir(-1))
         }
       }
+      if(currentPhase == "attack")
+      {
+        // update attack when zone when rotation
+        Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p), true)
+        Map.setHighlight((p:Point)=>p.distance(player.pos) >= player.weapon.innerRange && p.distance(player.pos) <= player.weapon.outerRange)
+      }
 
     }
 
@@ -122,13 +130,17 @@ object Game
     {
         // generate map : already done for now
         player.move(new Point(0, 0))
+        player.inventory.add(new Weapon("Cone Weapon example", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8))
+        player.inventory.add(new Weapon("Ray Weapon example", 1000000, 5, "pow", Zones.ray, 1, 0, 8, 5, 8))
+        player.inventory.add(new Weapon("Single Weapon example", 1000, 5, "pow", Zones.singleTile, 1, 5, 8, 5, 8))
+        player.inventory.add(new Bandages)
         setPhase("move", true)
         MessageHandler.clear()
         player.inventory.display()
         player.inventory.curInv = 0
 
         // creating and placing enemies :
-        enemiesVector = enemiesVector :+ new Enemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8))
+        enemiesVector = enemiesVector :+ new Enemy(new Point(2,3), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 2, 4))
         enemiesVector(0).move(enemiesVector(0).pos)
 
         // creating and placing items :
@@ -143,6 +155,13 @@ object Game
         { e =>
             e.curAP = e.baseAP + e.modifAP
             e.IA()
+        }
+
+        if(player.curHP <= 0)
+        {
+          // for now on game over, the game is just reset
+          player.curHP = player.maxHP
+          initialization()
         }
     }
 
