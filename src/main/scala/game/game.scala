@@ -52,7 +52,7 @@ object Game
             if (!Map.fromPoint(cursor.pos).highlight)
             {
               val p = Map.findHighlight()
-              if(p.x == -1)
+              if(p.x == -1) // if no solution is found
               {
                   cursor.setPos(player.pos)
               }
@@ -116,10 +116,6 @@ object Game
         }
       }
 
-      if(currentPhase == "attack")
-      {
-          Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, Game.cursor.currentDir, player.pos, p))
-      }
     }
 
     def initialization() =
