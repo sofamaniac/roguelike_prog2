@@ -7,7 +7,7 @@ import map._
 import game._
 
 abstract class Item
-    extends Entity(AnimationLoader.load("ressources/default", 1), new Point(0,0), GameWindow.contextGame)
+    extends Entity(AnimationLoader.load("item.png", 1), new Point(0,0), GameWindow.contextGame)
 {
   val name:String
     
@@ -18,6 +18,7 @@ abstract class Item
   {
     return "%s".format(name)
   }
+  def onUse(user:SentientEntity)
 }
 
 // outerRange à 0 pour les sorts qui ne translatent pas
@@ -53,6 +54,7 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
         }
     }
     def attack(dest:Point, attacker:SentientEntity) =
+
     {
         val bonus:Int = modif match
         {
@@ -71,5 +73,11 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
                 }
             }
         }
+    }
+    def onUse(owner:SentientEntity):Unit =
+    {
+      owner.inventory.add(owner.weapon)
+      owner.weapon = this
+      owner.inventory.remove(this)
     }
 }
