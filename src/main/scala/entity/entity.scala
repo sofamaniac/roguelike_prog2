@@ -74,6 +74,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     var modifPow:Int
 
     var weapon:Weapon       // equipped weapon
+    var inventory:Inventory = new Inventory(this)
 
     def move(next:Point):Unit = 
     {
@@ -183,15 +184,7 @@ class Player(dest:GraphicsContext)
     var modifSee = 0
 
     var weapon:Weapon = new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
-    var inventory:Vector[Item] = Vector()
-    var invStart = 0  // index of first element to be displayed
-    var invSize = 10  // number of element to display at once
-    var curInv = 0    // index of currently selected item
-    var nbItem = 0    // number of item in inventory
 
-    inventory = inventory :+ new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
-    inventory = inventory :+ new MeleeWeapon("Fire Hands", 0, 0, 1, 1, 1, 4)
-    nbItem += 2
     def loot()
     {
 
@@ -203,8 +196,21 @@ class Player(dest:GraphicsContext)
     {
         return seeRange + modifSee
     }
+}
 
-    def displayInventory():Unit =
+class Inventory(val owner:SentientEntity)
+{
+    var inventory:Vector[Item] = Vector() // maybe move inventory into its own class/object
+    var invStart = 0  // index of first element to be displayed
+    var invSize = 10  // number of element to display at once
+    var curInv = 0    // index of currently selected item
+    var nbItem = 0    // number of item in inventory
+
+    inventory = inventory :+ new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
+    inventory = inventory :+ new MeleeWeapon("Fire Hands", 0, 0, 1, 1, 1, 4)
+    nbItem += 2
+
+    def display():Unit =
     {
       MessageHandler.clearInventory()
       var i = 0
@@ -221,24 +227,37 @@ class Player(dest:GraphicsContext)
       }
       MessageHandler.show()
     }
-
-
-    def prevInv():Unit =
+    def prevPage():Unit =
     {
       if (invStart != 0)
         invStart -= invSize
-      displayInventory()
+      display()
     }
-    def nextInv():Unit =
+    def nextPage():Unit =
     {
       if (invStart+invSize < nbItem)
         invStart += invSize
-      displayInventory()
+      display()
     }
-    def moveInv(d:Int):Unit =
+    def moveItem(d:Int):Unit =
     {
       if (invStart <= curInv + d && curInv + d < nbItem.min(invStart + invSize))
         curInv += d
-      displayInventory()
+      display()
+    }
+    def useItem():Unit =
+    {
+      inventory(curInv).onUse(owner)
+      display()
+    }
+    def remove(i:Item):Unit =
+    {
+      inventory = inventory.filterNot(_ == i)
+      display()
+    }
+    def add(i:Item):Unit=
+    {
+      inventory = inventory :+ i
+      display()
     }
 }

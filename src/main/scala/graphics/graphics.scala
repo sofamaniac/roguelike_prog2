@@ -144,13 +144,15 @@ object MessageHandler
     addInfo("Use 'A' to go in attack mode, 'I' to go in information mode")
     addInfo("Use Space to select the current tile")
     addInfo("Use 'Esc' to go back in movement mode")
-    addInfo("To use item, press 'E' to go into inventory mode, select item using arrow keys, and press 'Space'")
+    addInfo("To use item, press 'E' to go into inventory mode,")
+    addInfo("select item using arrow keys, and press 'Space'")
     addInfo("Player: %d/%d HP; %d/%d(+%d) AP".format(Game.player.curHP, Game.player.maxHP, Game.player.curAP, Game.player.baseAP, Game.player.modifAP))
   }
 
   def clearInventory():Unit =
   {
     inventory = Vector[String]()
+    addInventory("Current Weapon : %s".format(Game.player.weapon.getInfo()))
     addInventory("Inventory:")
   }
 

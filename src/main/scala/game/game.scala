@@ -13,7 +13,6 @@ object Game
     val player = new Player(GameWindow.contextGame)
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
-    setPhase("move", true)
 
     var enemiesVector:Vector[Enemy] = Vector()
 
@@ -59,14 +58,6 @@ object Game
         cursor.limitation = false
         Map.setHighlight(-1, -1, player.pos)
       }
-      else if(phase == "inventory")
-      {
-        player.curInv = 0
-      }
-      if (phase != "inventory")
-      {
-        player.curInv = -1
-      }
       currentPhase = phase
     }
 
@@ -83,10 +74,15 @@ object Game
                              }
 
             case "attack" => MessageHandler.clear()
-                             player.attack(cursor.pos)
-                             loop()
-                             setPhase("move", true)
+                             if(Map.fromPoint(cursor.pos).highlight)
+                             {
+                               player.attack(cursor.pos)
+                               loop()
+                               setPhase("move", true)
+                             }
             case "info"   => ()
+            case "inventory" => player.inventory.useItem()
+            case _ => println(currentPhase)
       }
     }
 
@@ -96,10 +92,10 @@ object Game
       {
         event match
         {
-          case "Right"  => player.nextInv()
-          case "Left"   => player.prevInv()
-          case "Up"     => player.moveInv(-1)
-          case "Down"   => player.moveInv(1)
+          case "Right"  => player.inventory.nextPage()
+          case "Left"   => player.inventory.prevPage()
+          case "Up"     => player.inventory.moveItem(-1)
+          case "Down"   => player.inventory.moveItem(1)
         }
       }
       else
@@ -118,8 +114,10 @@ object Game
     {
         // generate map : already done for now
         player.move(new Point(0, 0))
+        setPhase("move", true)
         MessageHandler.clear()
-        player.displayInventory()
+        player.inventory.display()
+        player.inventory.curInv = 0
 
         // creating and placing enemies :
         enemiesVector = enemiesVector :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new MeleeWeapon("OldKnife", 0, 0, 0, 0, 4, 2))
@@ -131,7 +129,7 @@ object Game
     def loop() = 
     {
         player.curAP = player.baseAP + player.modifAP
-        player.displayInventory()
+        player.inventory.display()
         // ennemis morts -> array.filter (hp > 0) !!!
         enemiesVector.foreach
         {

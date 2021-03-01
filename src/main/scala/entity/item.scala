@@ -17,6 +17,8 @@ abstract class Item
   {
     return "%s".format(name)
   }
+
+  def onUse(user:SentientEntity)
 }
 
 abstract class Weapon(name:String, price:Int, rarity:Int) extends Item 
@@ -36,17 +38,16 @@ abstract class Weapon(name:String, price:Int, rarity:Int) extends Item
     Map.fromPoint(dest).entity match
     {
         case None => ()
-        // TODO: if we attack empty tile
         case Some(e) =>
             if (roll() >= e.armorClass && !e.dodge())
             {
-                var dmg = 0
+                var dmg = bonus
                 var i = 0
                 for(i<-1 to numberRoll)
                 {
                     dmg += roll(damageRoll)
                 }
-                e.damage(dmg + bonus, attacker)
+                e.damage(dmg, attacker)
                 MessageHandler.addInfo("Hit %s and dealt %d damage.".format(e.name, dmg))
             }
             else
@@ -55,6 +56,13 @@ abstract class Weapon(name:String, price:Int, rarity:Int) extends Item
             }
         }
     }
+  
+  def onUse(user:SentientEntity):Unit =
+  {
+    user.inventory.add(user.weapon)
+    user.weapon = this
+    user.inventory.remove(this)
+  }
 }
 
 class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int, val numberRoll:Int, val damageRoll:Int) extends Weapon(name, price, rarity)
