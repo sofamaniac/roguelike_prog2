@@ -180,10 +180,12 @@ class Player(dest:GraphicsContext)
     var basePow = 100
     var modifPow = 0
     
-    var seeRange = 5
+    var seeRange = 50
     var modifSee = 0
 
-    var weapon:Weapon = new MeleeWeapon("Bare Hands", 0, 0, 1, 1, 1, 4)
+    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+    nbItem += 2
 
     def loot()
     {
