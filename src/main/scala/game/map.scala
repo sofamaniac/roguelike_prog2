@@ -176,18 +176,41 @@ object Map
 
 object Zones
 {
+    def classic(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    {
+        val d = start.distance(dest)
+        (weapon.innerRange <= d) && (d <= weapon.outerRange)
+    }
+
+    def ray(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    {
+        val dx = dest.x - start.x
+        val dy = dest.y - start.y
+        val dz = -dx-dy
+        dir match
+        {
+            case 0 => (dy == 0) && (dx >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
+            case 1 => (dx == 0) && (dz <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
+            case 2 => (dz == 0) && (dy >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
+            case 3 => (dy == 0) && (dx <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
+            case 4 => (dx == 0) && (dz >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
+            case 5 => (dz == 0) && (dy <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
+        }
+    }
+
     def cone(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
     {
         val dx = dest.x - start.x
         val dy = dest.y - start.y
+        val dz = -dx-dy
         dir match
         {
-            case 0 => (dx == 0) && (dy == 0)
-            case 1 => (dx >= 0) && (dy >= 0) && (weapon.innerRange <= (-dx-dy).abs) && ((-dx-dy).abs <= weapon.range)
-            case 2 => false
-            case 3 => false
-            case 4 => false
-            case 5 => false
+            case 0 => (dy <= 0) && (dz <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
+            case 1 => (dx >= 0) && (dy >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
+            case 2 => (dx <= 0) && (dz <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
+            case 3 => (dy >= 0) && (dz >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
+            case 4 => (dx <= 0) && (dy <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
+            case 5 => (dx >= 0) && (dz >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
         }
     }
 }
