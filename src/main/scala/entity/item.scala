@@ -34,7 +34,6 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
         Map.fromPoint(dest).entity match
         {
             case None => ()
-            // TODO: if we attack empty tile
             case Some(e) =>
                 if (roll() >= e.armorClass && !e.dodge())
                 {
@@ -45,7 +44,7 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
                         dmg += roll(damageRoll)
                     }
                     e.damage(dmg, attacker)
-                    MessageHandler.addInfo("Hit %s and dealt %d damage.".format(e.name, dmg))
+                    MessageHandler.addInfo("%s hit %s and dealt %d damage.".format(attacker.name, e.name, dmg))
                 }
                 else
                 {

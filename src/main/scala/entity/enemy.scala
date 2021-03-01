@@ -9,7 +9,8 @@ import graphics._
 import game._
 import map._
 
-abstract class Enemy(animation:Array[ImageView], pos:Point, dest:GraphicsContext) extends SentientEntity(animation, pos, dest) 
+class Enemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var weapon:Weapon)
+    extends SentientEntity(AnimationLoader.load("goblin.png", 11, sizeY=58), pos, dest)
 {
   def IA():Unit =
   {
@@ -55,54 +56,9 @@ abstract class Enemy(animation:Array[ImageView], pos:Point, dest:GraphicsContext
     }
     return pos
   }
+  def dodge():Boolean = {return false}
+  def loot():Unit = {}
 }
 
-class MeleeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var weapon:Weapon)
-    extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
-{
-    def attack()
-    {
-        // roll 1d100
-        // if roll > AC_enemy -> touch
-        // roll damage
-    }
-    def loot()
-    {
-        
-    }
-    def dodge():Boolean = {return false}
-}
-
-class RangeEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var weapon:Weapon)
-    extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
-{
-    def attack()
-    {
-        // roll 1d100
-        // if roll > AC_enemy -> touch
-        // roll damage
-    }
-    def loot()
-    {
-
-    }
-    def dodge():Boolean = {return false}
-}
-
-class CasterEnemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var weapon:Weapon)
-    extends Enemy(AnimationLoader.load("melee_enemy.png", 1), pos, dest)
-{
-    def attack()
-    {
-        // roll 1d100
-        // if roll > AC_enemy -> touch
-        // roll damage
-    }
-    def loot()
-    {
-
-    }
-    def dodge():Boolean = {return false}
-}
 // Définir les caractéristiques des ennemis (caractéristiques, path vers les animations, ...) dans un format
 // de fichier type Json, cependant json n'est par défaut pas supporté par Scala
