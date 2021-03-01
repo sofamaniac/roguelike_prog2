@@ -48,21 +48,20 @@ object Game
         }
         else if(phase == "attack")
         {
-            val p = Map.findHighlight()
-            if(p.x == -1)
-            {
-                cursor.setPos(player.pos)
-            }
-            else
-            {
-                cursor.setPos(p)
-            }
             Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p))
-            cursor.limitation = true
-            if(!Map.fromPoint(cursor.pos).highlight)
+            if (!Map.fromPoint(cursor.pos).highlight)
             {
-            cursor.pos.setPoint(player.pos)
+              val p = Map.findHighlight()
+              if(p.x == -1)
+              {
+                  cursor.setPos(player.pos)
+              }
+              else
+              {
+                  cursor.setPos(p)
+              }
             }
+            cursor.limitation = true
         }
         else if(phase == "info")
         {
@@ -133,7 +132,7 @@ object Game
         player.inventory.curInv = 0
 
         // creating and placing enemies :
-        enemiesVector = enemiesVector :+ new MeleeEnemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8))
+        enemiesVector = enemiesVector :+ new Enemy(new Point(5,5), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8))
         enemiesVector(0).move(enemiesVector(0).pos)
 
         // creating and placing items :
@@ -143,8 +142,7 @@ object Game
     {
         player.curAP = player.baseAP + player.modifAP
         player.inventory.display()
-        // ennemis morts -> array.filter (hp > 0) !!!
-        enemiesVector.filter(_.curHP > 0)
+        enemiesVector = enemiesVector.filter(_.curHP > 0)
         enemiesVector.foreach
         { e =>
             e.curAP = e.baseAP + e.modifAP
