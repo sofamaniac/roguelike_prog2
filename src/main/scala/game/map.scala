@@ -109,10 +109,9 @@ class Wall(coord:Point) extends Tile(coord)
 
 class Door(coord:Point) extends Tile(coord)
 {
-  frontTexture = Some(new GraphicEntity(AnimationLoader.load("door_locked.png", 1), coord, GameWindow.contextGame))
+  frontTexture = Some(new GraphicEntity(AnimationLoader.load("door.png", 1), coord, GameWindow.contextGame))
   walkable = false
   seeThrough = false
-  var locked = true
 }
 
 object Map
@@ -139,6 +138,7 @@ object Map
                   tileArray(i)(j) = new Tile(new Point(i, j))
             }
         }
+        tileArray(5)(5) = new Door(new Point(5,5))
     }
 
     createMap(10)

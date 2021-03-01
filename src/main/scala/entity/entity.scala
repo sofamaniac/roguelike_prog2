@@ -73,6 +73,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
       if(curHP <= 0)
       {
         Map.fromPoint(pos).entity = None
+        loot()
       }
     }
 
@@ -217,8 +218,8 @@ class Inventory(val owner:SentientEntity)
     var curInv = 0    // index of currently selected item
     var nbItem = 0    // number of item in inventory
 
-    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
-    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+    inventory = inventory :+ new Weapon("Fire Burst", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
+    inventory = inventory :+ new Weapon("30m long sword", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
     nbItem += 2
 
     def display():Unit =
@@ -265,6 +266,7 @@ class Inventory(val owner:SentientEntity)
     {
       inventory = inventory.filterNot(_ == i)
       nbItem -= 1
+      curInv = nbItem.min(curInv)
       display()
     }
     def add(i:Item):Unit=

@@ -57,7 +57,12 @@ class Enemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var
     return pos
   }
   def dodge():Boolean = {return false}
-  def loot():Unit = {}
+  def loot():Unit = 
+  {
+    val item = new Bandages
+    item.pos.setPoint(pos)
+    Map.fromPoint(pos).item = Some(item)
+  }
 }
 
 // Définir les caractéristiques des ennemis (caractéristiques, path vers les animations, ...) dans un format

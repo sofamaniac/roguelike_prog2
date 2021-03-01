@@ -18,13 +18,13 @@ abstract class Item
   {
     return "%s".format(name)
   }
+  def move(dir:Point) = {}
   def onUse(user:SentientEntity)
 }
 
 // outerRange à 0 pour les sorts qui ne translatent pas
 class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, val zone:((Weapon, Int, Point, Point)=>Boolean), val innerRange:Int, val outerRange:Int, val range:Int, val numberRoll:Int, val damageRoll:Int) extends Item
 {
-    def move(dir:Point) = {}
     def roll(max:Int=100) = 
     {
         1 + scala.util.Random.nextInt(max)
@@ -79,4 +79,33 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
       owner.weapon = this
       owner.inventory.remove(this)
     }
+}
+
+class Key extends Item
+{
+  val name = "simple key"
+  val price = 0
+  val rarity = 0
+  def onUse(user:SentientEntity) =
+  {
+    if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable)
+    {
+      Map.fromPoint(Game.cursor.pos).frontTexture = None
+      Map.fromPoint(Game.cursor.pos).walkable = true
+      Map.fromPoint(Game.cursor.pos).seeThrough = true
+    }
+    user.inventory.remove(this)
+  }
+}
+
+class Bandages extends Item
+{
+  val name = "bandage"
+  val price = 0
+  val rarity = 0
+  def onUse(user:SentientEntity) =
+  {
+    user.curHP = user.maxHP
+    user.inventory.remove(this)
+  }
 }
