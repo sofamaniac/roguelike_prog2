@@ -157,7 +157,7 @@ object Map
         }
     }
 
-    def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false):Unit =
+    def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false, erase:Boolean=true):Unit =
     {
         var i = 0
         var j = 0
@@ -165,16 +165,13 @@ object Map
         {
             for(j<-0 until tileArray(i).size)
             {
-                tileArray(i)(j).highlight = false // erase previous highlight
-                tileArray(i)(j).highlightAttack = false
+                tileArray(i)(j).highlight = tileArray(i)(j).highlight && !erase// erase previous highlight
+                tileArray(i)(j).highlightAttack = tileArray(i)(j).highlightAttack && !erase
               
                 if (zone(tileArray(i)(j).coord) && tileArray(i)(j).isVisible() && !tileArray(i)(j).isInstanceOf[Wall] && inSight(Game.player.pos, new Point(i,j)))
                 {
-                    attackHighlight match
-                    {
-                      case false => tileArray(i)(j).highlight = true
-                      case true  => tileArray(i)(j).highlightAttack = true
-                    }
+                    tileArray(i)(j).highlight = !attackHighlight
+                    tileArray(i)(j).highlightAttack = attackHighlight
                 }
             }
         }
@@ -234,7 +231,7 @@ object Zones
     def classic(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
     {
         val d = start.distance(dest)
-        (weapon.innerRange <= d) && (d <= weapon.outerRange) && Map.inSight(start, dest)
+        (weapon.innerRange <= d) && (d <= weapon.range) && Map.inSight(start, dest)
     }
 
     def ray(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
