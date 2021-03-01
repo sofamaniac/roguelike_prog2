@@ -26,6 +26,8 @@ object Game
         case "Space"  => handleSelection()
         case "Esc"    => setPhase("move", true)
         case "E"      => setPhase("inventory", false)
+        case "F"      => player.inventory.drop()
+        case "G"      => pickUp()
         case _        => ()
       }
     }
@@ -135,5 +137,15 @@ object Game
         {
             case _ =>
         }
+    }
+
+    def pickUp() =
+    {
+      Map.fromPoint(player.pos).item match
+      {
+        case None    => ()
+        case Some(i) => player.inventory.add(i)
+                        Map.fromPoint(player.pos).item = None
+      }
     }
 }

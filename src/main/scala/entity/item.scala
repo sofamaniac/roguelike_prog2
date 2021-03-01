@@ -6,7 +6,7 @@ import position._
 import map._
 
 abstract class Item
-    extends Entity(AnimationLoader.load("ressources/default", 1), new Point(0,0), GameWindow.contextGame)
+    extends Entity(AnimationLoader.load("item.png", 1), new Point(0,0), GameWindow.contextGame)
 {
   val name:String
     
@@ -17,7 +17,6 @@ abstract class Item
   {
     return "%s".format(name)
   }
-
   def onUse(user:SentientEntity)
 }
 
@@ -57,12 +56,13 @@ abstract class Weapon(name:String, price:Int, rarity:Int) extends Item
         }
     }
   
-  def onUse(user:SentientEntity):Unit =
+  def onUse(owner:SentientEntity):Unit =
   {
-    user.inventory.add(user.weapon)
-    user.weapon = this
-    user.inventory.remove(this)
+    owner.inventory.add(owner.weapon)
+    owner.weapon = this
+    owner.inventory.remove(this)
   }
+
 }
 
 class MeleeWeapon(val name:String, val price:Int, val rarity:Int, val innerRange:Int, val outerRange:Int, val numberRoll:Int, val damageRoll:Int) extends Weapon(name, price, rarity)

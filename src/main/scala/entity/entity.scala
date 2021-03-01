@@ -260,4 +260,10 @@ class Inventory(val owner:SentientEntity)
       inventory = inventory :+ i
       display()
     }
+    def drop():Unit =
+    {
+      inventory(curInv).pos.setPoint(owner.pos)
+      Map.fromPoint(owner.pos).item = Some(inventory(curInv)) // override current item on tile
+      remove(inventory(curInv))
+    }
 }

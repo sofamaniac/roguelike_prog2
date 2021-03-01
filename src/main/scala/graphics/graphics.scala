@@ -146,6 +146,8 @@ object MessageHandler
     addInfo("Use 'Esc' to go back in movement mode")
     addInfo("To use item, press 'E' to go into inventory mode,")
     addInfo("select item using arrow keys, and press 'Space'")
+    addInfo("Press 'F' to drop item")
+    addInfo("Use 'G' to pick up item")
     addInfo("Player: %d/%d HP; %d/%d(+%d) AP".format(Game.player.curHP, Game.player.maxHP, Game.player.curAP, Game.player.baseAP, Game.player.modifAP))
   }
 
