@@ -53,7 +53,7 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
                 }
         }
     }
-    def attack(dest:Point, attacker:SentientEntity) =
+    def attack(dest:Point, attacker:SentientEntity, dir:Int) =
 
     {
         val bonus:Int = modif match
@@ -67,7 +67,7 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
         {
             for(j<-0 until Map.tileArray(i).size)
             {
-                if (zone(this, Game.cursor.currentDir, attacker.pos, Map.tileArray(i)(j).coord))
+                if (zone(this, dir, attacker.pos, Map.tileArray(i)(j).coord))
                 {
                     _attack(Map.tileArray(i)(j).coord, attacker, bonus/10)
                 }
