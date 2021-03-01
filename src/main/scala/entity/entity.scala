@@ -73,6 +73,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
       if(curHP <= 0)
       {
         Map.fromPoint(pos).entity = None
+        loot()
       }
     }
 
@@ -265,6 +266,7 @@ class Inventory(val owner:SentientEntity)
     {
       inventory = inventory.filterNot(_ == i)
       nbItem -= 1
+      curInv = nbItem.min(curInv)
       display()
     }
     def add(i:Item):Unit=
