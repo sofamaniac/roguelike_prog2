@@ -190,7 +190,7 @@ class Player(dest:GraphicsContext)
     var modifSee = 0
 
 
-    var weapon:Weapon = new Weapon("Ice Blow", 1000000, 5, "pow", Zones.classic, 3, 5, 0, 5, 8)
+    var weapon:Weapon = new Weapon("Ring Weapon example", 1000000, 5, "pow", Zones.classic, 3, 4, 0, 5, 8)
 
     def loot()
     {
@@ -218,9 +218,6 @@ class Inventory(val owner:SentientEntity)
     var curInv = 0    // index of currently selected item
     var nbItem = 0    // number of item in inventory
 
-    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
-    inventory = inventory :+ new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 5, 8)
-    nbItem += 2
 
     def display():Unit =
     {
@@ -266,7 +263,7 @@ class Inventory(val owner:SentientEntity)
     {
       inventory = inventory.filterNot(_ == i)
       nbItem -= 1
-      curInv = nbItem.min(curInv)
+      curInv = curInv.min(nbItem -1)
       display()
     }
     def add(i:Item):Unit=

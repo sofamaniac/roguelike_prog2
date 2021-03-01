@@ -66,7 +66,7 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
         {
             for(j<-0 until Map.tileArray(i).size)
             {
-                if (zone(this, dir, attacker.pos, Map.tileArray(i)(j).coord))
+                if (zone(this, dir, attacker.pos, Map.tileArray(i)(j).coord) && !attacker.pos.equals(new Point(i,j)))
                 {
                     _attack(Map.tileArray(i)(j).coord, attacker, bonus/10)
                 }
@@ -93,8 +93,8 @@ class Key extends Item
       Map.fromPoint(Game.cursor.pos).frontTexture = None
       Map.fromPoint(Game.cursor.pos).walkable = true
       Map.fromPoint(Game.cursor.pos).seeThrough = true
+      user.inventory.remove(this)
     }
-    user.inventory.remove(this)
   }
 }
 
