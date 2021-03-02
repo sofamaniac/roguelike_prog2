@@ -34,14 +34,6 @@ object Game
 
     def setPhase(phase:String, isSelectionPhase:Boolean) = 
     {
-        if(isSelectionPhase && phase != currentPhase)
-        {
-            if(!Map.fromPoint(cursor.pos).highlight)
-            {
-            cursor.setPos(player.pos)
-            }
-        }
-        currentPhase = phase
         if(phase == "move")
         {
             Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
@@ -50,8 +42,8 @@ object Game
         else if(phase == "attack")
         {
             Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p), true)
-            // We set the selection of the case to attack for weapon with non-0 outer range
-            Map.setHighlight((p:Point)=>p.distance(player.pos) >= player.weapon.innerRange && p.distance(player.pos) <= player.weapon.outerRange)
+            // We set the selection of the case to attack for weapon with non-zero outerrange
+            Map.setHighlight((p:Point)=>p.distance(player.pos) >= player.weapon.innerRange && p.distance(player.pos) <= player.weapon.outerRange, erase=false)
             val p = Map.findHighlight()
             if(p.x == -1) // if no solution is found
             {
@@ -68,6 +60,14 @@ object Game
             cursor.limitation = false
             Map.setHighlight((p:Point)=>false)
         }
+        if(isSelectionPhase && phase != currentPhase)
+        {
+            if(!Map.fromPoint(cursor.pos).highlight)
+            {
+              cursor.setPos(player.pos)
+            }
+        }
+        currentPhase = phase
     }
 
     def handleSelection() =
@@ -121,7 +121,7 @@ object Game
       {
         // update attack when zone when rotation
         Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p), true)
-        Map.setHighlight((p:Point)=>p.distance(player.pos) >= player.weapon.innerRange && p.distance(player.pos) <= player.weapon.outerRange)
+        Map.setHighlight((p:Point)=>p.distance(player.pos) >= player.weapon.innerRange && p.distance(player.pos) <= player.weapon.outerRange, erase=false)
       }
 
     }
