@@ -16,6 +16,7 @@ class Tile(val coord:Point)
     var selected:Boolean = false  // if a tile is selected dipslay info on what it contains
     var seen:Boolean = false      // if a tile has been seen the texture changes accordingly
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
+    var highlightAttack:Boolean = false // to show the zone that will take dammage
   
     val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
     var backTexture:GraphicEntity      = new GraphicEntity(AnimationLoader.load("texture.png", 1), coord, GameWindow.contextGame)
@@ -39,7 +40,7 @@ class Tile(val coord:Point)
             {
                 displayInfo()
             }
-            if(highlight)
+            if(highlight||highlightAttack)
             {
                 highlightTexture.show()
             }
@@ -132,13 +133,13 @@ object Map
         {
             for (j <- 0 until 2*radius +1)
             {
-                if ((2*i + 3*j) %11 == 5)
+                if (i == 10 || j == 10)
                   tileArray(i)(j) = new Wall(new Point(i,j))
                 else
                   tileArray(i)(j) = new Tile(new Point(i, j))
             }
         }
-        tileArray(5)(5) = new Door(new Point(5,5))
+        tileArray(10)(5) = new Door(new Point(10,5))
     }
 
     createMap(10)
@@ -156,7 +157,7 @@ object Map
         }
     }
 
-    def setHighlight(zone:(Point=>Boolean)):Unit =
+    def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false):Unit =
     {
         var i = 0
         var j = 0
@@ -165,10 +166,15 @@ object Map
             for(j<-0 until tileArray(i).size)
             {
                 tileArray(i)(j).highlight = false // erase previous highlight
+                tileArray(i)(j).highlightAttack = false
               
                 if (zone(tileArray(i)(j).coord) && tileArray(i)(j).isVisible() && !tileArray(i)(j).isInstanceOf[Wall] && inSight(Game.player.pos, new Point(i,j)))
                 {
-                    tileArray(i)(j).highlight = true
+                    attackHighlight match
+                    {
+                      case false => tileArray(i)(j).highlight = true
+                      case true  => tileArray(i)(j).highlightAttack = true
+                    }
                 }
             }
         }
@@ -178,6 +184,10 @@ object Map
     {
         var i = 0
         var j = 0
+
+        if (fromPoint(Game.cursor.pos).highlight)
+          return Game.cursor.pos
+        
         for (i<-0 until tileArray.size)
         {
             for(j<-0 until tileArray(i).size)
@@ -258,4 +268,10 @@ object Zones
             case 5 => (dx >= 0) && (dz >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range) && Map.inSight(start, dest)
         }
     }
+
+    def singleTile(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    {
+      dest.equals(Game.cursor.pos) || dest.equals(Game.player.pos) // 2nd case is here to allow enemy to use single tile weapon
+    }
+
 }

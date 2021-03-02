@@ -20,4 +20,8 @@ class Point(var x:Int, var y:Int)
     x = b.x
     y = b.y
   }
+  def equals(p:Point):Boolean =
+  {
+    return x == p.x && y == p.y
+  }
 }
