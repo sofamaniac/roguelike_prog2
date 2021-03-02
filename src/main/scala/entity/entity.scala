@@ -190,7 +190,7 @@ class Player(dest:GraphicsContext)
     var modifSee = 0
 
 
-    var weapon:Weapon = new Weapon("Ring Weapon example", 1000000, 5, "pow", Zones.classic, 3, 4, 0, 5, 8)
+    var weapon:Weapon = new Weapon("Ring Weapon example", 1000000, 5, "pow", Zones.classic, 3, 0, 4, 5, 8)
 
     def loot()
     {
