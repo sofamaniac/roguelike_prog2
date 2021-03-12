@@ -57,7 +57,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
     def isMoveValid(next:Point):Boolean =
     {
       return (next.x >= 0 && next.y >= 0 && next.x < Map.tileArray.size && next.y < Map.tileArray(next.y).size
-            && Map.tileArray(next.x)(next.y).entity == None && Map.tileArray(next.x)(next.y).walkable)
+            && Map.tileArray(next.x)(next.y).entity == None && Map.tileArray(next.x)(next.y).walkable && pos.distance(next) <= curAP)
     }
 
 

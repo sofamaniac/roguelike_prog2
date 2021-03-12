@@ -28,6 +28,7 @@ object Game
         case "E"      => setPhase("inventory", false)
         case "F"      => player.inventory.drop()
         case "G"      => pickUp()
+        case "Enter"  => loop()
         case _        => ()
       }
     }
@@ -57,7 +58,7 @@ object Game
         }
         else if(phase == "info")
         {
-            cursor.limitation = false
+            cursor.limitation = false // cursor can move freely on all visible tiles
             Map.setHighlight((p:Point)=>false)
         }
         if(isSelectionPhase && phase != currentPhase)
@@ -78,17 +79,12 @@ object Game
                              setPhase("move", true)
                              MessageHandler.clear()
                              MessageHandler.show()
-                             if(player.curAP < 1)
-                             {
-                                 loop()
-                                 setPhase("move", true)
-                             }
 
             case "attack" => MessageHandler.clear()
                              player.attack(cursor.pos)
                              MessageHandler.show()
-                             loop()
                              setPhase("move", true)
+
             case "info"   => ()
             case "inventory" => player.inventory.useItem()
             case _ => println(currentPhase)
