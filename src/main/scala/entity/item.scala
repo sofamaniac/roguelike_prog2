@@ -2,6 +2,7 @@ package item
 
 import entity._
 import graphics._
+import messageHandler._
 import position._
 import map._
 import game._

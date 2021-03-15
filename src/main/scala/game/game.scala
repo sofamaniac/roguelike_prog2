@@ -6,6 +6,7 @@ import item._
 import map._
 import position._
 import graphics._
+import messageHandler._
 import scalafx.scene.input.KeyCode
 
 object Game
@@ -63,7 +64,7 @@ object Game
         }
         if(isSelectionPhase && phase != currentPhase)
         {
-            if(!Map.fromPoint(cursor.pos).highlight)
+            if(!Map.fromPoint(cursor.pos).isHighlighted())
             {
               cursor.setPos(player.pos)
             }

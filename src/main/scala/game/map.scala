@@ -2,6 +2,7 @@ package map
 
 import item._
 import graphics._
+import messageHandler._
 import entity._
 import position._
 import game._
@@ -40,7 +41,7 @@ class Tile(val coord:Point)
             {
                 displayInfo()
             }
-            if(highlight||highlightAttack)
+            if(isHighlighted())
             {
                 highlightTexture.show()
             }
@@ -99,6 +100,10 @@ class Tile(val coord:Point)
         }
         return b 
     }
+    def isHighlighted():Boolean =
+    {
+      return highlight || highlightAttack
+    }
 }
 
 class Wall(coord:Point) extends Tile(coord)
@@ -119,6 +124,9 @@ object Map
 {
     var tileArray:Array[Array[Tile]] = Array.ofDim[Array[Tile]](0)
 
+    /** Create the tiles of the map to the size of the given radius
+     *  @param radius the radius of the map to be created
+     */
     def createMap(radius:Int)
     {
         tileArray = Array.ofDim[Array[Tile]](2*radius+1)
@@ -144,6 +152,7 @@ object Map
 
     createMap(10)
 
+    /** Display the entirety of the map on the screen */
     def show() = 
     {
         var i = 0
@@ -157,7 +166,13 @@ object Map
         }
     }
 
-    def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false, erase:Boolean=true):Unit =
+    /** Set the highlight for the designated zone
+     *  @param zone a function taking a point and returning a boolean iff the case at the given pos should be highlighted
+     *  @param attackHighlight indicates if the highlight to be set is the one indicating tiles that can be attacked (default: false)
+     *  @param erase a boolean indicating if the previously set highlight and attack highligh should be erased
+     *  @param highlightPlayer should be set to true to highlight the player pos if in zone
+     */
+    def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false, erase:Boolean=true, highlightPlayer:Boolean=false):Unit =
     {
         var i = 0
         var j = 0
@@ -175,6 +190,7 @@ object Map
                 }
             }
         }
+        Map.fromPoint(Game.player.pos).highlight = Map.fromPoint(Game.player.pos).highlight //& highlightPlayer
     }
 
     def findHighlight():Point =
@@ -184,20 +200,23 @@ object Map
 
         if (fromPoint(Game.cursor.pos).highlight)
           return Game.cursor.pos
-        
+
         for (i<-0 until tileArray.size)
         {
             for(j<-0 until tileArray(i).size)
             {
-                if (tileArray(i)(j).highlight)
-                {
+                if (tileArray(i)(j).highlight|| tileArray(i)(j).highlightAttack)
                     return tileArray(i)(j).coord
-                }
             }
         }
         return new Point(-1, -1)
     }
 
+    /** Indicates if the destination is visible from the source
+     *  @param source the source of the request
+     *  @param dest the position of the tile to test
+     *  @return a Boolean indicating if the dest is visible from the source
+     */
     def inSight(source:Point, dest:Point):Boolean =
     {
       // returns true iff [dest] can be seen from [source]
@@ -219,9 +238,19 @@ object Map
       return result
     }
 
+    /** Return a tile at a given position
+     *  @param p the point indicating the position of the tile on the map
+     *  @return the tile at position p
+     *  The function does not check if the coordinates are inboud
+     */
     def fromPoint(p:Point):Tile =
     {
       return tileArray(p.x)(p.y)
+    }
+
+    def isInbound(p:Point):Boolean =
+    {
+        p.x >= 0 && p.y >= 0 && p.x < Map.tileArray.size && p.y < Map.tileArray(p.x).size
     }
 
 }
@@ -241,12 +270,12 @@ object Zones
         val dz = -dx-dy
         dir match
         {
-            case 0 => (dy == 0) && (dx >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range) && Map.inSight(start, dest)
-            case 1 => (dx == 0) && (dz <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range) && Map.inSight(start, dest)
-            case 2 => (dz == 0) && (dy >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range) && Map.inSight(start, dest)
-            case 3 => (dy == 0) && (dx <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range) && Map.inSight(start, dest)
-            case 4 => (dx == 0) && (dz >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range) && Map.inSight(start, dest)
-            case 5 => (dz == 0) && (dy <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range) && Map.inSight(start, dest)
+            case 0 => (dy == 0) && (dx >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
+            case 1 => (dx == 0) && (dz <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
+            case 2 => (dz == 0) && (dy >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
+            case 3 => (dy == 0) && (dx <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
+            case 4 => (dx == 0) && (dz >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
+            case 5 => (dz == 0) && (dy <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
         }
     }
 
@@ -257,12 +286,12 @@ object Zones
         val dz = -dx-dy
         dir match
         {
-            case 0 => (dy <= 0) && (dz <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range) && Map.inSight(start, dest)
-            case 1 => (dx >= 0) && (dy >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range) && Map.inSight(start, dest)
-            case 2 => (dx <= 0) && (dz <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range) && Map.inSight(start, dest)
-            case 3 => (dy >= 0) && (dz >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range) && Map.inSight(start, dest)
-            case 4 => (dx <= 0) && (dy <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range) && Map.inSight(start, dest)
-            case 5 => (dx >= 0) && (dz >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range) && Map.inSight(start, dest)
+            case 0 => (dy <= 0) && (dz <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
+            case 1 => (dx >= 0) && (dy >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
+            case 2 => (dx <= 0) && (dz <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
+            case 3 => (dy >= 0) && (dz >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
+            case 4 => (dx <= 0) && (dy <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
+            case 5 => (dx >= 0) && (dz >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
         }
     }
 
