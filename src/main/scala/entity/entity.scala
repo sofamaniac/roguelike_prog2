@@ -57,8 +57,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     def isMoveValid(next:Point):Boolean =
     {
-      return (next.x >= 0 && next.y >= 0 && next.x < Map.tileArray.size && next.y < Map.tileArray(next.y).size
-            && Map.tileArray(next.x)(next.y).entity == None && Map.tileArray(next.x)(next.y).walkable && pos.distance(next) <= curAP)
+      return (Map.isInbound(next) && Map.fromPoint(next).entity == None && Map.fromPoint(next).walkable && pos.distance(next) <= curAP)
     }
 
 
@@ -99,6 +98,7 @@ class Cursor(dest:GraphicsContext)
   var currentDir = 0
   val name = "cursor"
   var limitation = false  // indicates if the cursor is restricted to highlighted tiles
+  var visible = true      // indicates if the cursor is currently visible
 
   def rotate(rot:Int) = 
   {
@@ -116,8 +116,11 @@ class Cursor(dest:GraphicsContext)
   }
   override def show() = 
   {
-    arrow.show()
-    super.show()
+    if(visible && Game.player.curAP > 0)
+    {
+      arrow.show()
+      super.show()
+    }
   }
 
   override def move(dir:Point) =
@@ -133,7 +136,6 @@ class Cursor(dest:GraphicsContext)
     }
     else 
       findNext(dir)
-    println(pos.x, pos.y)
   }
 
   def findNext(dir:Point):Unit =
@@ -160,8 +162,6 @@ class Cursor(dest:GraphicsContext)
     Map.fromPoint(pos).selected = false
     pos.setPoint(dest)
     Map.fromPoint(pos).selected = true
-    println("set")
-    println(pos.x, pos.y)
   }
 
 }

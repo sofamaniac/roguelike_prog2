@@ -36,6 +36,7 @@ object Game
 
     def setPhase(phase:String, isSelectionPhase:Boolean) = 
     {
+        cursor.visible = true
         if(phase == "move")
         {
             Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
@@ -49,7 +50,7 @@ object Game
             val p = Map.findHighlight()
             if(p.x == -1) // if no solution is found
             {
-                cursor.setPos(player.pos)
+                cursor.visible = false
             }
             else
             {

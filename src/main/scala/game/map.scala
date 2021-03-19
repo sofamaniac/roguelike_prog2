@@ -190,7 +190,7 @@ object Map
                 }
             }
         }
-        Map.fromPoint(Game.player.pos).highlight = Map.fromPoint(Game.player.pos).highlight //& highlightPlayer
+        Map.fromPoint(Game.player.pos).highlight = Map.fromPoint(Game.player.pos).highlight && highlightPlayer
     }
 
     def findHighlight():Point =
