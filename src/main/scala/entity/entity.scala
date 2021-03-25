@@ -17,8 +17,8 @@ abstract class Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContex
     def move(dir:Point):Unit
 }
 
-abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
-    extends Entity(animation, pos, dest)
+abstract class SentientEntity(animation:Array[ImageView], pos:Point) 
+    extends Entity(animation, pos, GameWindow.contextGame)
 {
     val name:String
     var maxHP:Int           // health points
@@ -167,8 +167,8 @@ class Cursor(dest:GraphicsContext)
 
 }
 
-class Player(dest:GraphicsContext)
-    extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=64), new Point(0,0), dest)
+class Player()
+    extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=64), new Point(0,0))
 {
     val name = "Player"
 

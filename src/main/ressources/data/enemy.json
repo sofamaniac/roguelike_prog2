@@ -1,0 +1,28 @@
+{
+	"name": "Cultist Brawler",
+	"maxHP": 100,
+	"curHP": 100,
+	"armorClass": 30,
+	"baseAP": 5,
+	"modifAP": 0,
+	"curAP": 5,
+	"baseStr": 10,
+	"modifStr": 0,
+	"baseDex": 10,
+	"modifDex": 0,
+	"basePow": 10,
+	"modifPow": 0,
+	"weapon":	"gun",
+	"loot_table": [
+		{
+			"item":"simple_key",
+			"weight": 50
+		},
+		{
+			"item": "bandages",
+			"weight": 50
+		}
+	]
+}
+
+

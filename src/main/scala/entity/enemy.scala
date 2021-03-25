@@ -9,9 +9,25 @@ import graphics._
 import game._
 import map._
 
-class Enemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var curHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var curAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var weapon:Weapon)
-    extends SentientEntity(AnimationLoader.load("goblin.png", 11, sizeY=58), pos, dest)
+import upickle.default._
+object Enemy
 {
+  // we define how are object serialized, 
+  // for instance here, only the name and the maxHP would be save to Json
+  // whereas, we create a new Enemy using only the first field of the json as a name
+  implicit val rw: ReadWriter[Enemy] = 
+    readwriter[ujson.Value].bimap[Enemy](
+      e=> ujson.Arr(e.name, e.maxHP),
+      json => new Enemy(new Point(5,3), name=json("name").str, weapon=new Weapon("Cone Weapon example", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8))
+      )
+}
+
+class Enemy(override val pos:Point, val name:String, var maxHP:Int=100, var armorClass:Int=30, var baseAP:Int=5, var modifAP:Int=0, var baseStr:Int=10, var modifStr:Int=0, var baseDex:Int=10, var modifDex:Int=0, var basePow:Int=10, var modifPow:Int=0, var weapon:Weapon)
+    extends SentientEntity(AnimationLoader.load("goblin.png", 11, sizeY=58), pos)
+{
+  var curHP = maxHP
+  var curAP = baseAP
+
   def IA():Unit =
   {
     val next = findBestMove()
