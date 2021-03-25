@@ -1,6 +1,7 @@
 package entity
 
 import graphics._
+import messageHandler._
 import scalafx.Includes._
 import scalafx.scene.image._
 import scalafx.scene.canvas._
@@ -56,8 +57,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     def isMoveValid(next:Point):Boolean =
     {
-      return (next.x >= 0 && next.y >= 0 && next.x < Map.tileArray.size && next.y < Map.tileArray(next.y).size
-            && Map.tileArray(next.x)(next.y).entity == None && Map.tileArray(next.x)(next.y).walkable)
+      return (Map.isInbound(next) && Map.fromPoint(next).entity == None && Map.fromPoint(next).walkable && pos.distance(next) <= curAP)
     }
 
 
@@ -79,6 +79,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     def attack(dest:Point, dir:Int):Unit =
     {
+        curAP = 0
         weapon.attack(dest, this, dir)
     }
 
@@ -98,6 +99,7 @@ class Cursor(dest:GraphicsContext)
   var currentDir = 0
   val name = "cursor"
   var limitation = false  // indicates if the cursor is restricted to highlighted tiles
+  var visible = true      // indicates if the cursor is currently visible
 
   def rotate(rot:Int) = 
   {
@@ -115,20 +117,23 @@ class Cursor(dest:GraphicsContext)
   }
   override def show() = 
   {
-    arrow.show()
-    super.show()
+    if(visible && Game.player.curAP > 0)
+    {
+      arrow.show()
+      super.show()
+    }
   }
 
   override def move(dir:Point) =
   {
     val nextX = pos.x + dir.x
     val nextY = pos.y + dir.y
-    if (nextX >= 0 && nextY >= 0 && nextX < Map.tileArray.size && nextY < Map.tileArray(nextX).size
-        && Map.tileArray(nextX)(nextY).isVisible() && (!limitation || Map.tileArray(nextX)(nextY).highlight))
+    val next = new Point(nextX, nextY)
+    if (Map.isInbound(next) && Map.fromPoint(next).isVisible() && (!limitation || Map.fromPoint(next).isHighlighted()))
     {
-      Map.tileArray(pos.x)(pos.y).selected = false
+      Map.fromPoint(next).selected = false
       pos.add(dir)
-      Map.tileArray(pos.x)(pos.y).selected = true
+      Map.fromPoint(next).selected = true
     }
     else 
       findNext(dir)
@@ -139,23 +144,25 @@ class Cursor(dest:GraphicsContext)
     // If the highlighted zone is not connex we must try to find the next component
     var i = pos.x+dir.x
     var j = pos.y+dir.y
-    while( 0 <= i && i < Map.tileArray.size && 0 <= j && j < Map.tileArray(i).size)
+    var p = new Point(i, j)
+    while(Map.isInbound(p))
     {
-      if (Map.tileArray(i)(j).isVisible() && (!limitation || Map.tileArray(i)(j).highlight))
+      if (Map.fromPoint(p).isVisible() && (!limitation || Map.fromPoint(p).isHighlighted()))
       {
-        setPos(new Point(i, j))
-        return
+          setPos(p)
+          return
       }
       i += dir.x
       j += dir.y
+      p = new Point(i ,j)
     }
   }
 
   def setPos(dest:Point)
   {
-    Map.tileArray(pos.x)(pos.y).selected = false
+    Map.fromPoint(pos).selected = false
     pos.setPoint(dest)
-    Map.tileArray(pos.x)(pos.y).selected = true
+    Map.fromPoint(pos).selected = true
   }
 
 }
@@ -221,16 +228,16 @@ class Inventory(val owner:SentientEntity)
 
     def display():Unit =
     {
-      MessageHandler.clearInventory()
+      MessageHandler.inventory.clear()
       var i = 0
       for(j <- inventory)
       {
         if (invStart <= i && i < invStart+invSize)
         {
           if (i == curInv) 
-            MessageHandler.addInventory("> "+j.getInfo()) 
+            MessageHandler.inventory.addMessage("> "+j.getInfo()) 
           else 
-            MessageHandler.addInventory(j.getInfo())
+            MessageHandler.inventory.addMessage(j.getInfo())
         }
         i+=1
       }

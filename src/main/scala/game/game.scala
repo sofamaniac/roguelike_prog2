@@ -6,6 +6,7 @@ import item._
 import map._
 import position._
 import graphics._
+import messageHandler._
 import scalafx.scene.input.KeyCode
 
 object Game
@@ -28,15 +29,18 @@ object Game
         case "E"      => setPhase("inventory", false)
         case "F"      => player.inventory.drop()
         case "G"      => pickUp()
+        case "Enter"  => loop()
+        case "F1"     => MessageHandler.setHelp()
         case _        => ()
       }
     }
 
     def setPhase(phase:String, isSelectionPhase:Boolean) = 
     {
+        cursor.visible = true
         if(phase == "move")
         {
-            Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
+            Map.setHighlight((p:Point)=>(0< player.pos.distance(p) && player.pos.distance(p) <= player.curAP))
             cursor.limitation = true
         }
         else if(phase == "attack")
@@ -47,7 +51,7 @@ object Game
             val p = Map.findHighlight()
             if(p.x == -1) // if no solution is found
             {
-                cursor.setPos(player.pos)
+                cursor.visible = false
             }
             else
             {
@@ -57,12 +61,12 @@ object Game
         }
         else if(phase == "info")
         {
-            cursor.limitation = false
+            cursor.limitation = false // cursor can move freely on all visible tiles
             Map.setHighlight((p:Point)=>false)
         }
         if(isSelectionPhase && phase != currentPhase)
         {
-            if(!Map.fromPoint(cursor.pos).highlight)
+            if(!Map.fromPoint(cursor.pos).isHighlighted())
             {
               cursor.setPos(player.pos)
             }
@@ -78,17 +82,12 @@ object Game
                              setPhase("move", true)
                              MessageHandler.clear()
                              MessageHandler.show()
-                             if(player.curAP < 1)
-                             {
-                                 loop()
-                                 setPhase("move", true)
-                             }
 
             case "attack" => MessageHandler.clear()
                              player.attack(cursor.pos)
                              MessageHandler.show()
-                             loop()
                              setPhase("move", true)
+
             case "info"   => ()
             case "inventory" => player.inventory.useItem()
             case _ => println(currentPhase)
@@ -156,6 +155,7 @@ object Game
             e.curAP = e.baseAP + e.modifAP
             e.IA()
         }
+        setPhase(currentPhase, true)  // reset the pase to movement phase
 
         if(player.curHP <= 0)
         {
