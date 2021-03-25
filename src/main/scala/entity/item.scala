@@ -45,11 +45,11 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
                         dmg += roll(damageRoll)
                     }
                     e.damage(dmg, attacker)
-                    MessageHandler.addInfo("%s hit %s and dealt %d damage.".format(attacker.name, e.name, dmg))
+                    MessageHandler.genInfo.addMessage("%s hit %s and dealt %d damage.".format(attacker.name, e.name, dmg))
                 }
                 else
                 {
-                    MessageHandler.addInfo("%s missed.".format(attacker.name))
+                    MessageHandler.genInfo.addMessage("%s missed.".format(attacker.name))
                 }
         }
     }

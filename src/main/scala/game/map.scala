@@ -87,7 +87,7 @@ class Tile(val coord:Point)
         case Some(i) => si = i.getInfo()
       }
 
-      MessageHandler.cellInfo("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
+      MessageHandler.cellInfo.addMessage("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
     }
 
     def isVisible():Boolean = 

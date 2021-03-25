@@ -30,6 +30,7 @@ object Game
         case "F"      => player.inventory.drop()
         case "G"      => pickUp()
         case "Enter"  => loop()
+        case "F1"     => MessageHandler.setHelp()
         case _        => ()
       }
     }
@@ -39,7 +40,7 @@ object Game
         cursor.visible = true
         if(phase == "move")
         {
-            Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
+            Map.setHighlight((p:Point)=>(0< player.pos.distance(p) && player.pos.distance(p) <= player.curAP))
             cursor.limitation = true
         }
         else if(phase == "attack")
@@ -154,6 +155,7 @@ object Game
             e.curAP = e.baseAP + e.modifAP
             e.IA()
         }
+        setPhase(currentPhase, true)  // reset the pase to movement phase
 
         if(player.curHP <= 0)
         {

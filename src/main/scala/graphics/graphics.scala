@@ -132,17 +132,8 @@ object GameWindow
 
   window.setScene(scene)
 
-  def gameHandler(kc:KeyCode)={Game.eventHandler(kc)}
-  var currentHandler = "Game"
-
-
-  def eventHandle(kc:KeyCode):Unit =
-  {
-    // for now the menu does not handle any keyboard event
-    gameHandler(kc)
-  }
-
-  scene.onKeyPressed = (e:KeyEvent) => eventHandle(e.getCode)
+  def eventHandler(kc:KeyCode)={Game.eventHandler(kc)}
+  scene.onKeyPressed = (e:KeyEvent) => eventHandler(e.getCode)
 
   val loop = AnimationTimer
   {

@@ -79,6 +79,7 @@ abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:Graphi
 
     def attack(dest:Point, dir:Int):Unit =
     {
+        curAP = 0
         weapon.attack(dest, this, dir)
     }
 
@@ -227,16 +228,16 @@ class Inventory(val owner:SentientEntity)
 
     def display():Unit =
     {
-      MessageHandler.clearInventory()
+      MessageHandler.inventory.clear()
       var i = 0
       for(j <- inventory)
       {
         if (invStart <= i && i < invStart+invSize)
         {
           if (i == curInv) 
-            MessageHandler.addInventory("> "+j.getInfo()) 
+            MessageHandler.inventory.addMessage("> "+j.getInfo()) 
           else 
-            MessageHandler.addInventory(j.getInfo())
+            MessageHandler.inventory.addMessage(j.getInfo())
         }
         i+=1
       }
