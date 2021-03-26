@@ -11,13 +11,14 @@ object MessageHandler
   var help = new MessageZone()
   var inventory = new MessageZone()
   var cellInfo = new MessageZone()
-  cellInfo.maxMessages()=1
+  cellInfo.maxMessages()=2
   var genInfo = new MessageZone()
 
   var textSize = IntegerProperty(20)
 
   help.addDefaults("Press F1 to display help")
   help.addDefaults("Use Left/Right arrow to change orientation and Up/Down to move")
+  help.addDefaults("Enter to end turn")
   help.addDefaults("Use 'A' to go in attack mode, 'I' to go in information mode")
   help.addDefaults("Use Space to select the current tile")
   help.addDefaults("Use 'Esc' to go back in movement mode")

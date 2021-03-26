@@ -8,10 +8,11 @@ import position._
 import graphics._
 import messageHandler._
 import scalafx.scene.input.KeyCode
+import json._
 
 object Game
 {
-    val player = new Player(GameWindow.contextGame)
+    val player = new Player()
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
 
@@ -139,7 +140,8 @@ object Game
         player.inventory.curInv = 0
 
         // creating and placing enemies :
-        enemiesVector = enemiesVector :+ new Enemy(new Point(2,3), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 2, 4))
+        enemiesVector = Vector()
+        enemiesVector = enemiesVector :+ EnemyCreator.create()
         enemiesVector(0).move(enemiesVector(0).pos)
 
         // creating and placing items :

@@ -71,7 +71,7 @@ class GraphicEntity(val animation:Array[ImageView], val pos:Point, var dest:Grap
 
 object AnimationLoader 
 { 
-  val ressource_folder = "file:src/main/ressources/"
+  val ressource_folder = "file:src/main/ressources/graphics/"
   def load(s:String, nbFrame: Int, sizeX:Int = -1, sizeY:Int = -1, marginX:Int = 0, marginY:Int = 0):Array[ImageView]=
   {
     var _sizeX = sizeX
