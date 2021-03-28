@@ -2,8 +2,6 @@ package entity
 
 import graphics._
 import messageHandler._
-import animation._
-import animation.Animation.Animation
 import scalafx.Includes._
 import scalafx.scene.image._
 import scalafx.scene.canvas._
@@ -12,15 +10,15 @@ import map._
 import game._
 import item._
 
-abstract class Entity(animation:Animation, pos:Point, dest:GraphicsContext) 
+abstract class Entity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
     extends GraphicEntity(animation, pos, dest)
 {
     val name:String
     def move(dir:Point):Unit
 }
 
-abstract class SentientEntity(animation:Animation, pos:Point) 
-    extends Entity(animation, pos, GameWindow.contextGame)
+abstract class SentientEntity(animation:Array[ImageView], pos:Point, dest:GraphicsContext) 
+    extends Entity(animation, pos, dest)
 {
     val name:String
     var maxHP:Int           // health points
@@ -43,31 +41,6 @@ abstract class SentientEntity(animation:Animation, pos:Point)
 
     var weapon:Weapon       // equipped weapon
     var inventory:Inventory = new Inventory(this)
-
-    var poisonDuration:Int  = 0 // number of turn before end of poison effect
-    var poisonDammage:Int   = 0
-
-    var onFireDuration:Int  = 0
-    var onFireDamage:Int    = 0
-
-    // While frozen the entity can still move, but gets less AP and takes damage
-    var frozenDuration:Int  = 0
-    var frozenDamage:Int    = 0
-
-    // While paralyzed the entity can only use item but takes no damage
-    var paralyzedDuration:Int = 0
-    var paralyzedDamage:Int   = 0
-
-    // We setup the armor // TODO: define some default armor
-    var headset:Armor
-    var chestplate:Armor
-    var leggings:Armor
-    var boots:Armor
-
-    // And the jewelry
-    var ring1:Item
-    var ring2:Item
-    var Pendant:Item
     
     val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
 
@@ -99,44 +72,15 @@ abstract class SentientEntity(animation:Animation, pos:Point)
       curHP -= dam
       if(curHP <= 0)
       {
-        kill()
+        Map.fromPoint(pos).entity = None
+        loot()
       }
     }
 
     def attack(dest:Point, dir:Int):Unit =
     {
-      if(curAP > 0) {
         curAP = 0
         weapon.attack(dest, this, dir)
-      }
-    }
-
-    def applyEffects():Unit={
-      if (poisonDuration > 0){
-        curHP -= poisonDamage
-        poisonDuration -= 1
-      }
-      if (onFireDuration > 0){
-        curHP -= onFireDamage
-        onFireDuration -= 1
-      }
-      if (frozenDuration > 0){
-        curHP -= fronzenDamage
-        frozenDuration -= 1
-      }
-      if (paralyzedDuration > 0){
-        curHP -= paralyzedDamage
-        paralyzedDuration -= 1
-      }
-
-      if (curHP <= 0)
-        kill()
-    }
-
-    def kill():Unit =
-    {
-      Map.fromPoint(pos).entity=None
-      Map.fromPoint(pos).item = Some(loot()) // TODO: change to not override it there is already an item
     }
 
     def dodge():Boolean
@@ -146,9 +90,9 @@ abstract class SentientEntity(animation:Animation, pos:Point)
 
 
 class Cursor(dest:GraphicsContext)
-  extends Entity(Animation.load("cursor.png", 1), new Point(0,0), dest)
+  extends Entity(AnimationLoader.load("cursor.png", 1), new Point(0,0), dest)
 {
-  val arrow = new GraphicEntity(Animation.load("arrow.png", 6), pos, dest)
+  val arrow = new GraphicEntity(AnimationLoader.load("arrow.png", 6), pos, dest)
   arrow.freeze()
 
   val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
@@ -223,8 +167,8 @@ class Cursor(dest:GraphicsContext)
 
 }
 
-class Player()
-    extends SentientEntity(Animation.load("character.png", 4, sizeY=64), new Point(0,0))
+class Player(dest:GraphicsContext)
+    extends SentientEntity(AnimationLoader.load("character.png", 4, sizeY=64), new Point(0,0), dest)
 {
     val name = "Player"
 

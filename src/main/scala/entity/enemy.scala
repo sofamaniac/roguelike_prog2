@@ -6,6 +6,8 @@ import position._
 import scalafx.scene.canvas._
 import scalafx.scene.image._
 import graphics._
+import animation._
+import animation.Animation.Animation
 import game._
 import map._
 import json._
@@ -15,7 +17,7 @@ import upickle.default._
 object Enemy
 {
   // We setup the default value for every parameter of enemy
-  val defAnimation = AnimationLoader.load("goblin.png", 11, sizeY=58)
+  val defAnimation = Animation.load("goblin.png", 11, sizeY=58)
   val defName = ""
   val defMHP = 100
   val defAC = 30
@@ -50,9 +52,10 @@ object Enemy
     if (index == -1)
       json = JsonTools.getRandom(json)
     else
-      json = _json(index)
+      json = json(index)
 
-    val animation   = defAnimation   // TODO: to complete
+
+    val animation   = if (JsonTools.contains(json, "animation")) Animation.loadJson(json) else defAnimation   // TODO: to complete
     val name        = JsonTools.load(json, "name", defName)
     val maxHP       = JsonTools.load(json, "maxHP", defMHP)
     val armorClass  = JsonTools.load(json, "armorClass", defAC)
@@ -66,15 +69,15 @@ object Enemy
     val modifPow    = JsonTools.load(json, "modifPow", defMPO)
     val fly         = JsonTools.load(json, "fly", defFly)
     val weapon      = defWea   // TODO: to complete
-    val lootTable   = if (JsonTools.contains(json, "lootTable")) read[LootTable](json) else defLT
+    val loot        = if (JsonTools.contains(json, "lootTable")) read[LootTable](json("lootTable")) else defLT
     val behaviour   = JsonTools.load(json, "behaviourType", defBeh)
-    // TODO differentiate based on behaviour, add fly and lootTable support
-    return Enemy(animation, new Point(5, 3), name, maxHP, armorClass, baseAP, modifAP, baseStr, modifStr, baseDex, modifDex, basePow, modifPow, fly, weapon, lootTable)
+    // TODO differentiate based on behaviour
+    return Enemy(animation, new Point(5, 3), name, maxHP, armorClass, baseAP, modifAP, baseStr, modifStr, baseDex, modifDex, basePow, modifPow, fly, weapon, loot)
   }
 }
 // I don't know why I need to overwrite pos and animation
 // TODO: look up why it is the case
-case class Enemy(override val animation:Array[ImageView], override val pos:Point, val name:String, var maxHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var fly:Boolean, var weapon:Weapon, var lootTable:LootTable)
+case class Enemy(override val animation:Animation, override val pos:Point, val name:String, var maxHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var fly:Boolean, var weapon:Weapon, var lootTable:LootTable)
     extends SentientEntity(animation, pos)
 {
   var curHP = maxHP
@@ -142,13 +145,19 @@ object LootTable {
     )
   
   def createTable(json:ujson.Value):LootTable = {
-    return new LootTable
+    val result = new LootTable
+    JsonTools.foreach(json,
+      (j:ujson.Value) => result.addItem(j("item").str, j("weight").num.toInt)
+      )
+    return result
   }
 }
 
 case class LootTable() {
 
-  var lootVector:Vector[(Item, Int)] = Vector()
+  // We store the tuple (itemName, weight)
+  // an item is create only when loot is called
+  var table:Vector[(String, Int)] = Vector()
   var totalWeight:Int = 0
 
   def loot():Item = {
@@ -158,17 +167,14 @@ case class LootTable() {
     var i = 0
 
     while (s < r){
-      s += lootVector(i)._2
+      s += table(i)._2
       i += 1
     }
-    return lootVector(i)._1
+    return ItemCreator.create(table(i)._1)
   }
 
-  def addItem(item:Item, weight:Int):Unit = {
-    lootVector = lootVector :+ ((item, weight))
+  def addItem(item:String, weight:Int):Unit = {
+    table = table :+ ((item, weight))
     totalWeight += weight
   }
 }
-
-// Définir les caractéristiques des ennemis (caractéristiques, path vers les animations, ...) dans un format
-// de fichier type Json, cependant json n'est par défaut pas supporté par Scala

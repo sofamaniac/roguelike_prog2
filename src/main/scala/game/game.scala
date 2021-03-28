@@ -157,6 +157,13 @@ object Game
             e.curAP = e.baseAP + e.modifAP
             e.IA()
         }
+        // We separate in case we add animation to display the damage done
+        enemiesVector.foreach
+        {
+          e => e.applyEffects()
+        }
+
+        enemiesVector.filter((e:Enemy)=>e.curHP > 0) // We remove dead enemies
         setPhase(currentPhase, true)  // reset the pase to movement phase
 
         if(player.curHP <= 0)

@@ -3,6 +3,7 @@ package map
 import item._
 import graphics._
 import messageHandler._
+import animation._
 import entity._
 import position._
 import game._
@@ -12,18 +13,21 @@ class Tile(val coord:Point)
 {
     var item:Option[Item] = None
     var entity:Option[SentientEntity] = None
+
     var walkable:Boolean = true   // can be useful to implement doors and walls
     var seeThrough:Boolean = true // for exemple walls are not see through
+    var flyable:Boolean = true    // can a flying entity be here
+    
     var selected:Boolean = false  // if a tile is selected dipslay info on what it contains
     var seen:Boolean = false      // if a tile has been seen the texture changes accordingly
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
     var highlightAttack:Boolean = false // to show the zone that will take dammage
   
-    val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
-    var backTexture:GraphicEntity      = new GraphicEntity(AnimationLoader.load("texture.png", 1), coord, GameWindow.contextGame)
+    val highlightTexture:GraphicEntity = new GraphicEntity(Animation.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity      = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
     var frontTexture:Option[GraphicEntity] = None
-    val seenTexture:GraphicEntity      = new GraphicEntity(AnimationLoader.load("seenTexture.png", 1), coord, GameWindow.contextGame)
-    val unseenTexture:GraphicEntity    = new GraphicEntity(AnimationLoader.load("unseenTexture.png", 1), coord, GameWindow.contextGame)
+    val seenTexture:GraphicEntity      = new GraphicEntity(Animation.load("seenTexture.png", 1), coord, GameWindow.contextGame)
+    val unseenTexture:GraphicEntity    = new GraphicEntity(Animation.load("unseenTexture.png", 1), coord, GameWindow.contextGame)
     
     val infoDest = GameWindow.contextMenu
 
@@ -108,16 +112,25 @@ class Tile(val coord:Point)
 
 class Wall(coord:Point) extends Tile(coord)
 {
-  frontTexture = Some(new GraphicEntity(AnimationLoader.load("wall.png", 1), coord, GameWindow.contextGame))
+  frontTexture = Some(new GraphicEntity(Animation.load("wall.png", 1), coord, GameWindow.contextGame))
   walkable = false
   seeThrough = false
+  flyable = false
 }
 
 class Door(coord:Point) extends Tile(coord)
 {
-  frontTexture = Some(new GraphicEntity(AnimationLoader.load("door.png", 1), coord, GameWindow.contextGame))
+  frontTexture = Some(new GraphicEntity(Animation.load("door.png", 1), coord, GameWindow.contextGame))
   walkable = false
   seeThrough = false
+  flyable = false
+
+  def open():Unit = { 
+    frontTexture = None
+    walkable = true
+    seeThrough = true
+    flyable = true
+  }
 }
 
 object Map

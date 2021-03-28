@@ -24,7 +24,8 @@ object JsonTools{
 
   def contains(json:ujson.Value, key:String):Boolean={
     try {
-        return (json(key) == json(key))
+        val v = json(key)
+        return true
     }
     catch {
       case e: java.util.NoSuchElementException => false
@@ -50,27 +51,26 @@ object JsonTools{
     return findGeneric(json, (i:Int) => json(i)(key).bool == value)
   }
 
-  def load(json:ujson.Value, key:String, default:String):String = {
+  def load[A](json:ujson.Value, key:String, default:A):A = {
     if (contains(json, key))
-      return json(key).str
-    else
-      return default
-  }
-  def load(json:ujson.Value, key:String, default:Int):Int = {
-    if (contains(json, key))
-      return json(key).num.toInt
-    else
-      return default
-  }
-  def load(json:ujson.Value, key:String, default:Boolean):Boolean = {
-    if (contains(json, key))
-      return json(key).bool
+      default match{
+        case s: String  => json(key).str.asInstanceOf[A]
+        case i: Int     => json(key).num.toInt.asInstanceOf[A]
+        case b: Boolean => json(key).bool.asInstanceOf[A]
+      }
     else
       return default
   }
 
   def getRandom(json:ujson.Value):ujson.Value = {
     return json(scala.util.Random.nextInt(length(json)))
+  }
+
+  def foreach(json:ujson.Value, f:(ujson.Value=>Unit)):Unit = {
+    var i = 0
+    for (i <- 0 to length(json) -1) {
+      f(json(i))
+    }
   }
 
 
@@ -86,6 +86,18 @@ object EnemyCreator{
     Enemy.nameToCreate = name
     val result = read[Enemy](data)
     Enemy.nameToCreate = "" // reset to the default value
+    return result
+  }
+}
+
+object ItemCreator{
+  val path = "src/main/ressources/data/"
+  val data = Source.fromFile(path+"item.json").getLines.mkString
+
+  def create(name:String=""):Item={
+    Item.nameToCreate = name
+    val result = read[Item](data)
+    Item.nameToCreate = ""
     return result
   }
 }
