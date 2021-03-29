@@ -81,12 +81,10 @@ object Game
         {
             case "move"   => player.move(cursor.pos)
                              setPhase("move", true)
-                             MessageHandler.clear()
-                             MessageHandler.show()
+                             //MessageHandler.clear()
 
             case "attack" => MessageHandler.clear()
                              player.attack(cursor.pos)
-                             MessageHandler.show()
                              setPhase("move", true)
 
             case "info"   => ()
@@ -130,9 +128,9 @@ object Game
     {
         // generate map : already done for now
         player.move(new Point(0, 0))
-        player.inventory.add(new Weapon("Cone Weapon example", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8))
-        player.inventory.add(new Weapon("Ray Weapon example", 1000000, 5, "pow", Zones.ray, 1, 0, 8, 5, 8))
-        player.inventory.add(new Weapon("Single Weapon example", 1000, 5, "pow", Zones.singleTile, 1, 5, 8, 5, 8))
+        player.inventory.add(new Weapon("Cone Weapon example", "description", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8))
+        player.inventory.add(new Weapon("Ray Weapon example", "", 1000000, 5, "pow", Zones.ray, 1, 0, 8, 5, 8))
+        player.inventory.add(new Weapon("Single Weapon example", "", 1000, 5, "pow", Zones.classic, 1, 5, 8, 5, 8))
         player.inventory.add(new Bandages)
         setPhase("move", true)
         MessageHandler.clear()
@@ -149,9 +147,10 @@ object Game
 
     def loop() = 
     {
-        player.curAP = player.baseAP + player.modifAP
+        player.endTurn()
         player.inventory.display()
-        enemiesVector = enemiesVector.filter(_.curHP > 0)
+
+        enemiesVector = enemiesVector.filter(_.curHP > 0) // We remove enemies killed by the player
         enemiesVector.foreach
         { e =>
             e.curAP = e.baseAP + e.modifAP
@@ -162,8 +161,12 @@ object Game
         {
           e => e.applyEffects()
         }
+        enemiesVector.foreach
+        {
+          e => e.endTurn()
+        }
+        enemiesVector = enemiesVector.filter(_.curHP > 0) // We remove enemies dying of other causes than the player
 
-        enemiesVector.filter((e:Enemy)=>e.curHP > 0) // We remove dead enemies
         setPhase(currentPhase, true)  // reset the pase to movement phase
 
         if(player.curHP <= 0)
@@ -172,6 +175,7 @@ object Game
           player.curHP = player.maxHP
           initialization()
         }
+        player.displayInfo() // We update the text on screen to update the player's status
     }
 
     def pickUp() =

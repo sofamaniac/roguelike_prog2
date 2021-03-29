@@ -41,10 +41,6 @@ class Tile(val coord:Point)
               case None => ()
               case Some(g) => g.show()
             }
-            if(selected)
-            {
-                displayInfo()
-            }
             if(isHighlighted())
             {
                 highlightTexture.show()
@@ -91,7 +87,7 @@ class Tile(val coord:Point)
         case Some(i) => si = i.getInfo()
       }
 
-      MessageHandler.cellInfo.addMessage("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
+      MessageHandler.setCellMessage("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
     }
 
     def isVisible():Boolean = 
@@ -107,6 +103,12 @@ class Tile(val coord:Point)
     def isHighlighted():Boolean =
     {
       return highlight || highlightAttack
+    }
+    def select(b:Boolean):Unit =
+    {
+      selected = b
+      if(b)
+        displayInfo()
     }
 }
 

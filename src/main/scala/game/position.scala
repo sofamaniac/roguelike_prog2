@@ -2,6 +2,7 @@ package position
 
 import game._
 import item._
+import weapon._
 import map._
 
 class Point(var x:Int, var y:Int)
@@ -32,7 +33,8 @@ class Point(var x:Int, var y:Int)
 
 object Zones
 {
-    def classic(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    type definition = (Weapon, Int, Point, Point) => Boolean
+    def ring(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
     {
         val d = start.distance(dest)
         (weapon.innerRange <= d) && (d <= weapon.range) && Map.inSight(start, dest)
@@ -70,7 +72,7 @@ object Zones
         }
     }
 
-    def singleTile(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    def classic(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
     {
       dest.equals(Game.cursor.pos) || dest.equals(Game.player.pos) // 2nd case is here to allow enemy to use single tile weapon
     }

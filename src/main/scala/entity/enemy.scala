@@ -29,7 +29,7 @@ object Enemy
   val defMDE = 0
   val defBPO = 10
   val defMPO = 0 
-  val defWea = new Weapon("Cone Weapon example", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8)
+  val defWea = new Weapon("Cone Weapon example", "", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8)
   val defLT = new LootTable()
   val defBeh = "classic"
   val defFly = false

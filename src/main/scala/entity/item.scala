@@ -11,6 +11,8 @@ import game._
 import upickle.default._
 import json._
 
+import weapon._
+
 object Item {
 
   implicit val rw: ReadWriter[Item] = 
@@ -30,14 +32,13 @@ object Item {
 
     var result = json("type").str match
     {
-      //case "weapon"   => read[Weapon](json)
+      case "weapon"   => read[Weapon](json)
       case "scroll"   => read[Scroll](json)
       case "grimoire" => read[Grimoire](json)
       case "key"      => read[Key](json)
       case "bandages" => read[Bandages](json)
       case "armor"    => read[Armor](json)
     }
-    // TODO: handle common fields
     return result
   }
 }
@@ -46,6 +47,7 @@ abstract class Item()
     extends Entity(Animation.load("item.png", 1), new Point(0,0), GameWindow.contextGame)
 {
   val name:String
+  val description:String
     
   val price:Int
   val rarity:Int
@@ -54,68 +56,15 @@ abstract class Item()
   {
     return "%s".format(name)
   }
+
+  def getDescription():String =
+  {
+    return "%s".format(description)
+  }
   def move(dir:Point) = {}
   def onUse(user:SentientEntity)
 }
 
-// outerRange à 0 pour les sorts qui ne translatent pas
-class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, val zone:((Weapon, Int, Point, Point)=>Boolean), val innerRange:Int, val outerRange:Int, val range:Int, val numberRoll:Int, val damageRoll:Int) extends Item
-{
-    def roll(max:Int=100) = 
-    {
-        1 + scala.util.Random.nextInt(max)
-    }
-    def _attack(dest:Point, attacker:SentientEntity, bonus:Int) =
-    {
-        Map.fromPoint(dest).entity match
-        {
-            case None => ()
-            case Some(e) =>
-                if (roll() >= e.armorClass && !e.dodge())
-                {
-                    var dmg = bonus
-                    var i = 0
-                    for(i<-1 to numberRoll)
-                    {
-                        dmg += roll(damageRoll)
-                    }
-                    e.damage(dmg, attacker)
-                    MessageHandler.genInfo.addMessage("%s hit %s and dealt %d damage.".format(attacker.name, e.name, dmg))
-                }
-                else
-                {
-                    MessageHandler.genInfo.addMessage("%s missed.".format(attacker.name))
-                }
-        }
-    }
-    def attack(dest:Point, attacker:SentientEntity, dir:Int) =
-
-    {
-        val bonus:Int = modif match
-        {
-            case "str" => attacker.baseStr + attacker.modifStr
-            case "dex" => attacker.baseDex + attacker.modifDex
-            case "pow" => attacker.basePow + attacker.modifPow
-        }
-        
-        for (i<-0 until Map.tileArray.size)
-        {
-            for(j<-0 until Map.tileArray(i).size)
-            {
-                if (zone(this, dir, attacker.pos, Map.tileArray(i)(j).coord) && !attacker.pos.equals(new Point(i,j)))
-                {
-                    _attack(Map.tileArray(i)(j).coord, attacker, bonus/10)
-                }
-            }
-        }
-    }
-    def onUse(owner:SentientEntity):Unit =
-    {
-      owner.inventory.add(owner.weapon)
-      owner.weapon = this
-      owner.inventory.remove(this)
-    }
-}
 
 
 object Key{
@@ -128,6 +77,7 @@ object Key{
 case class Key() extends Item
 {
   val name = "simple key"
+  val description = ""
   val price = 0
   val rarity = 0
   def onUse(user:SentientEntity) =
@@ -150,6 +100,7 @@ object Armor{
 case class Armor() extends Item
 {
   val name = "armor"
+  val description = ""
   val price = 0
   val rarity = 0
   def onUse(user:SentientEntity) =
@@ -172,6 +123,7 @@ object Scroll{
 case class Scroll() extends Item
 {
   val name = "scroll"
+  val description = ""
   val price = 0
   val rarity = 0
   def onUse(user:SentientEntity) =
@@ -194,6 +146,7 @@ object Grimoire{
 case class Grimoire() extends Item
 {
   val name = "grimoire"
+  val description = ""
   val price = 0
   val rarity = 0
   def onUse(user:SentientEntity) =
@@ -216,6 +169,7 @@ object Bandages{
 case class Bandages() extends Item
 {
   val name = "bandages"
+  val description = ""
   val price = 0
   val rarity = 0
   def onUse(user:SentientEntity) =

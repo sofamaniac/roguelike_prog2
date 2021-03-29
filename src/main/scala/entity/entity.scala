@@ -11,6 +11,8 @@ import position._
 import map._
 import game._
 import item._
+import weapon._
+import json._
 
 abstract class Entity(animation:Animation, pos:Point, dest:GraphicsContext) 
     extends GraphicEntity(animation, pos, dest)
@@ -45,7 +47,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var inventory:Inventory = new Inventory(this)
 
     var poisonDuration:Int  = 0 // number of turn before end of poison effect
-    var poisonDammage:Int   = 0
+    var poisonDamage:Int    = 0
 
     var onFireDuration:Int  = 0
     var onFireDamage:Int    = 0
@@ -58,16 +60,19 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var paralyzedDuration:Int = 0
     var paralyzedDamage:Int   = 0
 
+    var regenDuration:Int   = 0
+    var regenHP:Int         = 0
+
     // We setup the armor // TODO: define some default armor
-    var headset:Armor
-    var chestplate:Armor
-    var leggings:Armor
-    var boots:Armor
+    var headset:Armor = new Armor
+    var chestplate:Armor = new Armor
+    var leggings:Armor = new Armor
+    var boots:Armor = new Armor
 
     // And the jewelry
-    var ring1:Item
-    var ring2:Item
-    var Pendant:Item
+    var ring1:Item = new Armor
+    var ring2:Item = new Armor
+    var Pendant:Item = new Armor
     
     val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
 
@@ -103,6 +108,11 @@ abstract class SentientEntity(animation:Animation, pos:Point)
       }
     }
 
+    def heal(hp:Int):Unit = 
+    {
+      curHP = maxHP.min(curHP + hp)
+    }
+
     def attack(dest:Point, dir:Int):Unit =
     {
       if(curAP > 0) {
@@ -111,22 +121,42 @@ abstract class SentientEntity(animation:Animation, pos:Point)
       }
     }
 
+    def addEffects(fireDur:Int=0, fireDam:Int=0, poisDur:Int=0, poisDam:Int=0, frozDur:Int=0, frozDam:Int=0, paraDur:Int=0, paraDam:Int=0)
+    {
+      // TODO: change so that the effect are not simply added
+      onFireDuration  = onFireDuration + fireDur
+      onFireDamage    = onFireDamage + fireDam
+
+      poisonDuration  = poisonDuration + poisDur
+      poisonDamage    = poisonDamage + poisDam
+
+      frozenDuration  = frozenDuration + frozDur
+      frozenDamage    = frozenDamage + frozDam
+
+      paralyzedDuration = paralyzedDuration + paraDur
+      paralyzedDamage   = paralyzedDamage + paraDam
+    }
+
     def applyEffects():Unit={
       if (poisonDuration > 0){
-        curHP -= poisonDamage
-        poisonDuration -= 1
+        curHP = curHP - poisonDamage
+        poisonDuration = poisonDuration -1
       }
       if (onFireDuration > 0){
-        curHP -= onFireDamage
-        onFireDuration -= 1
+        curHP = curHP - onFireDamage
+        onFireDuration += onFireDuration -1
       }
       if (frozenDuration > 0){
-        curHP -= fronzenDamage
-        frozenDuration -= 1
+        curHP = curHP - frozenDamage
+        frozenDuration = frozenDuration -1
       }
       if (paralyzedDuration > 0){
-        curHP -= paralyzedDamage
-        paralyzedDuration -= 1
+        curHP = curHP - paralyzedDamage
+        paralyzedDuration = paralyzedDuration-1
+      }
+      if (regenDuration > 0){
+        heal(regenHP)
+        regenDuration = regenDuration - 1
       }
 
       if (curHP <= 0)
@@ -136,7 +166,18 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     def kill():Unit =
     {
       Map.fromPoint(pos).entity=None
-      Map.fromPoint(pos).item = Some(loot()) // TODO: change to not override it there is already an item
+      loot() // TODO: change to not override it there is already an item
+    }
+
+    def endTurn():Unit =
+    {
+      applyEffects()
+      if (paralyzedDuration > 0)
+        curAP = 0
+      if (frozenDuration > 0)
+        curAP = (baseAP + modifAP)/ 2
+      else
+        curAP = baseAP + modifAP
     }
 
     def dodge():Boolean
@@ -187,9 +228,9 @@ class Cursor(dest:GraphicsContext)
     val next = new Point(nextX, nextY)
     if (Map.isInbound(next) && Map.fromPoint(next).isVisible() && (!limitation || Map.fromPoint(next).isHighlighted()))
     {
-      Map.fromPoint(next).selected = false
+      Map.fromPoint(pos).select(false)
       pos.add(dir)
-      Map.fromPoint(next).selected = true
+      Map.fromPoint(pos).select(true)
     }
     else 
       findNext(dir)
@@ -216,9 +257,9 @@ class Cursor(dest:GraphicsContext)
 
   def setPos(dest:Point)
   {
-    Map.fromPoint(pos).selected = false
+    Map.fromPoint(pos).select(false)
     pos.setPoint(dest)
-    Map.fromPoint(pos).selected = true
+    Map.fromPoint(pos).select(true)
   }
 
 }
@@ -253,11 +294,15 @@ class Player()
     var modifSee = 0
 
 
-    var weapon:Weapon = new Weapon("Ring Weapon example", 1000000, 5, "pow", Zones.classic, 3, 0, 4, 5, 8)
+    var weapon:Weapon = new Weapon("Ring Weapon example", "", 1000000, 5, "pow", Zones.ring, 3, 0, 4, 5, 8)
 
     def loot()
     {
+    }
 
+    override def kill()
+    {
+      // TODO
     }
 
     def dodge():Boolean = {return false}
@@ -270,6 +315,16 @@ class Player()
     def attack(dest:Point):Unit =
     {
       super.attack(dest, Game.cursor.currentDir)
+    }
+
+    def displayInfo():Unit = 
+    {
+      val zone = MessageHandler.playerInfo
+      zone.clear()
+      zone.addMessage("HP:%d/%d\t\tArmor:%d".format(curHP, maxHP, armorClass))
+      zone.addMessage("AP:%d/%d(+%d)\t\tSanity:%d/%d".format(curAP, baseAP, modifAP, sanity, maxSanity))
+      zone.addMessage("Str:%d(+%d)\t\tDex:%d(+%d)".format(baseStr, modifStr, baseDex, modifDex))
+      zone.addMessage("Pow:%d(+%d)".format(basePow, modifPow))
     }
 }
 
@@ -290,8 +345,10 @@ class Inventory(val owner:SentientEntity)
       {
         if (invStart <= i && i < invStart+invSize)
         {
-          if (i == curInv) 
+          if (i == curInv){
             MessageHandler.inventory.addMessage("> "+j.getInfo()) 
+            MessageHandler.setItemInfo(j.getDescription())
+          }
           else 
             MessageHandler.inventory.addMessage(j.getInfo())
         }
