@@ -9,15 +9,18 @@ import scalafx.beans.property._
 object MessageHandler
 {
   var help = new MessageZone()
+  var playerInfo = new MessageZone()
   var inventory = new MessageZone()
   var cellInfo = new MessageZone()
-  cellInfo.maxMessages()=1
   var genInfo = new MessageZone()
+  var itemInfo = new MessageZone()
 
   var textSize = IntegerProperty(20)
 
+
   help.addDefaults("Press F1 to display help")
   help.addDefaults("Use Left/Right arrow to change orientation and Up/Down to move")
+  help.addDefaults("Enter to end turn")
   help.addDefaults("Use 'A' to go in attack mode, 'I' to go in information mode")
   help.addDefaults("Use Space to select the current tile")
   help.addDefaults("Use 'Esc' to go back in movement mode")
@@ -25,31 +28,57 @@ object MessageHandler
   help.addDefaults("select item using arrow keys, and press 'Space'")
   help.addDefaults("Press 'F' to drop item")
   help.addDefaults("Use 'G' to pick up item")
+
+  playerInfo.addDefaults("Player stats: ")
+  playerInfo.maxMessages() = 7 // TODO to adjust
   
   inventory.addDefaults("Inventory: ")
   inventory.maxMessages() = 11 // 10 items + header
 
   cellInfo.addDefaults("Tile Info: ")
+  cellInfo.maxMessages() = 2
+
+  itemInfo.addDefaults("Item's description: ")
+  itemInfo.maxMessages() = 2
 
   clear()
 
   val one = IntegerProperty(1)
 
-  inventory.yOffset <== when (help.maxMessages > 0) choose (help.yOffset + textSize * (help.maxMessages + one)) otherwise (help.yOffset + textSize * (help.nbMessages + one))
+  playerInfo.yOffset <== when (help.maxMessages > 0) choose (help.yOffset + textSize * (help.maxMessages + one)) otherwise (help.yOffset + textSize * (help.nbMessages + one))
+  inventory.yOffset <== playerInfo.yOffset + textSize * (playerInfo.maxMessages + one)
   cellInfo.yOffset <== inventory.yOffset + textSize * (inventory.maxMessages + one)
   genInfo.yOffset <== cellInfo.yOffset + textSize * (cellInfo.maxMessages + one)
+  itemInfo.yOffset <== genInfo.yOffset + textSize * (genInfo.nbMessages + one)
+
+  def setCellMessage(s:String):Unit =
+  {
+    cellInfo.clear()
+    cellInfo.addMessage(s)
+  }
+
+  def setItemInfo(s:String):Unit =
+  {
+    itemInfo.clear()
+    itemInfo.addMessage(s)
+  }
 
   def show():Unit =
   {
     help.show()
+    playerInfo.show()
     inventory.show()
     cellInfo.show()
     genInfo.show()
+    if (Game.currentPhase == "inventory")
+      itemInfo.show()
   }
 
   def clear():Unit =
   {
     help.clear()
+    playerInfo.clear()
+    Game.player.displayInfo()
     // inventory.clear()  // inventory must be cleared manually by the user
     cellInfo.clear()
     genInfo.clear()
@@ -70,6 +99,7 @@ object MessageHandler
 
 class MessageZone(){
 
+  // since we need to append messages to the end, using list is not better
   var messages = Vector[String]()
   var defaults = Vector[String]()
   var maxMessages = IntegerProperty(-1) // Maximum number of messages to display, -1 for no limits
@@ -84,11 +114,12 @@ class MessageZone(){
   {
     messages = messages :+ s
     nbMessages() += 1
+    MessageHandler.show()
   }
 
   def clear():Unit =
   {
-    messages = defaults // TODO: clone vector properly
+    messages = defaults // TODO: clone vector properly // it seems to work as is
     nbMessages = IntegerProperty(defaults.length)
   }
 
@@ -105,6 +136,7 @@ class MessageZone(){
   def show():Unit=
   {
     // TODO: fill the occupied space with grey before show
+    GameWindow.contextMenu.fillRect(0, yOffset(), GameWindow.canvasMenu.getWidth, yOffset() + (if (maxMessages() == -1) nbMessages() else maxMessages()) )
     var y = yOffset + textSize
     GameWindow.contextMenu.setFill(Black)
     var c = 0

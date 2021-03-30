@@ -23,8 +23,9 @@ import position._
 import game._
 import map._
 import messageHandler._
+import animation.Animation.Animation
 
-class GraphicEntity(val animation:Array[ImageView], val pos:Point, var dest:GraphicsContext)
+class GraphicEntity(val animation:Animation, val pos:Point, var dest:GraphicsContext)
 {
 
   var animationDuration : Int = 60 // duration in frame of the entire cycle
@@ -66,35 +67,6 @@ class GraphicEntity(val animation:Array[ImageView], val pos:Point, var dest:Grap
   def freeze():Unit=
   {
     _freeze = !_freeze
-  }
-}
-
-object AnimationLoader 
-{ 
-  val ressource_folder = "file:src/main/ressources/"
-  def load(s:String, nbFrame: Int, sizeX:Int = -1, sizeY:Int = -1, marginX:Int = 0, marginY:Int = 0):Array[ImageView]=
-  {
-    var _sizeX = sizeX
-    var _sizeY = sizeY
-    val image = new Image(ressource_folder + s)
-    if(sizeX < 0){
-      _sizeX = image.getWidth().toInt / nbFrame
-    }
-    if(sizeY < 0){
-      _sizeY = (image.getHeight()).toInt
-    }
-    val animation = new Array[ImageView](nbFrame) // Array of length [nbFrame]
-    var x = 0
-    var i = 0
-    for (i <- 0 until nbFrame)
-    {
-      val frame = new ImageView
-      frame.image = image
-      frame.setViewport(new Rectangle2D(x, 0, _sizeX, _sizeY)) // we use viewport to define sub pictures
-      animation(i) = frame
-      x = x + _sizeX + marginX
-    }
-    return animation
   }
 }
 
