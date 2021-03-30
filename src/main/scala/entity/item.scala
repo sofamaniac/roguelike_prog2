@@ -63,15 +63,13 @@ class Weapon(val name:String, val price:Int, val rarity:Int, val modif:String, v
             case "pow" => attacker.basePow + attacker.modifPow
         }
         
-        for (i<-0 until Map.tileArray.size)
+        Map.tileMap.foreach
         {
-            for(j<-0 until Map.tileArray(i).size)
-            {
-                if (zone(this, dir, attacker.pos, Map.tileArray(i)(j).coord) && !attacker.pos.equals(new Point(i,j)))
+            case(key, value) =>
+                if (zone(this, dir, attacker.pos, value.coord) && !attacker.pos.equals(new Point(key._1,key._2)))
                 {
-                    _attack(Map.tileArray(i)(j).coord, attacker, bonus/10)
+                    _attack(value.coord, attacker, bonus/10)
                 }
-            }
         }
     }
     def onUse(owner:SentientEntity):Unit =

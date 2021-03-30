@@ -4,7 +4,7 @@
 
 Normalement sbt installe les dépendances nécessaires, mais il arrive qu'il faille installer javafx manuellement
 
-## Comment jour
+## Comment jouer
 
 Le jeu se déroule sur une grille hexagonale, pour se déplacer le joueur dispose d'un curseur qui peut orienter avec les flèches gauche et droite.
 Appuyer sur 'A' passe en mode attaque dans lequel le joueur peut selectionner la/les cases qu'il souhaite attaquer.

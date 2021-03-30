@@ -30,31 +30,29 @@ class Enemy(pos:Point, dest:GraphicsContext, val name:String, var maxHP:Int, var
 
   def findBestMove():Point =
   {
-    var i = 0
-    var j = 0
-    // if player is in range, does not move
-    for(i <- 0 until dirArray.size)
-    {
-      if(weapon.zone(weapon, i, pos, Game.player.pos))
-      {
-        return pos
-      }
-    }
+        var i = 0
+        var j = 0
+        // if player is in range, does not move
+        for(i <- 0 until dirArray.size)
+        {
+            if(weapon.zone(weapon, i, pos, Game.player.pos))
+            {
+                return pos
+            }
+        }
 
-    // else find a position that move it closer to the player 
-    // in the future, enemies will have like the player a detection range,
-    // outside of which they are unable to see the player
-    val curD = pos.distance(Game.player.pos)
-    for (i <- 0 until Map.tileArray.size)
-    {
-      for (j <- 0 until Map.tileArray(i).size)
-      {
-        if(Map.tileArray(i)(j).coord.distance(Game.player.pos) < curD
-            && Map.tileArray(i)(j).coord.distance(pos) < curAP)
-          return Map.tileArray(i)(j).coord
-      }
-    }
-    return pos
+        // else find a position that move it closer to the player 
+        // in the future, enemies will have like the player a detection range,
+        // outside of which they are unable to see the player
+        val curD = pos.distance(Game.player.pos)
+        Map.tileMap.foreach
+        {
+            case(key, value) =>
+                if(value.coord.distance(Game.player.pos) < curD
+                    && value.coord.distance(pos) < curAP)
+                return value.coord
+        }
+        return pos
   }
   def dodge():Boolean = {return false}
   def loot():Unit = 
