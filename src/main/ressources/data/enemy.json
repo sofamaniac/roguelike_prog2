@@ -1,0 +1,65 @@
+[
+	{
+		"name": "Bat",
+		"behaviourType": "classic",
+		"animation":
+			{
+				"file": "goblin.png",
+				"nbFrame": 11,
+				"sizeY": 58
+			},
+		"flying": true,
+		"maxHP": 100,
+		"armorClass": 30,
+		"baseAP": 5,
+		"modifAP": 0,
+		"baseStr": 10,
+		"modifStr": 0,
+		"baseDex": 10,
+		"modifDex": 0,
+		"basePow": 10,
+		"modifPow": 0,
+		"weapon":	"sword",
+		"lootTable": [
+			{
+				"item":"simple_key",
+				"weight": 50
+			},
+			{
+				"item": "bandages",
+				"weight": 50
+			}
+		]
+	},
+
+	{
+		"name": "Cultist Brawler",
+		"animation":
+			{
+				"file": "goblin.png",
+				"nbFrame": 11,
+				"sizeY": 58
+			},
+		"maxHP": 100,
+		"armorClass": 30,
+		"baseAP": 5,
+		"modifAP": 0,
+		"baseStr": 10,
+		"modifStr": 0,
+		"baseDex": 10,
+		"modifDex": 0,
+		"basePow": 10,
+		"modifPow": 0,
+		"weapon":	"sword",
+		"loot_table": [
+			{
+				"item":"simple_key",
+				"weight": 50
+			},
+			{
+				"item": "bandages",
+				"weight": 50
+			}
+		]
+	}
+]
