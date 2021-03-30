@@ -149,7 +149,8 @@ object Map
                   tileMap += (b -> new Tile(new Point(i,j)))
             }
         }
-        tileMap((i,j)) = new Door(new Point(10,5))
+        tileMap((0,0)) = new Tile(new Point(0,0))
+        tileMap((10,5)) = new Door(new Point(10,5))
     }
 
     createMap(10)
@@ -221,7 +222,6 @@ object Map
         result = result && tileMap((x.toInt,y.toInt)).seeThrough
         x += dx
         y += dy
-
       }
       return result
     }
