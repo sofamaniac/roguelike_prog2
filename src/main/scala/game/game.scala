@@ -3,15 +3,17 @@ package game
 import enemy._
 import entity._
 import item._
+import weapon._
 import map._
 import position._
 import graphics._
 import messageHandler._
 import scalafx.scene.input.KeyCode
+import json._
 
 object Game
 {
-    val player = new Player(GameWindow.contextGame)
+    val player = new Player()
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
 
@@ -80,12 +82,10 @@ object Game
         {
             case "move"   => player.move(cursor.pos)
                              setPhase("move", true)
-                             MessageHandler.clear()
-                             MessageHandler.show()
+                             //MessageHandler.clear()
 
             case "attack" => MessageHandler.clear()
                              player.attack(cursor.pos)
-                             MessageHandler.show()
                              setPhase("move", true)
 
             case "info"   => ()
@@ -129,9 +129,9 @@ object Game
     {
         // generate map : already done for now
         player.move(new Point(0, 0))
-        player.inventory.add(new Weapon("Cone Weapon example", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8))
-        player.inventory.add(new Weapon("Ray Weapon example", 1000000, 5, "pow", Zones.ray, 1, 0, 8, 5, 8))
-        player.inventory.add(new Weapon("Single Weapon example", 1000, 5, "pow", Zones.singleTile, 1, 5, 8, 5, 8))
+        player.inventory.add(WeaponCreator.create())
+        //player.inventory.add(new Weapon("Ray Weapon example", "", 1000000, 5, "pow", Zones.ray, 1, 0, 8, 5, 8))
+        //player.inventory.add(new Weapon("Single Weapon example", "", 1000, 5, "pow", Zones.classic, 1, 5, 8, 5, 8))
         player.inventory.add(new Bandages)
         setPhase("move", true)
         MessageHandler.clear()
@@ -139,7 +139,8 @@ object Game
         player.inventory.curInv = 0
 
         // creating and placing enemies :
-        enemiesVector = enemiesVector :+ new Enemy(new Point(2,3), GameWindow.contextGame, "Cultist Brawler", 100, 100, 30, 5, 0, 10, 0, 10, 0, 99, 0, 0, new Weapon("Ice Blow", 1000000, 5, "pow", Zones.cone, 3, 0, 8, 2, 4))
+        enemiesVector = Vector()
+        enemiesVector = enemiesVector :+ EnemyCreator.create()
         enemiesVector(0).move(enemiesVector(0).pos)
 
         // creating and placing items :
@@ -147,14 +148,26 @@ object Game
 
     def loop() = 
     {
-        player.curAP = player.baseAP + player.modifAP
+        player.endTurn()
         player.inventory.display()
-        enemiesVector = enemiesVector.filter(_.curHP > 0)
+
+        enemiesVector = enemiesVector.filter(_.curHP > 0) // We remove enemies killed by the player
         enemiesVector.foreach
         { e =>
             e.curAP = e.baseAP + e.modifAP
             e.IA()
         }
+        // We separate in case we add animation to display the damage done
+        enemiesVector.foreach
+        {
+          e => e.applyEffects()
+        }
+        enemiesVector.foreach
+        {
+          e => e.endTurn()
+        }
+        enemiesVector = enemiesVector.filter(_.curHP > 0) // We remove enemies dying of other causes than the player
+
         setPhase(currentPhase, true)  // reset the pase to movement phase
 
         if(player.curHP <= 0)
@@ -163,6 +176,7 @@ object Game
           player.curHP = player.maxHP
           initialization()
         }
+        player.displayInfo() // We update the text on screen to update the player's status
     }
 
     def pickUp() =

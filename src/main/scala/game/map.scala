@@ -3,6 +3,7 @@ package map
 import item._
 import graphics._
 import messageHandler._
+import animation._
 import entity._
 import position._
 import game._
@@ -12,18 +13,21 @@ class Tile(val coord:Point)
 {
     var item:Option[Item] = None
     var entity:Option[SentientEntity] = None
+
     var walkable:Boolean = true   // can be useful to implement doors and walls
     var seeThrough:Boolean = true // for exemple walls are not see through
+    var flyable:Boolean = true    // can a flying entity be here
+    
     var selected:Boolean = false  // if a tile is selected dipslay info on what it contains
     var seen:Boolean = false      // if a tile has been seen the texture changes accordingly
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
     var highlightAttack:Boolean = false // to show the zone that will take dammage
   
-    val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
-    var backTexture:GraphicEntity      = new GraphicEntity(AnimationLoader.load("texture.png", 1), coord, GameWindow.contextGame)
+    val highlightTexture:GraphicEntity = new GraphicEntity(Animation.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity      = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
     var frontTexture:Option[GraphicEntity] = None
-    val seenTexture:GraphicEntity      = new GraphicEntity(AnimationLoader.load("seenTexture.png", 1), coord, GameWindow.contextGame)
-    val unseenTexture:GraphicEntity    = new GraphicEntity(AnimationLoader.load("unseenTexture.png", 1), coord, GameWindow.contextGame)
+    val seenTexture:GraphicEntity      = new GraphicEntity(Animation.load("seenTexture.png", 1), coord, GameWindow.contextGame)
+    val unseenTexture:GraphicEntity    = new GraphicEntity(Animation.load("unseenTexture.png", 1), coord, GameWindow.contextGame)
     
     val infoDest = GameWindow.contextMenu
 
@@ -36,10 +40,6 @@ class Tile(val coord:Point)
             {
               case None => ()
               case Some(g) => g.show()
-            }
-            if(selected)
-            {
-                displayInfo()
             }
             if(isHighlighted())
             {
@@ -87,7 +87,7 @@ class Tile(val coord:Point)
         case Some(i) => si = i.getInfo()
       }
 
-      MessageHandler.cellInfo.addMessage("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
+      MessageHandler.setCellMessage("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
     }
 
     def isVisible():Boolean = 
@@ -104,20 +104,35 @@ class Tile(val coord:Point)
     {
       return highlight || highlightAttack
     }
+    def select(b:Boolean):Unit =
+    {
+      selected = b
+      if(b)
+        displayInfo()
+    }
 }
 
 class Wall(coord:Point) extends Tile(coord)
 {
-  frontTexture = Some(new GraphicEntity(AnimationLoader.load("wall.png", 1), coord, GameWindow.contextGame))
+  frontTexture = Some(new GraphicEntity(Animation.load("wall.png", 1), coord, GameWindow.contextGame))
   walkable = false
   seeThrough = false
+  flyable = false
 }
 
 class Door(coord:Point) extends Tile(coord)
 {
-  frontTexture = Some(new GraphicEntity(AnimationLoader.load("door.png", 1), coord, GameWindow.contextGame))
+  frontTexture = Some(new GraphicEntity(Animation.load("door.png", 1), coord, GameWindow.contextGame))
   walkable = false
   seeThrough = false
+  flyable = false
+
+  def open():Unit = { 
+    frontTexture = None
+    walkable = true
+    seeThrough = true
+    flyable = true
+  }
 }
 
 object Map
@@ -251,53 +266,6 @@ object Map
     def isInbound(p:Point):Boolean =
     {
         p.x >= 0 && p.y >= 0 && p.x < Map.tileArray.size && p.y < Map.tileArray(p.x).size
-    }
-
-}
-
-object Zones
-{
-    def classic(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
-    {
-        val d = start.distance(dest)
-        (weapon.innerRange <= d) && (d <= weapon.range) && Map.inSight(start, dest)
-    }
-
-    def ray(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
-    {
-        val dx = dest.x - start.x
-        val dy = dest.y - start.y
-        val dz = -dx-dy
-        dir match
-        {
-            case 0 => (dy == 0) && (dx >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
-            case 1 => (dx == 0) && (dz <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
-            case 2 => (dz == 0) && (dy >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
-            case 3 => (dy == 0) && (dx <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
-            case 4 => (dx == 0) && (dz >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
-            case 5 => (dz == 0) && (dy <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
-        }
-    }
-
-    def cone(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
-    {
-        val dx = dest.x - start.x
-        val dy = dest.y - start.y
-        val dz = -dx-dy
-        dir match
-        {
-            case 0 => (dy <= 0) && (dz <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
-            case 1 => (dx >= 0) && (dy >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
-            case 2 => (dx <= 0) && (dz <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
-            case 3 => (dy >= 0) && (dz >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
-            case 4 => (dx <= 0) && (dy <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
-            case 5 => (dx >= 0) && (dz >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
-        }
-    }
-
-    def singleTile(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
-    {
-      dest.equals(Game.cursor.pos) || dest.equals(Game.player.pos) // 2nd case is here to allow enemy to use single tile weapon
     }
 
 }
