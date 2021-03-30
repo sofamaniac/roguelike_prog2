@@ -3,6 +3,7 @@ package game
 import enemy._
 import entity._
 import item._
+import weapon._
 import map._
 import position._
 import graphics._
@@ -128,9 +129,9 @@ object Game
     {
         // generate map : already done for now
         player.move(new Point(0, 0))
-        player.inventory.add(new Weapon("Cone Weapon example", "description", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8))
-        player.inventory.add(new Weapon("Ray Weapon example", "", 1000000, 5, "pow", Zones.ray, 1, 0, 8, 5, 8))
-        player.inventory.add(new Weapon("Single Weapon example", "", 1000, 5, "pow", Zones.classic, 1, 5, 8, 5, 8))
+        player.inventory.add(WeaponCreator.create())
+        //player.inventory.add(new Weapon("Ray Weapon example", "", 1000000, 5, "pow", Zones.ray, 1, 0, 8, 5, 8))
+        //player.inventory.add(new Weapon("Single Weapon example", "", 1000, 5, "pow", Zones.classic, 1, 5, 8, 5, 8))
         player.inventory.add(new Bandages)
         setPhase("move", true)
         MessageHandler.clear()

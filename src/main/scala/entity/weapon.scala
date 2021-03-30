@@ -24,6 +24,8 @@ object Weapon{
   val defDescription = "That's a nice item you got here\nif only you knew what it does"
   val defPrice = 0
   val defRarity = 0
+  val defWeight = 0
+
   val defModif = "str"
   val defZone = "classic"
   val defInR = 0
@@ -42,14 +44,22 @@ object Weapon{
   val defParaDam = 0
 
   val defVampirism = 0 // Integer between 0 and 100 representing the proportion of damage made that the attacker gets added to its HP
-
-  def create(json:ujson.Value):Weapon =
+  
+  var nameToCreate = ""
+  def create(_json:ujson.Value):Weapon =
   {
+    var json = _json
+    var index = JsonTools.find(json, "name", nameToCreate)
+    if (index == -1)
+      json = JsonTools.getRandom(json)
+    else
+      json = json(index)
 
     val name = JsonTools.load(json, "name", defName)
     val description = JsonTools.load(json, "description", defDescription)
     val price = JsonTools.load(json, "price", defPrice)
     val rarity = JsonTools.load(json, "rarity", defRarity)
+    val weight = JsonTools.load(json, "weight", defWeight)
     val modif = JsonTools.load(json, "modif", defModif)
     val zone = loadZone(json) // TODO
     val inRange = JsonTools.load(json, "innerRange", defInR)
@@ -69,7 +79,7 @@ object Weapon{
 
     val vampirism = JsonTools.load(json, "vampirism", defVampirism)
 
-    return new Weapon(name, description, price, rarity, modif, zone, inRange, outRange, range, nbRoll, damRoll,
+    return new Weapon(name, description, price, rarity, weight, modif, zone, inRange, outRange, range, nbRoll, damRoll,
                       fireDur, fireDam, poisDur, poisDam, frozDur, frozDam, paraDur, paraDam, vampirism)
   }
 
@@ -88,7 +98,7 @@ object Weapon{
 
 
 // outerRange à 0 pour les sorts qui ne translatent pas
-class Weapon(val name:String, val description:String,  val price:Int, val rarity:Int, val modif:String, val zone:Zones.definition,
+class Weapon(val name:String, val description:String,  val price:Int, val rarity:Int, val weight:Int, val modif:String, val zone:Zones.definition,
              val innerRange:Int, val outerRange:Int, val range:Int, val numberRoll:Int, val damageRoll:Int,
              val fireDuration:Int, val fireDamage:Int, val poisonDuration:Int, val poisonDamage:Int,
              val frozenDuration:Int, val frozenDamage:Int, val paralyzedDuration:Int, val paralyzedDamage:Int, val vampirism:Int) extends Item

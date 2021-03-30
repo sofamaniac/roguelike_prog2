@@ -64,10 +64,10 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var regenHP:Int         = 0
 
     // We setup the armor // TODO: define some default armor
-    var headset:Armor = new Armor
-    var chestplate:Armor = new Armor
-    var leggings:Armor = new Armor
-    var boots:Armor = new Armor
+    var helmet:Helmet = new Helmet
+    var chestplate:Chestplate = new Chestplate
+    var leggings:Leggings = new Leggings
+    var boots:Boots = new Boots
 
     // And the jewelry
     var ring1:Item = new Armor
@@ -294,7 +294,7 @@ class Player()
     var modifSee = 0
 
 
-    var weapon:Weapon = new Weapon("Ring Weapon example", "", 1000000, 5, "pow", Zones.ring, 3, 0, 4, 5, 8)
+    var weapon:Weapon = WeaponCreator.create("shotgun")
 
     def loot()
     {

@@ -35,7 +35,24 @@ object Animation
     return animation
   }
 
+  val defPath = "goblin.png"
+  val defNbFrame = 1
+  val defSizeX = -1
+  val defSizeY = -1
+  val defMargX = 0
+  val defMargY = 0
+
   def loadJson(json:ujson.Value):Animation = {
-    return load("goblin.png", 11, sizeY=58)
+    val path    = JsonTools.load(json, "path", defPath)
+    val nbFrame = JsonTools.load(json, "nbFrame", defNbFrame)
+    val sizeX   = JsonTools.load(json, "sizeX", defSizeX)
+    val sizeY   = JsonTools.load(json, "sizeY", defSizeY)
+    val margX   = JsonTools.load(json, "marginX", defMargX)
+    val margY   = JsonTools.load(json, "marginY", defMargY)
+    return load(path, nbFrame, sizeX, sizeY, margX, margY)
+  }
+
+  def loadDefault():Animation = {
+    return load(defPath, defNbFrame, defSizeX, defSizeY, defMargX, defMargY)
   }
 }

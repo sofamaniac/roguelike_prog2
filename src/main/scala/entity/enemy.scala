@@ -2,6 +2,7 @@ package enemy
 
 import entity._
 import item._
+import weapon._
 import position._
 import scalafx.scene.canvas._
 import scalafx.scene.image._
@@ -17,7 +18,7 @@ import upickle.default._
 object Enemy
 {
   // We setup the default value for every parameter of enemy
-  val defAnimation = Animation.load("goblin.png", 11, sizeY=58)
+  val defAnimation = Animation.loadDefault()
   val defName = ""
   val defMHP = 100
   val defAC = 30
@@ -29,7 +30,7 @@ object Enemy
   val defMDE = 0
   val defBPO = 10
   val defMPO = 0 
-  val defWea = new Weapon("Cone Weapon example", "", 1000000, 5, "pow", Zones.cone, 1, 0, 8, 5, 8)
+  val defWea = WeaponCreator.create("sword")
   val defLT = new LootTable()
   val defBeh = "classic"
   val defFly = false
@@ -55,7 +56,7 @@ object Enemy
       json = json(index)
 
 
-    val animation   = if (JsonTools.contains(json, "animation")) Animation.loadJson(json) else defAnimation   // TODO: to complete
+    val animation   = if (JsonTools.contains(json, "animation")) Animation.loadJson(json("animation")) else defAnimation
     val name        = JsonTools.load(json, "name", defName)
     val maxHP       = JsonTools.load(json, "maxHP", defMHP)
     val armorClass  = JsonTools.load(json, "armorClass", defAC)

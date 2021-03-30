@@ -6,6 +6,7 @@ import enemy._
 import graphics._
 import position._
 import item._
+import weapon._
 import map._
 import scala.util.Random
 
@@ -98,6 +99,17 @@ object ItemCreator{
     Item.nameToCreate = name
     val result = read[Item](data)
     Item.nameToCreate = ""
+    return result
+  }
+}
+
+object WeaponCreator{
+  val path = "src/main/ressources/data/"
+  val data = Source.fromFile(path+"weapon.json").getLines.mkString
+  def create(name:String=""):Weapon={
+    Weapon.nameToCreate = name
+    val result = read[Weapon](data)
+    Weapon.nameToCreate = ""
     return result
   }
 }
