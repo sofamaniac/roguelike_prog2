@@ -8,6 +8,7 @@ import entity._
 import position._
 import game._
 import scalafx.scene.paint.Color._
+import scala.collection.mutable.{Map => MapObject}
 
 class Tile(val coord:Point)
 {
@@ -22,9 +23,10 @@ class Tile(val coord:Point)
     var seen:Boolean = false      // if a tile has been seen the texture changes accordingly
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
     var highlightAttack:Boolean = false // to show the zone that will take dammage
-  
-    val highlightTexture:GraphicEntity = new GraphicEntity(Animation.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
-    var backTexture:GraphicEntity      = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
+
+    val highlightAttackTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightAttackTexture.png", 1), coord, GameWindow.contextGame)
+    val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity      = new GraphicEntity(AnimationLoader.load("texture.png", 1), coord, GameWindow.contextGame)
     var frontTexture:Option[GraphicEntity] = None
     val seenTexture:GraphicEntity      = new GraphicEntity(Animation.load("seenTexture.png", 1), coord, GameWindow.contextGame)
     val unseenTexture:GraphicEntity    = new GraphicEntity(Animation.load("unseenTexture.png", 1), coord, GameWindow.contextGame)
@@ -44,6 +46,10 @@ class Tile(val coord:Point)
             if(isHighlighted())
             {
                 highlightTexture.show()
+            }
+            if(highlightAttack)
+            {
+                highlightAttackTexture.show()
             }
 
             item match
@@ -100,9 +106,10 @@ class Tile(val coord:Point)
         }
         return b 
     }
+
     def isHighlighted():Boolean =
     {
-      return highlight || highlightAttack
+        return highlight || highlightAttack
     }
     def select(b:Boolean):Unit =
     {
@@ -137,32 +144,28 @@ class Door(coord:Point) extends Tile(coord)
 
 object Map
 {
-    var tileArray:Array[Array[Tile]] = Array.ofDim[Array[Tile]](0)
+    var tileMap = MapObject[(Int, Int), Tile]()
 
     /** Create the tiles of the map to the size of the given radius
      *  @param radius the radius of the map to be created
      */
     def createMap(radius:Int)
     {
-        tileArray = Array.ofDim[Array[Tile]](2*radius+1)
         var i = 0
-        for (i <- 0 until 2*radius +1)
-        {
-            tileArray(i) = Array.ofDim[Tile](2*radius +1) // TODO: to change to the correct size
-        }
-        
         var j = 0
         for (i <- 0 until 2*radius +1)
         {
             for (j <- 0 until 2*radius +1)
             {
+                val b = (i,j)
                 if (i == 10 || j == 10)
-                  tileArray(i)(j) = new Wall(new Point(i,j))
+                  tileMap += (b -> new Wall(new Point(i,j)))
                 else
-                  tileArray(i)(j) = new Tile(new Point(i, j))
+                  tileMap += (b -> new Tile(new Point(i,j)))
             }
         }
-        tileArray(10)(5) = new Door(new Point(10,5))
+        tileMap((0,0)) = new Tile(new Point(0,0))
+        tileMap((10,5)) = new Door(new Point(10,5))
     }
 
     createMap(10)
@@ -170,14 +173,9 @@ object Map
     /** Display the entirety of the map on the screen */
     def show() = 
     {
-        var i = 0
-        var j = 0
-        for (i <- 0 until tileArray.size)
+        tileMap.foreach
         {
-            for (j <- 0 until tileArray(i).size)
-            {
-                tileArray(i)(j).show()
-            }
+            case(key, value) => value.show()
         }
     }
 
@@ -189,40 +187,31 @@ object Map
      */
     def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false, erase:Boolean=true, highlightPlayer:Boolean=false):Unit =
     {
-        var i = 0
-        var j = 0
-        for (i<-0 until tileArray.size)
+        tileMap.foreach
         {
-            for(j<-0 until tileArray(i).size)
-            {
-                tileArray(i)(j).highlight = tileArray(i)(j).highlight && !erase// erase previous highlight
-                tileArray(i)(j).highlightAttack = tileArray(i)(j).highlightAttack && !erase
+            case(key, value) =>
+                value.highlight = value.highlight && !erase     // erase previous highlight
+                value.highlightAttack = value.highlightAttack && !erase
               
-                if (zone(tileArray(i)(j).coord) && tileArray(i)(j).isVisible() && !tileArray(i)(j).isInstanceOf[Wall] && inSight(Game.player.pos, new Point(i,j)))
+                if (zone(value.coord) && value.isVisible() && !value.isInstanceOf[Wall] && inSight(Game.player.pos, new Point(key._1,key._2)))
                 {
-                    tileArray(i)(j).highlight = !attackHighlight
-                    tileArray(i)(j).highlightAttack = attackHighlight
+                    value.highlight = !attackHighlight
+                    value.highlightAttack = attackHighlight
                 }
-            }
         }
         Map.fromPoint(Game.player.pos).highlight = Map.fromPoint(Game.player.pos).highlight && highlightPlayer
     }
 
     def findHighlight():Point =
     {
-        var i = 0
-        var j = 0
-
         if (fromPoint(Game.cursor.pos).highlight)
           return Game.cursor.pos
 
-        for (i<-0 until tileArray.size)
+        tileMap.foreach
         {
-            for(j<-0 until tileArray(i).size)
-            {
-                if (tileArray(i)(j).highlight|| tileArray(i)(j).highlightAttack)
-                    return tileArray(i)(j).coord
-            }
+            case(key, value) =>
+                if (value.isHighlighted())
+                    return value.coord
         }
         return new Point(-1, -1)
     }
@@ -245,10 +234,9 @@ object Map
       var result = true
       for(i <- 0 to d-1)
       {
-        result = result && tileArray(x.toInt)(y.toInt).seeThrough
+        result = result && tileMap((x.toInt,y.toInt)).seeThrough
         x += dx
         y += dy
-
       }
       return result
     }
@@ -260,12 +248,12 @@ object Map
      */
     def fromPoint(p:Point):Tile =
     {
-      return tileArray(p.x)(p.y)
+        return tileMap((p.x,p.y))
     }
 
     def isInbound(p:Point):Boolean =
     {
-        p.x >= 0 && p.y >= 0 && p.x < Map.tileArray.size && p.y < Map.tileArray(p.x).size
+        tileMap contains (p.x,p.y)
     }
 
 }

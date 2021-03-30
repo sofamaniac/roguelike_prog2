@@ -342,7 +342,6 @@ class Inventory(val owner:SentientEntity)
     var curInv = 0    // index of currently selected item
     var nbItem = 0    // number of item in inventory
 
-
     def display():Unit =
     {
       MessageHandler.inventory.clear()
