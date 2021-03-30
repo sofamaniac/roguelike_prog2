@@ -66,8 +66,6 @@ abstract class Item()
   def onUse(user:SentientEntity)
 }
 
-
-
 object Key{
   implicit val rw : ReadWriter[Key] =
     readwriter[ujson.Value].bimap[Key](
@@ -91,17 +89,16 @@ case class Key() extends Item
     }
   }
 }
-
-object Armor{
-  implicit val rw : ReadWriter[Armor] =
-    readwriter[ujson.Value].bimap[Armor](
+object Jewel{
+  implicit val rw : ReadWriter[Jewel] =
+    readwriter[ujson.Value].bimap[Jewel](
       e=> ujson.Arr(e.name, e.price),
-      json => new Armor // TODO differentiate based on armor piece type
+      json => new Jewel // TODO differentiate based on armor piece type
     )
 }
-case class Armor() extends Item
+case class Jewel() extends Item
 {
-  val name = "armor"
+  val name = "simple key"
   val description = ""
   val price = 0
   val rarity = 0
@@ -115,10 +112,85 @@ case class Armor() extends Item
     }
   }
 }
-class Helmet extends Armor {override val name = "basic helmet"}
-class Chestplate extends Armor {override val name = "basic chestplate"}
-class Leggings extends Armor {override val name = "basic leggings"}
-class Boots extends Armor {override val name = "basic boots"}
+
+object Armor{
+  implicit val rw : ReadWriter[Armor] =
+    readwriter[ujson.Value].bimap[Armor](
+      e=> ujson.Arr(e.name, e.price),
+      json => create(json) // TODO differentiate based on armor piece type
+    )
+
+  def create(json:ujson.Value):Armor = {
+    json("type").str match
+    {
+      case "helmet"     => new Helmet
+      case "chestplate" => new Chestplate
+      case "leggings"   => new Leggings
+      case "boots"      => new Boots
+    }
+  }
+}
+abstract case class Armor() extends Item
+{
+  val name = "armor"
+  val description = ""
+  val price = 0
+  val rarity = 0
+  val weight = 0
+  val armorClass = 0
+  def onUse(user:SentientEntity):Unit 
+  def defend(user:SentientEntity, attacker:SentientEntity):Unit=  // with this method, armor pieces can have effects on their owner and the attacker (eg thorns, heal,...)
+  {
+  }
+}
+class Helmet extends Armor 
+{
+  override val name = "basic helmet"
+  def onUse(user:SentientEntity):Unit = 
+  {
+    user.armorClass = user.armorClass - user.helmet.armorClass
+    user.inventory.add(user.helmet)
+    user.helmet = this
+    user.armorClass = user.armorClass + armorClass
+  }
+
+}
+class Chestplate extends Armor
+{
+  override val name = "basic chestplate"
+
+  def onUse(user:SentientEntity):Unit = 
+  {
+    user.armorClass = user.armorClass - user.chestplate.armorClass
+    user.inventory.add(user.chestplate)
+    user.chestplate = this
+    user.armorClass = user.armorClass + armorClass
+  }
+}
+class Leggings extends Armor
+{
+  override val name = "basic leggings"
+
+  def onUse(user:SentientEntity):Unit = 
+  {
+    user.armorClass = user.armorClass - user.helmet.armorClass
+    user.inventory.add(user.leggings)
+    user.leggings = this
+    user.armorClass = user.armorClass + armorClass
+  }
+}
+class Boots extends Armor
+{
+  override val name = "basic boots"
+
+  override def onUse(user:SentientEntity):Unit = 
+  {
+    user.armorClass = user.armorClass - user.boots.armorClass
+    user.inventory.add(user.boots)
+    user.boots = this
+    user.armorClass = user.armorClass + armorClass
+  }
+}
 
 object Scroll{
   implicit val rw : ReadWriter[Scroll] =

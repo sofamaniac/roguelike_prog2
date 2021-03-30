@@ -19,7 +19,7 @@
 		"modifDex": 0,
 		"basePow": 10,
 		"modifPow": 0,
-		"weapon":	"gun",
+		"weapon":	"sword",
 		"lootTable": [
 			{
 				"item":"simple_key",
@@ -50,7 +50,7 @@
 		"modifDex": 0,
 		"basePow": 10,
 		"modifPow": 0,
-		"weapon":	"gun",
+		"weapon":	"sword",
 		"loot_table": [
 			{
 				"item":"simple_key",

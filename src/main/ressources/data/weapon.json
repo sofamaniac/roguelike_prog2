@@ -32,9 +32,9 @@
 		"weight": 4,
 		"modif": "dex",
 		"zone": "cone",
-		"innerRange": 2,
+		"innerRange": 1,
 		"outerRange": 0,
-		"range": 6,
+		"range": 4,
 		"nbRoll": 1,
 		"damRoll": 4
 	}

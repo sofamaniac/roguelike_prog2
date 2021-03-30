@@ -69,7 +69,8 @@ object Enemy
     val basePow     = JsonTools.load(json, "basePow", defBPO)
     val modifPow    = JsonTools.load(json, "modifPow", defMPO)
     val fly         = JsonTools.load(json, "fly", defFly)
-    val weapon      = defWea   // TODO: to complete
+    val weapon      = if (JsonTools.contains(json, "weapon")) WeaponCreator.create(json("weapon").str) else defWea
+    println(weapon.name)
     val loot        = if (JsonTools.contains(json, "lootTable")) read[LootTable](json("lootTable")) else defLT
     val behaviour   = JsonTools.load(json, "behaviourType", defBeh)
     // TODO differentiate based on behaviour
@@ -102,12 +103,14 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
 
   def findBestMove():Point =
   {
-    var i = 0
+    var d = 0
     var j = 0
+    // we try attacking in each direction
     // if player is in range, does not move
-    for(i <- 0 until dirArray.size)
+    // TODO: maybe change to a foreach
+    for(d <- 0 until dirArray.size)
     {
-      if(weapon.zone(weapon, i, pos, Game.player.pos))
+      if(weapon.zone(weapon, d, pos, Game.player.pos))
       {
         return pos
       }
@@ -116,6 +119,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
     // else find a position that move it closer to the player 
     // in the future, enemies will have like the player a detection range,
     // outside of which they are unable to see the player
+    // TODO: change not to loop over tileArray
     val curD = pos.distance(Game.player.pos)
     for (i <- 0 until Map.tileArray.size)
     {
