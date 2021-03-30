@@ -28,6 +28,11 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var maxHP:Int           // health points
     var curHP:Int           // current hp
 
+    var curWeight = 0
+    var maxWeight = 25
+
+    var gold = 0
+    var lastHitBy:SentientEntity = this // We store the last entity than inflicted damage
     var armorClass:Int      // AC
     
     var baseAP:Int          // Action Points
@@ -70,9 +75,9 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var boots:Boots = new Boots
 
     // And the jewelry
-    var ring1:Item = new Armor
-    var ring2:Item = new Armor
-    var Pendant:Item = new Armor
+    var ring1:Item = new Jewel
+    var ring2:Item = new Jewel
+    var Pendant:Item = new Jewel
     
     val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
 
@@ -101,6 +106,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     def damage(dam:Int, from:SentientEntity):Unit=
     {
       // [from] can be used to apply a thorn-like effect
+      lastHitBy = from
       curHP -= dam
       if(curHP <= 0)
       {
@@ -139,32 +145,30 @@ abstract class SentientEntity(animation:Animation, pos:Point)
 
     def applyEffects():Unit={
       if (poisonDuration > 0){
-        curHP = curHP - poisonDamage
-        poisonDuration = poisonDuration -1
+        damage(poisonDamage, lastHitBy)
+        poisonDuration -= 1
       }
       if (onFireDuration > 0){
-        curHP = curHP - onFireDamage
-        onFireDuration += onFireDuration -1
+        damage(onFireDamage, lastHitBy)
+        onFireDuration -= 1
       }
       if (frozenDuration > 0){
-        curHP = curHP - frozenDamage
-        frozenDuration = frozenDuration -1
+        damage(frozenDamage, lastHitBy)
+        frozenDuration -= 1
       }
       if (paralyzedDuration > 0){
-        curHP = curHP - paralyzedDamage
-        paralyzedDuration = paralyzedDuration-1
+        damage(paralyzedDamage, lastHitBy)
+        paralyzedDuration -= 1
       }
       if (regenDuration > 0){
         heal(regenHP)
-        regenDuration = regenDuration - 1
+        regenDuration -= 1
       }
-
-      if (curHP <= 0)
-        kill()
     }
 
     def kill():Unit =
     {
+      lastHitBy.gold += 10  // TODO change to drop a random value
       Map.fromPoint(pos).entity=None
       loot() // TODO: change to not override it there is already an item
     }
@@ -226,7 +230,7 @@ class Cursor(dest:GraphicsContext)
     val nextX = pos.x + dir.x
     val nextY = pos.y + dir.y
     val next = new Point(nextX, nextY)
-    if (Map.isInbound(next) && Map.fromPoint(next).isVisible() && (!limitation || Map.fromPoint(next).isHighlighted()))
+    if (Map.isInbound(next) && Map.fromPoint(next).isVisible() && Map.fromPoint(next).walkable && (!limitation || Map.fromPoint(next).isHighlighted()))
     {
       Map.fromPoint(pos).select(false)
       pos.add(dir)
@@ -323,8 +327,10 @@ class Player()
       zone.clear()
       zone.addMessage("HP:%d/%d\t\tArmor:%d".format(curHP, maxHP, armorClass))
       zone.addMessage("AP:%d/%d(+%d)\t\tSanity:%d/%d".format(curAP, baseAP, modifAP, sanity, maxSanity))
-      zone.addMessage("Str:%d(+%d)\t\tDex:%d(+%d)".format(baseStr, modifStr, baseDex, modifDex))
-      zone.addMessage("Pow:%d(+%d)".format(basePow, modifPow))
+      zone.addMessage("Str:%d(+%d)\t\t\tDex:%d(+%d)".format(baseStr, modifStr, baseDex, modifDex))
+      zone.addMessage("Pow:%d(+%d)\t\t\tWeight:%d/%d".format(basePow, modifPow, curWeight, maxWeight))
+      zone.addMessage("Helmet:%s(+%d)\t\tChesplate:%s(+%d)".format(helmet.name, helmet.armorClass, chestplate.name, chestplate.armorClass))
+      zone.addMessage("Leggings:%s(+%d)\t\tBoots:%s(+%d)".format(leggings.name, leggings.armorClass, boots.name, boots.armorClass))
     }
 }
 
@@ -340,6 +346,7 @@ class Inventory(val owner:SentientEntity)
     def display():Unit =
     {
       MessageHandler.inventory.clear()
+      Game.player.displayInfo()   // TODO: not great of referencing the player directly
       var i = 0
       for(j <- inventory)
       {
@@ -354,7 +361,6 @@ class Inventory(val owner:SentientEntity)
         }
         i+=1
       }
-      MessageHandler.show()
     }
     def prevPage():Unit =
     {
@@ -383,6 +389,7 @@ class Inventory(val owner:SentientEntity)
     {
       inventory = inventory.filterNot(_ == i)
       nbItem -= 1
+      owner.curWeight -= i.weight
       curInv = curInv.min(nbItem -1)
       display()
     }
@@ -390,6 +397,7 @@ class Inventory(val owner:SentientEntity)
     {
       inventory = inventory :+ i
       nbItem += 1
+      owner.curWeight += i.weight
       display()
     }
     def drop():Unit =

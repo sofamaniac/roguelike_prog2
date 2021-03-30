@@ -184,8 +184,11 @@ object Game
       Map.fromPoint(player.pos).item match
       {
         case None    => ()
-        case Some(i) => player.inventory.add(i)
-                        Map.fromPoint(player.pos).item = None
+        case Some(i) => if (player.curWeight + i.weight <= player.maxWeight)
+                        {
+                          player.inventory.add(i)
+                          Map.fromPoint(player.pos).item = None
+                        }
       }
     }
 }
