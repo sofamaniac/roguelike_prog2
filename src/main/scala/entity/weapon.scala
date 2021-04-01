@@ -10,7 +10,7 @@ import entity._
 import position.Zones
 import map.Map
 import messageHandler._
-
+import game._
 
 object Weapon{
   implicit val rw: ReadWriter[Weapon] =
@@ -22,6 +22,7 @@ object Weapon{
   // We define the default value for a weapon
   val defName = ""
   val defDescription = "That's a nice item you got here\nif only you knew what it does"
+  val defType = "weapon"
   val defPrice = 0
   val defRarity = 0
   val defWeight = 0
@@ -44,6 +45,9 @@ object Weapon{
   val defParaDam = 0
 
   val defVampirism = 0 // Integer between 0 and 100 representing the proportion of damage made that the attacker gets added to its HP
+
+  val defCost = 0
+  val defMinPow = 0
   
   var nameToCreate = ""
   def create(_json:ujson.Value):Weapon =
@@ -78,9 +82,18 @@ object Weapon{
     val paraDam = JsonTools.load(json, "paralyzedDamage", defParaDam)
 
     val vampirism = JsonTools.load(json, "vampirism", defVampirism)
+    val cost = JsonTools.load(json, "spellCost", defCost)   // Only applicable to scrolls and grimoires
+    val minPow = JsonTools.load(json, "minPow", defMinPow)  // Only for grimoires
 
-    return new Weapon(name, description, price, rarity, weight, modif, zone, inRange, outRange, range, nbRoll, damRoll,
-                      fireDur, fireDam, poisDur, poisDam, frozDur, frozDam, paraDur, paraDam, vampirism)
+    JsonTools.load(json, "type", defType) match
+    {
+      case "scroll" =>  new Scroll(name, description, price, rarity, weight, modif, zone, inRange, outRange, range, nbRoll, damRoll,
+                                  fireDur, fireDam, poisDur, poisDam, frozDur, frozDam, paraDur, paraDam, vampirism, cost)
+      case "grimoire" => new Grimoire(name, description, price, rarity, weight, modif, zone, inRange, outRange, range, nbRoll, damRoll,
+                                  fireDur, fireDam, poisDur, poisDam, frozDur, frozDam, paraDur, paraDam, vampirism, cost, minPow)
+      case _ =>         new Weapon(name, description, price, rarity, weight, modif, zone, inRange, outRange, range, nbRoll, damRoll,
+                                  fireDur, fireDam, poisDur, poisDam, frozDur, frozDam, paraDur, paraDam, vampirism)
+    }
   }
 
   def loadZone(json:ujson.Value):Zones.definition =
@@ -144,15 +157,13 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
 
         // TODO:change to use a function in Map or a foreach
         
-        for (i<-0 until Map.tileArray.size)
+        Map.tileMap.foreach
         {
-            for(j<-0 until Map.tileArray(i).size)
-            {
-                if (zone(this, dir, attacker.pos, Map.tileArray(i)(j).coord) && !attacker.pos.equals(new Point(i,j)))
+          case(key, value) =>
+                if (zone(this, dir, attacker.pos, value.coord) && !attacker.pos.equals(value.coord))
                 {
-                    _attack(Map.tileArray(i)(j).coord, attacker, bonus/10)
+                    _attack(value.coord, attacker, bonus/10)
                 }
-            }
         }
     }
     def onUse(owner:SentientEntity):Unit =
@@ -161,4 +172,54 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
       owner.weapon = this
       owner.inventory.remove(this)
     }
+}
+abstract class MagicWeapon( name:String,  description:String,   price:Int,  rarity:Int,  weight:Int,  modif:String,  zone:Zones.definition,
+              innerRange:Int,  outerRange:Int,  range:Int,  numberRoll:Int,  damageRoll:Int,
+              fireDuration:Int,  fireDamage:Int,  poisonDuration:Int,  poisonDamage:Int,
+              frozenDuration:Int,  frozenDamage:Int,  paralyzedDuration:Int,  paralyzedDamage:Int,  vampirism:Int,  cost:Int) 
+              
+             extends Weapon(name, description, price, rarity:Int, weight, modif, zone, innerRange, outerRange, range, numberRoll, damageRoll,
+             fireDuration, fireDamage, poisonDuration, poisonDamage, frozenDuration, frozenDamage, paralyzedDuration, paralyzedDamage, vampirism)
+{
+  override def onUse(owner:SentientEntity):Unit = 
+  {
+    // Only the player can call this function
+    Game.changeWeapon(this)
+    Game.setPhase("attack", true)
+  }
+  override def attack(dest:Point, attacker:SentientEntity, dir:Int) =
+  {
+    super.attack(dest, attacker, dir)
+    attacker.applyMagicCost(cost)
+  }
+}
+
+class Scroll( name:String,  description:String,   price:Int,  rarity:Int,  weight:Int,  modif:String,  zone:Zones.definition,
+              innerRange:Int,  outerRange:Int,  range:Int,  numberRoll:Int,  damageRoll:Int,
+              fireDuration:Int,  fireDamage:Int,  poisonDuration:Int,  poisonDamage:Int,
+              frozenDuration:Int,  frozenDamage:Int,  paralyzedDuration:Int,  paralyzedDamage:Int,  vampirism:Int,  cost:Int) 
+              
+             extends MagicWeapon(name, description, price, rarity:Int, weight, modif, zone, innerRange, outerRange, range, numberRoll, damageRoll,
+             fireDuration, fireDamage, poisonDuration, poisonDamage, frozenDuration, frozenDamage, paralyzedDuration, paralyzedDamage, vampirism, cost)
+{
+  override def attack(dest:Point, attacker:SentientEntity, dir:Int) =
+  {
+    super.attack(dest, attacker, dir)
+    attacker.inventory.remove(this)
+  }
+}
+
+class Grimoire( name:String,  description:String,   price:Int,  rarity:Int,  weight:Int,  modif:String,  zone:Zones.definition,
+              innerRange:Int,  outerRange:Int,  range:Int,  numberRoll:Int,  damageRoll:Int,
+              fireDuration:Int,  fireDamage:Int,  poisonDuration:Int,  poisonDamage:Int,
+              frozenDuration:Int,  frozenDamage:Int,  paralyzedDuration:Int,  paralyzedDamage:Int,  vampirism:Int,  cost:Int,  minPow:Int) 
+              
+             extends MagicWeapon(name, description, price, rarity:Int, weight, modif, zone, innerRange, outerRange, range, numberRoll, damageRoll,
+             fireDuration, fireDamage, poisonDuration, poisonDamage, frozenDuration, frozenDamage, paralyzedDuration, paralyzedDamage, vampirism, cost)
+{
+  override def onUse(owner:SentientEntity):Unit =
+  {
+    if (owner.basePow + owner.modifPow >= minPow)
+      super.onUse(owner)
+  }
 }

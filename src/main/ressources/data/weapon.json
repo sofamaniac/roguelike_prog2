@@ -37,5 +37,20 @@
 		"range": 4,
 		"nbRoll": 1,
 		"damRoll": 4
+	},
+	{
+		"type": "grimoire",
+		"name": "Fire Ball",
+		"description": "Launch a fireball",
+		"weight": 0,
+		"modif": "pow",
+		"zone": "ray",
+		"innerRange": 1,
+		"outerRange": 0,
+		"range": 4,
+		"fireDuration": 3,
+		"fireDamage": 7,
+		"spellCost": 5,
+		"nbRoll": 0
 	}
 ]
