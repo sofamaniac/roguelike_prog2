@@ -11,6 +11,18 @@ import position.Zones
 import map.Map
 import messageHandler._
 import game._
+import scala.collection.mutable.{Map => MapObject}
+
+// We simulate type disjunction
+// arguments for a weapon can be of three types only : Integer, String or Zone
+sealed trait ArgsType{ 
+  def int():Int  =    { return 0 }
+  def str():String =  { return ""}
+  def zone():Zones.definition  ={return Zones.classic}
+}
+case class Num(i:Int) extends ArgsType{ override def int():Int = {return i}}
+case class Str(s:String) extends ArgsType{ override def str():String = {return s}}
+case class Zone(z:Zones.definition) extends ArgsType{ override def zone():Zones.definition = {return z}}
 
 object Weapon{
   implicit val rw: ReadWriter[Weapon] =
@@ -59,40 +71,40 @@ object Weapon{
     else
       json = json(index)
 
-    val name = JsonTools.load(json, "name", defName)
-    val description = JsonTools.load(json, "description", defDescription)
-    val price = JsonTools.load(json, "price", defPrice)
-    val rarity = JsonTools.load(json, "rarity", defRarity)
-    val weight = JsonTools.load(json, "weight", defWeight)
-    val modif = JsonTools.load(json, "modif", defModif)
-    val zone = loadZone(json) // TODO
-    val inRange = JsonTools.load(json, "innerRange", defInR)
-    val outRange = JsonTools.load(json, "outerRange", defOutR)
-    val range = JsonTools.load(json, "range", defRange)
-    val nbRoll = JsonTools.load(json, "nbRoll", defNbRoll)
-    val damRoll = JsonTools.load(json, "damRoll", defDamRoll)
+    var args = MapObject[String, ArgsType]()
 
-    val fireDur = JsonTools.load(json, "fireDuration", defFireDur)
-    val fireDam = JsonTools.load(json, "fireDammage", defFireDam)
-    val poisDur = JsonTools.load(json, "poisonDuration", defPoisDur)
-    val poisDam = JsonTools.load(json, "poisonDamage", defPoisDam)
-    val frozDur = JsonTools.load(json, "frozenDuration", defFrozDur)
-    val frozDam = JsonTools.load(json, "frozenDamage", defFrozDam)
-    val paraDur = JsonTools.load(json, "paralyzedDuration", defParaDur)
-    val paraDam = JsonTools.load(json, "paralyzedDamage", defParaDam)
+    args += "name"        -> Str(JsonTools.load(json, "name", defName))
+    args += "description" -> Str(JsonTools.load(json, "description", defDescription))
+    args += "price"       -> Num(JsonTools.load(json, "price", defPrice))
+    args += "rarity"      -> Num(JsonTools.load(json, "rarity", defRarity))
+    args += "weight"      -> Num(JsonTools.load(json, "weight", defWeight))
+    args += "modif"       -> Str(JsonTools.load(json, "modif", defModif))
+    args += "zone"        -> Zone(loadZone(json))
+    args += "innerRange"  -> Num(JsonTools.load(json, "innerRange", defInR))
+    args += "outerRange"  -> Num(JsonTools.load(json, "outerRange", defOutR))
+    args += "range"       -> Num(JsonTools.load(json, "range", defRange))
+    args += "numberRoll"  -> Num(JsonTools.load(json, "nbRoll", defNbRoll))
+    args += "damageRoll"  -> Num(JsonTools.load(json, "damRoll", defDamRoll))
 
-    val vampirism = JsonTools.load(json, "vampirism", defVampirism)
+    args += "fireDuration"      -> Num(JsonTools.load(json, "fireDuration", defFireDur))
+    args += "fireDamage"        -> Num(JsonTools.load(json, "fireDammage", defFireDam))
+    args += "poisonDuration"    -> Num(JsonTools.load(json, "poisonDuration", defPoisDur))
+    args += "poisonDamage"      -> Num(JsonTools.load(json, "poisonDamage", defPoisDam))
+    args += "frozenDuration"    -> Num(JsonTools.load(json, "frozenDuration", defFrozDur))
+    args += "frozenDamage"      -> Num(JsonTools.load(json, "frozenDamage", defFrozDam))
+    args += "paralyzedDuration" -> Num(JsonTools.load(json, "paralyzedDuration", defParaDur))
+    args += "paralyzedDamage"   -> Num(JsonTools.load(json, "paralyzedDamage", defParaDam))
+
+    args += "vampirism" -> Num(JsonTools.load(json, "vampirism", defVampirism))
+    
     val cost = JsonTools.load(json, "spellCost", defCost)   // Only applicable to scrolls and grimoires
     val minPow = JsonTools.load(json, "minPow", defMinPow)  // Only for grimoires
 
     JsonTools.load(json, "type", defType) match
     {
-      case "scroll" =>  new Scroll(name, description, price, rarity, weight, modif, zone, inRange, outRange, range, nbRoll, damRoll,
-                                  fireDur, fireDam, poisDur, poisDam, frozDur, frozDam, paraDur, paraDam, vampirism, cost)
-      case "grimoire" => new Grimoire(name, description, price, rarity, weight, modif, zone, inRange, outRange, range, nbRoll, damRoll,
-                                  fireDur, fireDam, poisDur, poisDam, frozDur, frozDam, paraDur, paraDam, vampirism, cost, minPow)
-      case _ =>         new Weapon(name, description, price, rarity, weight, modif, zone, inRange, outRange, range, nbRoll, damRoll,
-                                  fireDur, fireDam, poisDur, poisDam, frozDur, frozDam, paraDur, paraDam, vampirism)
+      case "scroll" =>  new Scroll(args, cost)
+      case "grimoire" => new Grimoire(args, cost, minPow)
+      case _ =>         new Weapon(args)
     }
   }
 
@@ -116,6 +128,14 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
              val fireDuration:Int, val fireDamage:Int, val poisonDuration:Int, val poisonDamage:Int,
              val frozenDuration:Int, val frozenDamage:Int, val paralyzedDuration:Int, val paralyzedDamage:Int, val vampirism:Int) extends Item
 {
+    def this(map:MapObject[String, ArgsType]) =
+    {
+      // Using the ersatz of type disjunction we defined, we can make a much simpler constructor for weapon
+      this(map("name").str, map("description").str, map("price").int, map("rarity").int, map("weight").int, map("modif").str, map("zone").zone(), 
+            map("innerRange").int, map("outerRange").int, map("range").int, map("numberRoll").int, map("damageRoll").int, map("fireDuration").int, map("fireDamage").int,
+            map("poisonDuration").int, map("poisonDamage").int, map("frozenDuration").int, map("frozenDamage").int,
+            map("paralyzedDuration").int, map("paralyzedDamage").int, map("vampirism").int)
+    }
     def roll(max:Int=100) = 
     {
         1 + scala.util.Random.nextInt(max)
@@ -173,13 +193,7 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
       owner.inventory.remove(this)
     }
 }
-abstract class MagicWeapon( name:String,  description:String,   price:Int,  rarity:Int,  weight:Int,  modif:String,  zone:Zones.definition,
-              innerRange:Int,  outerRange:Int,  range:Int,  numberRoll:Int,  damageRoll:Int,
-              fireDuration:Int,  fireDamage:Int,  poisonDuration:Int,  poisonDamage:Int,
-              frozenDuration:Int,  frozenDamage:Int,  paralyzedDuration:Int,  paralyzedDamage:Int,  vampirism:Int,  cost:Int) 
-              
-             extends Weapon(name, description, price, rarity:Int, weight, modif, zone, innerRange, outerRange, range, numberRoll, damageRoll,
-             fireDuration, fireDamage, poisonDuration, poisonDamage, frozenDuration, frozenDamage, paralyzedDuration, paralyzedDamage, vampirism)
+abstract class MagicWeapon(args:MapObject[String, ArgsType], val cost:Int)  extends Weapon(args)
 {
   override def onUse(owner:SentientEntity):Unit = 
   {
@@ -194,13 +208,7 @@ abstract class MagicWeapon( name:String,  description:String,   price:Int,  rari
   }
 }
 
-class Scroll( name:String,  description:String,   price:Int,  rarity:Int,  weight:Int,  modif:String,  zone:Zones.definition,
-              innerRange:Int,  outerRange:Int,  range:Int,  numberRoll:Int,  damageRoll:Int,
-              fireDuration:Int,  fireDamage:Int,  poisonDuration:Int,  poisonDamage:Int,
-              frozenDuration:Int,  frozenDamage:Int,  paralyzedDuration:Int,  paralyzedDamage:Int,  vampirism:Int,  cost:Int) 
-              
-             extends MagicWeapon(name, description, price, rarity:Int, weight, modif, zone, innerRange, outerRange, range, numberRoll, damageRoll,
-             fireDuration, fireDamage, poisonDuration, poisonDamage, frozenDuration, frozenDamage, paralyzedDuration, paralyzedDamage, vampirism, cost)
+class Scroll(args:MapObject[String, ArgsType], cost:Int)  extends MagicWeapon(args, cost)
 {
   override def attack(dest:Point, attacker:SentientEntity, dir:Int) =
   {
@@ -209,13 +217,7 @@ class Scroll( name:String,  description:String,   price:Int,  rarity:Int,  weigh
   }
 }
 
-class Grimoire( name:String,  description:String,   price:Int,  rarity:Int,  weight:Int,  modif:String,  zone:Zones.definition,
-              innerRange:Int,  outerRange:Int,  range:Int,  numberRoll:Int,  damageRoll:Int,
-              fireDuration:Int,  fireDamage:Int,  poisonDuration:Int,  poisonDamage:Int,
-              frozenDuration:Int,  frozenDamage:Int,  paralyzedDuration:Int,  paralyzedDamage:Int,  vampirism:Int,  cost:Int,  minPow:Int) 
-              
-             extends MagicWeapon(name, description, price, rarity:Int, weight, modif, zone, innerRange, outerRange, range, numberRoll, damageRoll,
-             fireDuration, fireDamage, poisonDuration, poisonDamage, frozenDuration, frozenDamage, paralyzedDuration, paralyzedDamage, vampirism, cost)
+class Grimoire(args:MapObject[String, ArgsType], cost:Int, val minPow:Int)  extends MagicWeapon(args, cost)
 {
   override def onUse(owner:SentientEntity):Unit =
   {

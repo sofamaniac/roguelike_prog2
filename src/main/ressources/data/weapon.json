@@ -10,7 +10,7 @@
 		"innerRange": 1,
 		"outerRange": 1,
 		"range": 1,
-		"nbRoll": 2
+		"numberRoll": 2
 	},
 	{
 		"type": "weapon",
@@ -22,8 +22,8 @@
 		"innerRange": 1,
 		"outerRange": 5,
 		"range": 5,
-		"nbRoll": 2,
-		"damRoll": 4
+		"numberRoll": 2,
+		"damageRoll": 4
 	},
 	{
 		"type": "weapon",
@@ -35,8 +35,8 @@
 		"innerRange": 1,
 		"outerRange": 0,
 		"range": 4,
-		"nbRoll": 1,
-		"damRoll": 4
+		"numberRoll": 1,
+		"damageRoll": 4
 	},
 	{
 		"type": "grimoire",
@@ -51,6 +51,6 @@
 		"fireDuration": 3,
 		"fireDamage": 7,
 		"spellCost": 5,
-		"nbRoll": 0
+		"numberRoll": 0
 	}
 ]
