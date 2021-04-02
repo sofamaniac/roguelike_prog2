@@ -24,9 +24,9 @@ class Tile(val coord:Point)
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
     var highlightAttack:Boolean = false // to show the zone that will take dammage
 
-    val highlightAttackTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightAttackTexture.png", 1), coord, GameWindow.contextGame)
-    val highlightTexture:GraphicEntity = new GraphicEntity(AnimationLoader.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
-    var backTexture:GraphicEntity      = new GraphicEntity(AnimationLoader.load("texture.png", 1), coord, GameWindow.contextGame)
+    val highlightAttackTexture:GraphicEntity = new GraphicEntity(Animation.load("highlightAttackTexture.png", 1), coord, GameWindow.contextGame)
+    val highlightTexture:GraphicEntity = new GraphicEntity(Animation.load("highlightTexture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity      = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
     var frontTexture:Option[GraphicEntity] = None
     val seenTexture:GraphicEntity      = new GraphicEntity(Animation.load("seenTexture.png", 1), coord, GameWindow.contextGame)
     val unseenTexture:GraphicEntity    = new GraphicEntity(Animation.load("unseenTexture.png", 1), coord, GameWindow.contextGame)
@@ -43,7 +43,7 @@ class Tile(val coord:Point)
               case None => ()
               case Some(g) => g.show()
             }
-            if(isHighlighted())
+            if(highlight)
             {
                 highlightTexture.show()
             }

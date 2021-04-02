@@ -16,6 +16,7 @@ object Game
     val player = new Player()
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
+    var currentWeapon = player.weapon
 
     var enemiesVector:Vector[Enemy] = Vector()
 
@@ -119,8 +120,8 @@ object Game
       if(currentPhase == "attack")
       {
         // update attack when zone when rotation
-        Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p), true)
-        Map.setHighlight((p:Point)=>p.distance(player.pos) >= player.weapon.innerRange && p.distance(player.pos) <= player.weapon.outerRange, erase=false)
+        Map.setHighlight((p:Point)=>currentWeapon.zone(currentWeapon, cursor.currentDir, player.pos, p), true)
+        Map.setHighlight((p:Point)=>p.distance(player.pos) >= currentWeapon.innerRange && p.distance(player.pos) <= currentWeapon.outerRange, erase=false)
       }
 
     }
@@ -130,6 +131,7 @@ object Game
         // generate map : already done for now
         player.move(new Point(0, 0))
         player.inventory.add(WeaponCreator.create())
+        player.inventory.add(WeaponCreator.create("Fire Ball"))
         //player.inventory.add(new Weapon("Ray Weapon example", "", 1000000, 5, "pow", Zones.ray, 1, 0, 8, 5, 8))
         //player.inventory.add(new Weapon("Single Weapon example", "", 1000, 5, "pow", Zones.classic, 1, 5, 8, 5, 8))
         player.inventory.add(new Bandages)
@@ -150,6 +152,8 @@ object Game
     {
         player.endTurn()
         player.inventory.display()
+
+        currentWeapon = player.weapon
 
         enemiesVector = enemiesVector.filter(_.curHP > 0) // We remove enemies killed by the player
         enemiesVector.foreach
@@ -177,6 +181,11 @@ object Game
           initialization()
         }
         player.displayInfo() // We update the text on screen to update the player's status
+    }
+
+    def changeWeapon(weapon:Weapon):Unit=
+    {
+      currentWeapon = weapon
     }
 
     def pickUp() =
