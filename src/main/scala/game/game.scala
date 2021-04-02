@@ -48,7 +48,7 @@ object Game
         }
         else if(phase == "attack")
         {
-            Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon, cursor.currentDir, player.pos, p), true)
+            Map.setHighlight((p:Point)=>player.weapon.zone(player.weapon.innerRange, player.weapon.range, cursor.currentDir, player.pos, p), true)
             // We set the selection of the case to attack for weapon with non-zero outerrange
             Map.setHighlight((p:Point)=>p.distance(player.pos) >= player.weapon.innerRange && p.distance(player.pos) <= player.weapon.outerRange, erase=false)
             val p = Map.findHighlight()
@@ -120,7 +120,7 @@ object Game
       if(currentPhase == "attack")
       {
         // update attack when zone when rotation
-        Map.setHighlight((p:Point)=>currentWeapon.zone(currentWeapon, cursor.currentDir, player.pos, p), true)
+        Map.setHighlight((p:Point)=>currentWeapon.zone(currentWeapon.innerRange, currentWeapon.range, cursor.currentDir, player.pos, p), true)
         Map.setHighlight((p:Point)=>p.distance(player.pos) >= currentWeapon.innerRange && p.distance(player.pos) <= currentWeapon.outerRange, erase=false)
       }
 

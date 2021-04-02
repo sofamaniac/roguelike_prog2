@@ -91,7 +91,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
     var i = 0
     for(i <- 0 until dirArray.size)
     {
-      if(curAP > 0 && weapon.zone(weapon, i, pos, Game.player.pos))
+      if(curAP > 0 && weapon.zone(weapon.innerRange, weapon.range, i, pos, Game.player.pos))
       {
         // the fun consequence of this way of attacking is that enemies can damage other enemies
         weapon.attack(Game.player.pos, this, i)
@@ -107,7 +107,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // if player is in range, does not move
         for(i <- 0 until dirArray.size)
         {
-            if(weapon.zone(weapon, i, pos, Game.player.pos))
+            if(weapon.zone(weapon.innerRange, weapon.range, i, pos, Game.player.pos))
             {
                 return pos
             }
