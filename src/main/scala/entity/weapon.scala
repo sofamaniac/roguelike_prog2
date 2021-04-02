@@ -19,9 +19,9 @@ sealed trait ArgsType{
   def str():String =  { return ""}
   def zone():Zones.definition  ={return Zones.classic}
 }
-case class Num(i:Int) extends ArgsType{ override def int():Int = {return i}}
-case class Str(s:String) extends ArgsType{ override def str():String = {return s}}
-case class Zone(z:Zones.definition) extends ArgsType{ override def zone():Zones.definition = {return z}}
+case class Num(val i:Int) extends ArgsType{ override def int():Int = {return i}}
+case class Str(val s:String) extends ArgsType{ override def str():String = {return s}}
+case class Zone(val z:Zones.definition) extends ArgsType{ override def zone():Zones.definition = {return z}}
 
 object Weapon{
   implicit val rw: ReadWriter[Weapon] =

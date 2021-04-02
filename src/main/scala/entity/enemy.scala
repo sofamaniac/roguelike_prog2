@@ -14,7 +14,9 @@ import map._
 import json._
 import scala.util.{Random => Rand}
 
+import scala.collection.mutable.{Map => MapObject}
 import upickle.default._
+
 object Enemy
 {
   // We setup the default value for every parameter of enemy
@@ -54,26 +56,31 @@ object Enemy
       json = JsonTools.getRandom(json)
     else
       json = json(index)
-
+    
+    var args = MapObject[Int]()
 
     val animation   = if (JsonTools.contains(json, "animation")) Animation.loadJson(json("animation")) else defAnimation
     val name        = JsonTools.load(json, "name", defName)
-    val maxHP       = JsonTools.load(json, "maxHP", defMHP)
-    val armorClass  = JsonTools.load(json, "armorClass", defAC)
-    val baseAP      = JsonTools.load(json, "baseAP", defBAP)
-    val modifAP     = JsonTools.load(json, "modifAP", defMAP)
-    val baseStr     = JsonTools.load(json, "baseStr", defBST)
-    val modifStr    = JsonTools.load(json, "modifStr", defMST) 
-    val baseDex     = JsonTools.load(json, "baseDex", defBDE)
-    val modifDex    = JsonTools.load(json, "modifDex", defMDE)
-    val basePow     = JsonTools.load(json, "basePow", defBPO)
-    val modifPow    = JsonTools.load(json, "modifPow", defMPO)
+    args += "maxHP" -> JsonTools.load(json, "maxHP", defMHP)
+    args += "armorClass" -> JsonTools.load(json, "armorClass", defAC)
+    args += "baseAP" -> JsonTools.load(json, "baseAP", defBAP)
+    args += "modifAP" -> JsonTools.load(json, "modifAP", defMAP)
+    args += "baseStr" -> JsonTools.load(json, "baseStr", defBST)
+    args += "modifStr" -> JsonTools.load(json, "modifStr", defMST) 
+    args += "baseDex" -> JsonTools.load(json, "baseDex", defBDE)
+    args += "modifDex" -> JsonTools.load(json, "modifDex", defMDE)
+    args += "basePow" -> JsonTools.load(json, "basePow", defBPO)
+    args += "modifPow" -> JsonTools.load(json, "modifPow", defMPO)
     val fly         = JsonTools.load(json, "fly", defFly)
     val weapon      = if (JsonTools.contains(json, "weapon")) WeaponCreator.create(json("weapon").str) else defWea
     val loot        = if (JsonTools.contains(json, "lootTable")) read[LootTable](json("lootTable")) else defLT
     val behaviour   = JsonTools.load(json, "behaviourType", defBeh)
     // TODO differentiate based on behaviour
-    return Enemy(animation, new Point(5, 3), name, maxHP, armorClass, baseAP, modifAP, baseStr, modifStr, baseDex, modifDex, basePow, modifPow, fly, weapon, loot)
+    behaviour match
+    {
+      case "neutral"  => new NeutralNPC(animation, new Point(6,7), name, fly, weapon, loot, args)
+      case "coward"   => new CowardNPC(animation, new Point(2,3), name, fly, weapon, loot, args)
+      case _          => Enemy(animation, new Point(5, 3), name, fly, weapon, loot, args)
   }
 }
 // I don't know why I need to overwrite pos and animation
@@ -81,6 +88,11 @@ object Enemy
 case class Enemy(override val animation:Animation, override val pos:Point, val name:String, var maxHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var fly:Boolean, var weapon:Weapon, var lootTable:LootTable)
     extends SentientEntity(animation, pos)
 {
+  def this(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, lootTable:LootTable, map:MapObject[Int])
+  {
+    this(animation, pos, name, map("maxHP"), map("armorClass"), map("baseAP"), map("modifAP"), map("baseStr"), map("modifStr"), map("baseDex"), map("modifDex"), map("basePow")
+          map("modifPow"), fly, weapon, lootTable)
+  }
   var curHP = maxHP
   var curAP = baseAP
 
@@ -112,7 +124,6 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
                 return pos
             }
         }
-
         // else find a position that move it closer to the player 
         // in the future, enemies will have like the player a detection range,
         // outside of which they are unable to see the player
@@ -132,6 +143,21 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
     val item = lootTable.loot()
     item.pos.setPoint(pos)
     Map.fromPoint(pos).item = Some(item)
+  }
+}
+
+class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[Int])
+  extends Enemy(animation, pos, name, fly, weapon, loot, map)
+{
+  var neutral:Boolean = true
+  
+  override def IA()
+  {
+    if (!neutral || lastHitBy == Game.player)
+    {
+      neutral = true
+      super.IA()
+    }
   }
 }
 
