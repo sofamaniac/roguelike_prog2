@@ -43,7 +43,7 @@ object Game
         cursor.visible = true
         if(phase == "move")
         {
-            Map.setHighlight((p:Point)=>(0< player.pos.distance(p) && player.pos.distance(p) <= player.curAP))
+            Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
             cursor.limitation = true
         }
         else if(phase == "attack")

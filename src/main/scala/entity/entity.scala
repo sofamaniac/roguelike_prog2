@@ -319,6 +319,17 @@ class Player()
       // TODO
     }
 
+    override def damage(dam:Int, from:SentientEntity):Unit = 
+    {
+      super.damage(dam, from)
+      displayInfo()
+    }
+    override def applyMagicCost(cost:Int):Unit =
+    {
+      super.applyMagicCost(cost:Int)
+      displayInfo()
+    }
+
     def dodge():Boolean = {return false}
 
     def getSeeRange():Int = 
@@ -332,6 +343,7 @@ class Player()
         curAP = 0
         Game.currentWeapon.attack(dest, this, Game.cursor.currentDir)
       }
+      displayInfo()
     }
 
     def displayInfo():Unit = 
