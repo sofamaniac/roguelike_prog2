@@ -70,7 +70,6 @@ object Enemy
     val modifPow    = JsonTools.load(json, "modifPow", defMPO)
     val fly         = JsonTools.load(json, "fly", defFly)
     val weapon      = if (JsonTools.contains(json, "weapon")) WeaponCreator.create(json("weapon").str) else defWea
-    println(weapon.name)
     val loot        = if (JsonTools.contains(json, "lootTable")) read[LootTable](json("lootTable")) else defLT
     val behaviour   = JsonTools.load(json, "behaviourType", defBeh)
     // TODO differentiate based on behaviour

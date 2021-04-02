@@ -166,6 +166,16 @@ abstract class SentientEntity(animation:Animation, pos:Point)
       }
     }
 
+    def applyMagicCost(cost:Int):Unit =
+    {
+      // This function can be changed to add resistance to the costs of magic use
+      curHP -= cost
+      if(curHP <= 0)
+      {
+        kill()
+      }
+    }
+
     def kill():Unit =
     {
       lastHitBy.gold += 10  // TODO change to drop a random value
@@ -318,13 +328,17 @@ class Player()
 
     def attack(dest:Point):Unit =
     {
-      super.attack(dest, Game.cursor.currentDir)
+      if(curAP > 0) {
+        curAP = 0
+        Game.currentWeapon.attack(dest, this, Game.cursor.currentDir)
+      }
     }
 
     def displayInfo():Unit = 
     {
       val zone = MessageHandler.playerInfo
       zone.clear()
+      zone.addMessage("Gold:%d".format(gold))
       zone.addMessage("HP:%d/%d\t\tArmor:%d".format(curHP, maxHP, armorClass))
       zone.addMessage("AP:%d/%d(+%d)\t\tSanity:%d/%d".format(curAP, baseAP, modifAP, sanity, maxSanity))
       zone.addMessage("Str:%d(+%d)\t\t\tDex:%d(+%d)".format(baseStr, modifStr, baseDex, modifDex))

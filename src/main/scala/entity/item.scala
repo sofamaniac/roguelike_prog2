@@ -33,8 +33,8 @@ object Item {
     var result = json("type").str match
     {
       case "weapon"   => WeaponCreator.create(json("name").str)
-      case "scroll"   => read[Scroll](json)
-      case "grimoire" => read[Grimoire](json)
+      case "scroll"   => WeaponCreator.create(json("name").str)
+      case "grimoire" => WeaponCreator.create(json("name").str)
       case "key"      => read[Key](json)
       case "bandages" => read[Bandages](json)
       case "armor"    => read[Armor](json)
@@ -121,7 +121,7 @@ object Armor{
     )
 
   def create(json:ujson.Value):Armor = {
-    json("type").str match
+    json("part").str match
     {
       case "helmet"     => new Helmet
       case "chestplate" => new Chestplate
@@ -138,6 +138,7 @@ abstract case class Armor() extends Item
   val rarity = 0
   val weight = 0
   val armorClass = 0
+  // TODO add more modif (fire resistance, ...)
   def onUse(user:SentientEntity):Unit 
   def defend(user:SentientEntity, attacker:SentientEntity):Unit=  // with this method, armor pieces can have effects on their owner and the attacker (eg thorns, heal,...)
   {
@@ -189,55 +190,6 @@ class Boots extends Armor
     user.inventory.add(user.boots)
     user.boots = this
     user.armorClass = user.armorClass + armorClass
-  }
-}
-
-object Scroll{
-  implicit val rw : ReadWriter[Scroll] =
-    readwriter[ujson.Value].bimap[Scroll](
-      e=> ujson.Arr(e.name, e.price),
-      json => new Scroll
-    )
-}
-case class Scroll() extends Item
-{
-  val name = "scroll"
-  val description = ""
-  val price = 0
-  val rarity = 0
-  val weight = 0
-  def onUse(user:SentientEntity) =
-  {
-    if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable)
-    {
-      Map.fromPoint(Game.cursor.pos).asInstanceOf[Door].open()
-      user.inventory.remove(this)
-    }
-  }
-}
-
-object Grimoire{
-  implicit val rw : ReadWriter[Grimoire] =
-    readwriter[ujson.Value].bimap[Grimoire](
-      e=> ujson.Arr(e.name, e.price),
-      json => new Grimoire
-    )
-}
-// TODO: Grimoire and spells should inherit from weapon instead of item
-case class Grimoire() extends Item
-{
-  val name = "grimoire"
-  val description = ""
-  val price = 0
-  val rarity = 0
-  val weight = 0
-  def onUse(user:SentientEntity) =
-  {
-    if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable)
-    {
-      Map.fromPoint(Game.cursor.pos).asInstanceOf[Door].open()
-      user.inventory.remove(this)
-    }
   }
 }
 
