@@ -33,46 +33,46 @@ class Point(var x:Int, var y:Int)
 
 object Zones
 {
-    type definition = (Weapon, Int, Point, Point) => Boolean
-    def ring(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    type definition = (Int, Int, Int, Point, Point) => Boolean
+    def ring(minRange:Int, maxRange:Int, dir:Int, start:Point, dest:Point):Boolean =
     {
         val d = start.distance(dest)
-        (weapon.innerRange <= d) && (d <= weapon.range) && Map.inSight(start, dest)
+        (minRange <= d) && (d <= maxRange) && Map.inSight(start, dest)
     }
 
-    def ray(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    def ray(minRange:Int, maxRange:Int, dir:Int, start:Point, dest:Point):Boolean =
     {
         val dx = dest.x - start.x
         val dy = dest.y - start.y
         val dz = -dx-dy
         dir match
         {
-            case 0 => (dy == 0) && (dx >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
-            case 1 => (dx == 0) && (dz <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
-            case 2 => (dz == 0) && (dy >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
-            case 3 => (dy == 0) && (dx <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
-            case 4 => (dx == 0) && (dz >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
-            case 5 => (dz == 0) && (dy <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
+            case 0 => (dy == 0) && (dx >= 0) && (minRange <= dx.abs) && (dx.abs <= maxRange)
+            case 1 => (dx == 0) && (dz <= 0) && (minRange <= dz.abs) && (dz.abs <= maxRange)
+            case 2 => (dz == 0) && (dy >= 0) && (minRange <= dy.abs) && (dy.abs <= maxRange)
+            case 3 => (dy == 0) && (dx <= 0) && (minRange <= dx.abs) && (dx.abs <= maxRange)
+            case 4 => (dx == 0) && (dz >= 0) && (minRange <= dz.abs) && (dz.abs <= maxRange)
+            case 5 => (dz == 0) && (dy <= 0) && (minRange <= dy.abs) && (dy.abs <= maxRange)
         }
     }
 
-    def cone(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    def cone(minRange:Int, maxRange:Int, dir:Int, start:Point, dest:Point):Boolean =
     {
         val dx = dest.x - start.x
         val dy = dest.y - start.y
         val dz = -dx-dy
         dir match
         {
-            case 0 => (dy <= 0) && (dz <= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
-            case 1 => (dx >= 0) && (dy >= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
-            case 2 => (dx <= 0) && (dz <= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
-            case 3 => (dy >= 0) && (dz >= 0) && (weapon.innerRange <= dx.abs) && (dx.abs <= weapon.range)
-            case 4 => (dx <= 0) && (dy <= 0) && (weapon.innerRange <= dz.abs) && (dz.abs <= weapon.range)
-            case 5 => (dx >= 0) && (dz >= 0) && (weapon.innerRange <= dy.abs) && (dy.abs <= weapon.range)
+            case 0 => (dy <= 0) && (dz <= 0) && (minRange <= dx.abs) && (dx.abs <= maxRange)
+            case 1 => (dx >= 0) && (dy >= 0) && (minRange <= dz.abs) && (dz.abs <= maxRange)
+            case 2 => (dx <= 0) && (dz <= 0) && (minRange <= dy.abs) && (dy.abs <= maxRange)
+            case 3 => (dy >= 0) && (dz >= 0) && (minRange <= dx.abs) && (dx.abs <= maxRange)
+            case 4 => (dx <= 0) && (dy <= 0) && (minRange <= dz.abs) && (dz.abs <= maxRange)
+            case 5 => (dx >= 0) && (dz >= 0) && (minRange <= dy.abs) && (dy.abs <= maxRange)
         }
     }
 
-    def classic(weapon:Weapon, dir:Int, start:Point, dest:Point):Boolean =
+    def classic(minRange:Int, maxRange:Int, dir:Int, start:Point, dest:Point):Boolean =
     {
       dest.equals(Game.cursor.pos) || dest.equals(Game.player.pos) // 2nd case is here to allow enemy to use single tile weapon
     }

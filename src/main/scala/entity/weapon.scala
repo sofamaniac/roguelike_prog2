@@ -180,7 +180,7 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
         Map.tileMap.foreach
         {
           case(key, value) =>
-                if (zone(this, dir, attacker.pos, value.coord) && !attacker.pos.equals(value.coord))
+                if (zone(this.innerRange, this.range, dir, attacker.pos, value.coord) && !attacker.pos.equals(value.coord))
                 {
                     _attack(value.coord, attacker, bonus/10)
                 }
