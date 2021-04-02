@@ -319,6 +319,17 @@ class Player()
       // TODO
     }
 
+    override def damage(dam:Int, from:SentientEntity):Unit = 
+    {
+      super.damage(dam, from)
+      displayInfo()
+    }
+    override def applyMagicCost(cost:Int):Unit =
+    {
+      super.applyMagicCost(cost:Int)
+      displayInfo()
+    }
+
     def dodge():Boolean = {return false}
 
     def getSeeRange():Int = 
@@ -332,6 +343,7 @@ class Player()
         curAP = 0
         Game.currentWeapon.attack(dest, this, Game.cursor.currentDir)
       }
+      displayInfo()
     }
 
     def displayInfo():Unit = 
@@ -345,6 +357,49 @@ class Player()
       zone.addMessage("Pow:%d(+%d)\t\t\tWeight:%d/%d".format(basePow, modifPow, curWeight, maxWeight))
       zone.addMessage("Helmet:%s(+%d)\t\tChesplate:%s(+%d)".format(helmet.name, helmet.armorClass, chestplate.name, chestplate.armorClass))
       zone.addMessage("Leggings:%s(+%d)\t\tBoots:%s(+%d)".format(leggings.name, leggings.armorClass, boots.name, boots.armorClass))
+    }
+}
+class SelectionMenu(val zone:MessageZone)
+{
+    var messageStart = 0  // index of first element to be displayed
+    var messagesSize = 10  // number of element to display at once
+    var curMessage = 0    // index of currently selected item
+
+    def display():Unit =
+    {
+      zone.inventory.clear()
+      var i = 0
+      for(j <- inventory)
+      {
+        if (messageStart <= i && i < messageStart+messageSize)
+        {
+          if (i == curInv){
+            zone.addMessage("> "+j.getInfo()) 
+            MessageHandler.setItemInfo(j.getDescription())
+          }
+          else 
+            zone.addMessage(j.getInfo())
+        }
+        i+=1
+      }
+    }
+    def prevPage():Unit =
+    {
+      if (messageStart != 0)
+        messageStart -= messageSize
+      display()
+    }
+    def nextPage():Unit =
+    {
+      if (messageStart+messageSize < zone.nbMessages)
+        messageStart += messageSize
+      display()
+    }
+    def moveItem(d:Int):Unit =
+    {
+      if (messageStart <= curMessage + d && curMessage + d < nbItem.min(messageStart + messageSize))
+        curMessage += d
+      display()
     }
 }
 

@@ -1,6 +1,5 @@
 package weapon
 
-
 import json._
 import upickle.default._
 
@@ -20,9 +19,9 @@ sealed trait ArgsType{
   def str():String =  { return ""}
   def zone():Zones.definition  ={return Zones.classic}
 }
-case class Num(i:Int) extends ArgsType{ override def int():Int = {return i}}
-case class Str(s:String) extends ArgsType{ override def str():String = {return s}}
-case class Zone(z:Zones.definition) extends ArgsType{ override def zone():Zones.definition = {return z}}
+case class Num(val i:Int) extends ArgsType{ override def int():Int = {return i}}
+case class Str(val s:String) extends ArgsType{ override def str():String = {return s}}
+case class Zone(val z:Zones.definition) extends ArgsType{ override def zone():Zones.definition = {return z}}
 
 object Weapon{
   implicit val rw: ReadWriter[Weapon] =
@@ -165,8 +164,8 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
                 }
         }
     }
-    def attack(dest:Point, attacker:SentientEntity, dir:Int) =
 
+    def attack(dest:Point, attacker:SentientEntity, dir:Int) =
     {
         val bonus:Int = modif match
         {
@@ -174,8 +173,6 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
             case "dex" => attacker.baseDex + attacker.modifDex
             case "pow" => attacker.basePow + attacker.modifPow
         }
-
-        // TODO:change to use a function in Map or a foreach
         
         Map.tileMap.foreach
         {
@@ -191,6 +188,8 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
       owner.inventory.add(owner.weapon)
       owner.weapon = this
       owner.inventory.remove(this)
+      if(owner == Game.player)
+        Game.currentWeapon = this
     }
 }
 abstract class MagicWeapon(args:MapObject[String, ArgsType], val cost:Int)  extends Weapon(args)
