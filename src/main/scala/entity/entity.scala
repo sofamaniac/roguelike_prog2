@@ -27,6 +27,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     val name:String
     var maxHP:Int           // health points
     var curHP:Int           // current hp
+    var currentRoomCoords = new Point(0, 0) // keep the coordinate of the current room in which the entity is
 
     var curWeight = 0
     var maxWeight = 25
@@ -68,7 +69,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var regenDuration:Int   = 0
     var regenHP:Int         = 0
 
-    // We setup the armor // TODO: define some default armor
+    // We setup the armor
     var helmet:Helmet = new Helmet
     var chestplate:Chestplate = new Chestplate
     var leggings:Leggings = new Leggings
@@ -428,7 +429,6 @@ class Inventory(val owner:SentientEntity)
     def drop():Unit =
     {
       inventory(curInv).pos.setPoint(owner.pos)
-      Map.fromPoint(owner.pos).item = Some(inventory(curInv)) // override current item on tile
-      remove(inventory(curInv))
+      Map.fromPoint(owner.pos).placeItem(inventory(curInv), Some(owner))
     }
 }

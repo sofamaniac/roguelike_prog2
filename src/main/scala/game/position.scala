@@ -7,11 +7,22 @@ import map._
 
 class Point(var x:Int, var y:Int)
 {
+  this(p:Point)
+  {
+    // this allow to copy a point
+    this(p.x, p.y)
+  }
     def add(b:Point) =
     {
         x = b.x + x
         y = b.y + y
     }
+
+  def sub(b:Point) =
+  {
+    x = x - b.x
+    y = y - b.y
+  }
 
   def distance(b:Point):Int =
   {

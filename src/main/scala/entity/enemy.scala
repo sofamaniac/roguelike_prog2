@@ -143,7 +143,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
   {
     val item = lootTable.loot()
     item.pos.setPoint(pos)
-    Map.fromPoint(pos).item = Some(item)
+    Map.fromPoint(pos).placeItem(item)
   }
 }
 
