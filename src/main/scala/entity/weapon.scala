@@ -17,11 +17,9 @@ import scala.collection.mutable.{Map => MapObject}
 sealed trait ArgsType{ 
   def int():Int  =    { return 0 }
   def str():String =  { return ""}
-  def zone():Zones.definition  ={return Zones.classic}
 }
 case class Num(val i:Int) extends ArgsType{ override def int():Int = {return i}}
 case class Str(val s:String) extends ArgsType{ override def str():String = {return s}}
-case class Zone(val z:Zones.definition) extends ArgsType{ override def zone():Zones.definition = {return z}}
 
 object Weapon{
   implicit val rw: ReadWriter[Weapon] =
@@ -78,10 +76,9 @@ object Weapon{
     args += "rarity"      -> Num(JsonTools.load(json, "rarity", defRarity))
     args += "weight"      -> Num(JsonTools.load(json, "weight", defWeight))
     args += "modif"       -> Str(JsonTools.load(json, "modif", defModif))
-    args += "zone"        -> Zone(loadZone(json))
+    args += "zone"        -> Str(JsonTools.load(json, "zone", defZone))
     args += "innerRange"  -> Num(JsonTools.load(json, "innerRange", defInR))
     args += "outerRange"  -> Num(JsonTools.load(json, "outerRange", defOutR))
-    args += "range"       -> Num(JsonTools.load(json, "range", defRange))
     args += "numberRoll"  -> Num(JsonTools.load(json, "nbRoll", defNbRoll))
     args += "damageRoll"  -> Num(JsonTools.load(json, "damRoll", defDamRoll))
 
@@ -122,16 +119,16 @@ object Weapon{
 
 
 // outerRange à 0 pour les sorts qui ne translatent pas
-class Weapon(val name:String, val description:String,  val price:Int, val rarity:Int, val weight:Int, val modif:String, val zone:Zones.definition,
-             val innerRange:Int, val outerRange:Int, val range:Int, val numberRoll:Int, val damageRoll:Int,
+class Weapon(val name:String, val description:String,  val price:Int, val rarity:Int, val weight:Int, val modif:String, val zone:String,
+             val innerRange:Int, val outerRange:Int, val numberRoll:Int, val damageRoll:Int,
              val fireDuration:Int, val fireDamage:Int, val poisonDuration:Int, val poisonDamage:Int,
              val frozenDuration:Int, val frozenDamage:Int, val paralyzedDuration:Int, val paralyzedDamage:Int, val vampirism:Int) extends Item
 {
-    def this(map:MapObject[String, ArgsType]) =
+    def this(map:MapObject[String, ArgsType])=
     {
       // Using the ersatz of type disjunction we defined, we can make a much simpler constructor for weapon
-      this(map("name").str, map("description").str, map("price").int, map("rarity").int, map("weight").int, map("modif").str, map("zone").zone(), 
-            map("innerRange").int, map("outerRange").int, map("range").int, map("numberRoll").int, map("damageRoll").int, map("fireDuration").int, map("fireDamage").int,
+      this(map("name").str, map("description").str, map("price").int, map("rarity").int, map("weight").int, map("modif").str, map("zone").str, 
+            map("innerRange").int, map("outerRange").int, map("numberRoll").int, map("damageRoll").int, map("fireDuration").int, map("fireDamage").int,
             map("poisonDuration").int, map("poisonDamage").int, map("frozenDuration").int, map("frozenDamage").int,
             map("paralyzedDuration").int, map("paralyzedDamage").int, map("vampirism").int)
     }
@@ -177,7 +174,7 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
         Map.tileMap.foreach
         {
           case(key, value) =>
-                if (zone(this.innerRange, this.range, dir, attacker.pos, value.coord) && !attacker.pos.equals(value.coord))
+                if (getZone()(this.innerRange, this.outerRange, dir, attacker.pos, value.coord) && !attacker.pos.equals(value.coord))
                 {
                     _attack(value.coord, attacker, bonus/10)
                 }
@@ -191,6 +188,16 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
       if(owner == Game.player)
         Game.currentWeapon = this
     }
+    def getZone():Zones.definition =
+    {
+      zone match
+      {
+        case "ring" => Zones.ring
+        case "ray"  => Zones.ray
+        case "cone" => Zones.cone
+        case _      => Zones.classic
+      }
+    }
 }
 abstract class MagicWeapon(args:MapObject[String, ArgsType], val cost:Int)  extends Weapon(args)
 {
@@ -198,7 +205,7 @@ abstract class MagicWeapon(args:MapObject[String, ArgsType], val cost:Int)  exte
   {
     // Only the player can call this function
     Game.changeWeapon(this)
-    Game.setPhase("attack", true)
+    Game.setPhase("attack")
   }
   override def attack(dest:Point, attacker:SentientEntity, dir:Int) =
   {
