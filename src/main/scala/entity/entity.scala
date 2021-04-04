@@ -27,6 +27,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     val name:String
     var maxHP:Int           // health points
     var curHP:Int           // current hp
+    var currentRoomCoords = new Point(0, 0) // keep the coordinate of the current room in which the entity is
 
     var curWeight = 0
     var maxWeight = 25
@@ -68,7 +69,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var regenDuration:Int   = 0
     var regenHP:Int         = 0
 
-    // We setup the armor // TODO: define some default armor
+    // We setup the armor
     var helmet:Helmet = new Helmet
     var chestplate:Chestplate = new Chestplate
     var leggings:Leggings = new Leggings
@@ -226,7 +227,7 @@ class Cursor(dest:GraphicsContext)
       case -1 => return dirArray((currentDir + 3) % dirArray.size)
     }
   }
-  override def show() = 
+  override def show(offset:Point=new Point(0,0)) = 
   {
     if(visible && Game.player.curAP > 0)
     {
@@ -359,53 +360,10 @@ class Player()
       zone.addMessage("Leggings:%s(+%d)\t\tBoots:%s(+%d)".format(leggings.name, leggings.armorClass, boots.name, boots.armorClass))
     }
 }
-class SelectionMenu(val zone:MessageZone)
-{
-    var messageStart = 0  // index of first element to be displayed
-    var messagesSize = 10  // number of element to display at once
-    var curMessage = 0    // index of currently selected item
-
-    def display():Unit =
-    {
-      zone.inventory.clear()
-      var i = 0
-      for(j <- inventory)
-      {
-        if (messageStart <= i && i < messageStart+messageSize)
-        {
-          if (i == curInv){
-            zone.addMessage("> "+j.getInfo()) 
-            MessageHandler.setItemInfo(j.getDescription())
-          }
-          else 
-            zone.addMessage(j.getInfo())
-        }
-        i+=1
-      }
-    }
-    def prevPage():Unit =
-    {
-      if (messageStart != 0)
-        messageStart -= messageSize
-      display()
-    }
-    def nextPage():Unit =
-    {
-      if (messageStart+messageSize < zone.nbMessages)
-        messageStart += messageSize
-      display()
-    }
-    def moveItem(d:Int):Unit =
-    {
-      if (messageStart <= curMessage + d && curMessage + d < nbItem.min(messageStart + messageSize))
-        curMessage += d
-      display()
-    }
-}
 
 class Inventory(val owner:SentientEntity)
 {
-    var inventory:Vector[Item] = Vector() // maybe move inventory into its own class/object
+      var inventory:Vector[Item] = Vector() // maybe move inventory into its own class/object
     var invStart = 0  // index of first element to be displayed
     var invSize = 10  // number of element to display at once
     var curInv = 0    // index of currently selected item
@@ -421,10 +379,10 @@ class Inventory(val owner:SentientEntity)
         if (invStart <= i && i < invStart+invSize)
         {
           if (i == curInv){
-            MessageHandler.inventory.addMessage("> "+j.getInfo()) 
+            MessageHandler.inventory.addMessage("> "+j.getInfo())
             MessageHandler.setItemInfo(j.getDescription())
           }
-          else 
+          else
             MessageHandler.inventory.addMessage(j.getInfo())
         }
         i+=1
@@ -471,7 +429,6 @@ class Inventory(val owner:SentientEntity)
     def drop():Unit =
     {
       inventory(curInv).pos.setPoint(owner.pos)
-      Map.fromPoint(owner.pos).item = Some(inventory(curInv)) // override current item on tile
-      remove(inventory(curInv))
+      Map.fromPoint(owner.pos).placeItem(inventory(curInv), Some(owner))
     }
 }

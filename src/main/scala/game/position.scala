@@ -7,11 +7,22 @@ import map._
 
 class Point(var x:Int, var y:Int)
 {
+  def this(p:Point)
+  {
+    // this allow to copy a point
+    this(p.x, p.y)
+  }
     def add(b:Point) =
     {
         x = b.x + x
         y = b.y + y
     }
+
+  def sub(b:Point) =
+  {
+    x = x - b.x
+    y = y - b.y
+  }
 
   def distance(b:Point):Int =
   {
@@ -74,7 +85,9 @@ object Zones
 
     def classic(minRange:Int, maxRange:Int, dir:Int, start:Point, dest:Point):Boolean =
     {
-      dest.equals(Game.cursor.pos) || dest.equals(Game.player.pos) // 2nd case is here to allow enemy to use single tile weapon
+      val d = start.distance(dest)
+      (dest.equals(Game.cursor.pos) || dest.equals(Game.player.pos)) && // 2nd case is here to allow enemy to use single tile weapon
+        minRange <= d && d <= maxRange
     }
 
 }
