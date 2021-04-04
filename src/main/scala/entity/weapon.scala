@@ -171,13 +171,17 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
             case "pow" => attacker.basePow + attacker.modifPow
         }
         
-        Map.tileMap.foreach
+        Map.rooms.foreach
         {
-          case(key, value) =>
+          case(key, r) =>
+            r.tiles.foreach
+            {
+              case (key, value) =>
                 if (getZone()(this.innerRange, this.outerRange, dir, attacker.pos, value.coord) && !attacker.pos.equals(value.coord))
                 {
                     _attack(value.coord, attacker, bonus/10)
                 }
+            }
         }
     }
     def onUse(owner:SentientEntity):Unit =

@@ -43,7 +43,7 @@ class GraphicEntity(val animation:Animation, val pos:Point, var dest:GraphicsCon
 
     // We set the offset based on the offset given as a parameter and the player position
     val off = new Point(offset)
-    off.sub(Game.player.pos)
+    off.add(Game.player.pos)
     
     val x = w.value/2 + GameWindow.tileSize * (sqrt(3) * (pos.x-off.x)  +  sqrt(3)/2 * (pos.y - off.y))
     val y = h.value/2 + GameWindow.tileSize * (                                3.0/2 * (pos.y - off.y))

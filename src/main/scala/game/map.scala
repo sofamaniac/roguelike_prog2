@@ -10,6 +10,10 @@ import game._
 import scalafx.scene.paint.Color._
 import scala.collection.mutable.{Map => MapObject}
 
+import upickle.default._
+import json._
+import enemy._
+
 
 object CommonTextures
 {
@@ -19,7 +23,7 @@ object CommonTextures
     val seen:GraphicEntity      = new GraphicEntity(Animation.load("seenTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
     val unseen:GraphicEntity    = new GraphicEntity(Animation.load("unseenTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
 
-    def showTexture(texture:GraphicEntity, pos:Point)
+    def show(texture:GraphicEntity, pos:Point)
     {
       texture.pos.setPoint(pos)
       texture.show()
@@ -40,7 +44,7 @@ class Tile(val coord:Point)
     var highlight:Boolean = false // indicates if the tile should be "highlighted"
     var highlightAttack:Boolean = false // to show the zone that will take dammage
 
-    var textureMap = MapObject[String, Some(GraphicEntity)]()
+    var textureMap = MapObject[String, Option[GraphicEntity]]()
 
     var backTexture:GraphicEntity      = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
     var frontTexture:Option[GraphicEntity] = None
@@ -49,7 +53,7 @@ class Tile(val coord:Point)
 
     val textures = CommonTextures
 
-    def show(offset) = 
+    def show(offset:Point) = 
     {
         if(isVisible(offset))
         {
@@ -139,13 +143,15 @@ class Tile(val coord:Point)
       item match
       {
         case Some(i) => i.pos.add(off)
+        case _       => ()
       }
       entity match
       {
         case Some(e) => e.pos.add(off)
+        case _       => ()
       }
     }
-    def placeItem(droppedItem:Item, from:Option[SentientEntity]):Unit=
+    def placeItem(droppedItem:Item, from:Option[SentientEntity]=None):Unit=
     {
       // [from] is used to indicates if the item is placed by some entity and should therefore
       // be removed from her inventory
@@ -165,6 +171,7 @@ class Tile(val coord:Point)
           case _       => ()
         }
       }
+    }
 }
 
 class Wall(coord:Point) extends Tile(coord)
@@ -177,16 +184,25 @@ class Wall(coord:Point) extends Tile(coord)
 
 object Map
 {
-  var rooms = MapObject[(Int, Int), Tile]
-
+    var rooms = MapObject[(Int, Int), Room]()
+    rooms += (0,0) -> Room.create()
 
     /** Display the entirety of the map on the screen */
     def show() = 
     {
-        tileMap.foreach
+        rooms.foreach
         {
             case(key, room) => room.show()
         }
+    }
+
+    /** Update all the rooms of the map */
+    def update() =
+    {
+      rooms.foreach
+      {
+        case(key, room) => room.update()
+      }
     }
 
     /** Set the highlight for the designated zone
@@ -210,11 +226,15 @@ object Map
         if (fromPoint(Game.cursor.pos).highlight)
           return Game.cursor.pos
 
-        tileMap.foreach
+        rooms.foreach
         {
-            case(key, value) =>
-                if (value.isHighlighted())
-                    return value.coord
+            case(key, r) =>
+              r.tiles.foreach
+              {
+                case(k, t) =>
+                  if (t.isHighlighted())
+                      return t.coord
+              }
         }
         return new Point(-1, -1)
     }
@@ -226,7 +246,6 @@ object Map
      */
     def inSight(source:Point, dest:Point):Boolean =
     {
-      // TODO: to change
       // returns true iff [dest] can be seen from [source]
       // ie, there is only seeThrough tiles between them
       var x = source.x.toDouble
@@ -238,7 +257,8 @@ object Map
       var result = true
       for(i <- 0 to d-1)
       {
-        result = result && tileMap((x.toInt,y.toInt)).seeThrough
+        // TODO: change to not create a Point for each iteration
+        result = result && fromPoint(new Point(x.toInt,y.toInt)).seeThrough
         x += dx
         y += dy
       }
@@ -252,7 +272,14 @@ object Map
      */
     def fromPoint(p:Point):Tile =
     {
-        return tileMap((p.x,p.y))
+        // We look for the room containing the tile at position [p]
+        rooms.foreach
+        {
+            case(key, room) => 
+              if (room.tiles contains (p.x, p.y)) 
+                return room.tiles((p.x, p.y))
+        }
+        return rooms(0,0).tiles(0,0)  // default value
     }
 
     def isInbound(p:Point):Boolean =
@@ -260,12 +287,24 @@ object Map
         var result = false
         rooms.foreach
         {
-            case(key, room) => result = result || room.tiles contains (p.x,p.y)
+            case(key, room) => result = result || (room.tiles contains (p.x,p.y))
         }
+        return result
+    }
+
+    def getEnemies():Vector[Enemy] =
+    {
+      var result = Vector[Enemy]()
+      rooms.foreach
+      {
+        case(key, room) => result = result ++ room.enemies
+      }
+      return result
     }
 }
 
 class Door(coord:Point, val room:Room) extends Tile(coord)
+// TODO: change the objective to be a door property instead of a room one so that different doors can have different objectives
 {
   // [room] is the room on which depends the opening condition
 
@@ -273,9 +312,10 @@ class Door(coord:Point, val room:Room) extends Tile(coord)
   walkable = false
   seeThrough = false
   flyable = false
+  var openCondition = "key"
   val keyType = "simple key"  // We can specify that a specific key is needed to open the door
 
-  var nextDoor = None       // which door it is linked to in the nextRoom
+  var nextDoor:Option[Door] = None       // which door it is linked to in the nextRoom
 
   def open():Unit = { 
     frontTexture = None
@@ -295,6 +335,21 @@ class Door(coord:Point, val room:Room) extends Tile(coord)
     door.room.topLeft.add(coord)
     door.room.topLeft.sub(door.coord)
   }
+  def checkOpen(enemies:Vector[Enemy], receptacles:Vector[Receptacle]):Unit=
+  {
+    openCondition match
+    {
+      case "key"  => ()
+      case "killAll"  => if(enemies.length == 0) open()
+      case "receptacles" => if (checkReceptacles(receptacles)) open()
+    }
+  }
+  def checkReceptacles(r:Vector[Receptacle]):Boolean=
+  {
+    var result = true
+    r.foreach( e => result = e.full && result )
+    return result
+  }
 }
 
 class Receptacle(coord:Point, val room:Room) extends Tile(coord)
@@ -302,15 +357,19 @@ class Receptacle(coord:Point, val room:Room) extends Tile(coord)
   val itemToPlace = "key" // name of the item to put in the receptacle
   var full = false  // is the [itemToPlace] inside the receptacle
 
-  override def placeItem(droppedItem:Item, from:Option[SentientEntity]):Unit=
+  override def placeItem(droppedItem:Item, from:Option[SentientEntity]=None):Unit=
   {
     super.placeItem(droppedItem, from)
-    full = item.name == itemToPlace
+    item match
+    {
+      case Some(i)  => full = i.name == itemToPlace
+      case _        => ()
+    }
     //TODO: change texture if the good item is in the receptacle
   }
-  override def show():Unit=
+  override def show(offset:Point):Unit=
   {
-    super.show()
+    super.show(offset)
     if(full)
       ()  // just show the good texture if the receptacle is full
   }
@@ -322,63 +381,73 @@ object Room
   implicit val rw: ReadWriter[Room] =
     readwriter[ujson.Value].bimap[Room](
       e => ujson.Arr(),
-      json => create(json)
+      json => createJson(json)
     )
 
-  def create(json:ujson.Value):Room=
+  def createJson(json:ujson.Value):Room=
   {
     return new Room()
+  }
+  def create():Room=
+  {
+    var room = new Room()
+    room.create()
+    return room
   }
 }
 
 case class Room()
 {
-  var topLeftPos = new Point(0, 0)  // coordinates of the top left corner of the smallest box containing the room
+  var topLeft = new Point(0, 0)  // coordinates of the top left corner of the smallest box containing the room
 
-  var tiles = MapObject[(Int, Int), Tile]
+  var tiles = MapObject[(Int, Int), Tile]()
 
   var enemies     = Vector[Enemy]()
   var doors       = Vector[Door]()
   var receptacles = Vector[Receptacle]()
   var otherNPCs   = Vector[SentientEntity]()
 
-  var winCondition = ""
-
-  def create(shape:String, size:MapObject[String, Int], doors:MapObject[(Int, Int), Door], enemies:MapObject[(Int, Int), Enemy], items:MapObject[(Int, Int), Item]):Room =
+  //def create(shape:String, size:MapObject[String, Int], doors:MapObject[(Int, Int), Door], enemies:MapObject[(Int, Int), Enemy], items:MapObject[(Int, Int), Item]):Room =
+  def create():Unit=
   {
     // TODO
+    var i = 0
+    var j = 0
+    for (i <- 0 to 10; j <- 0 to 10)
+    {
+      if (i == 10 || j == 10)
+        tiles += (i, j) -> new Wall(new Point(i,j))
+      else
+        tiles += (i, j) -> new Tile(new Point(i,j))
+    }
+    tiles((3, 10)) = new Door(new Point(3, 10), this){ openCondition="killAll"}
+
+    doors = doors :+ tiles((3, 10)).asInstanceOf[Door]
+    enemies = enemies :+ EnemyCreator.create()
+    enemies(0).move(new Point(5, 5))
   }
   def setOffset(ref:Point, p:Point)
   {
-    topLeftPos.add(ref)
-    topLeftPos.sub(p)
+    topLeft.add(ref)
+    topLeft.sub(p)
     tiles.foreach
     {
-      case (key, value) => value.setOffset(topLeftPos)
+      case (key, value) => value.setOffset(topLeft)
     }
-  }
-  def unlock():Unit = 
-  {
-    doors.foreach{ d => d.open() }
   }
   def checkWin():Unit =
   {
-    // check if winning conditions is verified
-    if (winCondition == "killAll" && enemies.length == 0)
-      unlock()
-    else if (winCondition == "receptacles" && checkReceptacles())
-      unlock()
-  }
-  def checkReceptacles():Boolean=
-  {
-    var result = true
-    receptacles.foreach( e => e.full && result )
+    // We checked for each door if its opening condition is verified
+    doors.foreach
+    {
+      d => d.checkOpen(enemies, receptacles)
+    }
   }
 
   def update():Unit=
   {
-    enemies.filter(_.curHP <= 0)
-    receptacles.filter(_.full)
+    enemies = enemies.filter(_.curHP > 0)
+    //receptacles.filter(_.full)
     checkWin()
   }
   def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false, erase:Boolean=true, highlightPlayer:Boolean=false):Unit =
@@ -389,11 +458,18 @@ case class Room()
                 value.highlight = value.highlight && !erase     // erase previous highlight
                 value.highlightAttack = value.highlightAttack && !erase
               
-                if (zone(value.coord) && value.isVisible() && !value.isInstanceOf[Wall] && inSight(Game.player.pos, new Point(key._1,key._2)))
+                if (zone(value.coord) && value.isVisible() && !value.isInstanceOf[Wall] && Map.inSight(Game.player.pos, new Point(key._1,key._2)))
                 {
                     value.highlight = !attackHighlight
                     value.highlightAttack = attackHighlight
                 }
         }
+  }
+  def show()
+  {
+    tiles.foreach
+    {
+      case(key, tile) => tile.show(topLeft)
+    }
   }
 }

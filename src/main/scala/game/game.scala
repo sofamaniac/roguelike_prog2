@@ -159,9 +159,7 @@ object Game
         player.inventory.curInv = 0
 
         // creating and placing enemies :
-        enemiesVector = Vector()
-        enemiesVector = enemiesVector :+ EnemyCreator.create()
-        enemiesVector(0).move(enemiesVector(0).pos)
+        enemiesVector = Map.getEnemies()
 
         // creating and placing items :
     }
@@ -198,6 +196,7 @@ object Game
           player.curHP = player.maxHP
           initialization()
         }
+        Map.update()  // We update the rooms of the map
         player.displayInfo() // We update the text on screen to update the player's status
     }
 

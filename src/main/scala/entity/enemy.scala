@@ -129,12 +129,15 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // in the future, enemies will have like the player a detection range,
         // outside of which they are unable to see the player
         val curD = pos.distance(Game.player.pos)
-        Map.tileMap.foreach
+        Map.rooms.foreach
         {
-            case(key, value) =>
-                if(value.coord.distance(Game.player.pos) < curD
-                    && value.coord.distance(pos) < curAP)
-                return value.coord
+            case(key, r) =>
+              r.tiles.foreach
+              {
+                case (k, t) =>
+                  if(t.coord.distance(Game.player.pos) < curD && t.coord.distance(pos) < curAP)
+                    return t.coord
+              }
         }
         return pos
   }
@@ -173,12 +176,15 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
     
     // The entity look for a tile that will increase its distance from the player
     val curD = pos.distance(Game.player.pos)
-    Map.tileMap.foreach
+    Map.rooms.foreach
     {
-        case(key, value) =>
-          if(value.coord.distance(Game.player.pos) >= curD
-                && value.coord.distance(pos) < curAP)
-                move(value.coord)
+        case(key, r) =>
+          r.tiles.foreach
+          {
+            case(k, t) =>
+            if(t.coord.distance(Game.player.pos) >= curD && t.coord.distance(pos) < curAP)
+                  move(t.coord)
+          }
     }
   }
 }

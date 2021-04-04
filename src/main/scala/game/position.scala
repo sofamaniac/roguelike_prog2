@@ -7,7 +7,7 @@ import map._
 
 class Point(var x:Int, var y:Int)
 {
-  this(p:Point)
+  def this(p:Point)
   {
     // this allow to copy a point
     this(p.x, p.y)
