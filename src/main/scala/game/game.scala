@@ -44,7 +44,7 @@ object Game
         var selectionPhase = true // Are we selcting a tile on the map
         if(phase == "move")
         {
-            Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
+          Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP && player.curAP > 0), highlightPlayer=true)
             cursor.limitation = true
         }
         else if(phase == "attack")
@@ -147,7 +147,7 @@ object Game
     def initialization() =
     {
         // generate map : already done for now
-        player.move(new Point(0, 0))
+        player.move(new Point(1, 1))
         player.inventory.add(WeaponCreator.create())
         player.inventory.add(WeaponCreator.create("Fire Ball"))
         player.inventory.add(WeaponCreator.create("sword"))

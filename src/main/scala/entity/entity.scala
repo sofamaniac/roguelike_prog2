@@ -227,7 +227,7 @@ class Cursor(dest:GraphicsContext)
       case -1 => return dirArray((currentDir + 3) % dirArray.size)
     }
   }
-  override def show(offset:Point=new Point(0,0)) = 
+  override def show() = 
   {
     if(visible && Game.player.curAP > 0)
     {

@@ -211,7 +211,7 @@ case class LootTable() {
   // We store the tuple (itemName, weight)
   // an item is create only when loot is called
   var table:Vector[(String, Int)] = Vector()
-  var totalWeight:Int = 0
+  var totalWeight:Int = 1
 
   def loot():Item = {
 
@@ -223,6 +223,7 @@ case class LootTable() {
       s += table(i)._2
       i += 1
     }
+    i = i.max(0).min(table.length - 1)
     return ItemCreator.create(table(i)._1)
   }
 

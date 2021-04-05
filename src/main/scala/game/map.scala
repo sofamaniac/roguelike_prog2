@@ -53,15 +53,15 @@ class Tile(val coord:Point)
 
     val textures = CommonTextures
 
-    def show(offset:Point) = 
+    def show() = 
     {
-        if(isVisible(offset))
+        if(isVisible())
         {
             backTexture.show()
             frontTexture match
             {
               case None => ()
-              case Some(g) => g.show(offset)
+              case Some(g) => g.show()
             }
             if(highlight)
             {
@@ -75,12 +75,12 @@ class Tile(val coord:Point)
             item match
             {
                 case None => ()
-                case Some(i) => i.show(offset)
+                case Some(i) => i.show()
             }
             entity match
             {
                 case None => ()
-                case Some(e) => e.show(offset)
+                case Some(e) => e.show()
             }
         }
         else if(seen)
@@ -186,6 +186,9 @@ object Map
 {
     var rooms = MapObject[(Int, Int), Room]()
     rooms += (0,0) -> Room.create()
+    rooms += (0,1) -> Room.create()
+
+    rooms((0, 0)).tiles((3, 10)).asInstanceOf[Door].connectDoor(rooms((0, 1)).tiles((3, 0)).asInstanceOf[Door])
 
     /** Display the entirety of the map on the screen */
     def show() = 
@@ -276,8 +279,8 @@ object Map
         rooms.foreach
         {
             case(key, room) => 
-              if (room.tiles contains (p.x, p.y)) 
-                return room.tiles((p.x, p.y))
+              if (room.contains(p)) 
+                return room.load(p)
         }
         return rooms(0,0).tiles(0,0)  // default value
     }
@@ -287,7 +290,7 @@ object Map
         var result = false
         rooms.foreach
         {
-            case(key, room) => result = result || (room.tiles contains (p.x,p.y))
+            case(key, room) => result = result || (room.contains(p))
         }
         return result
     }
@@ -304,7 +307,6 @@ object Map
 }
 
 class Door(coord:Point, val room:Room) extends Tile(coord)
-// TODO: change the objective to be a door property instead of a room one so that different doors can have different objectives
 {
   // [room] is the room on which depends the opening condition
 
@@ -318,6 +320,8 @@ class Door(coord:Point, val room:Room) extends Tile(coord)
   var nextDoor:Option[Door] = None       // which door it is linked to in the nextRoom
 
   def open():Unit = { 
+    if(walkable)
+      return  // The door is already open
     frontTexture = None
     walkable = true
     seeThrough = true
@@ -331,9 +335,9 @@ class Door(coord:Point, val room:Room) extends Tile(coord)
   def connectDoor(door:Door):Unit=
   {
     nextDoor = Some(door)
+    door.nextDoor = Some(this)
     // We change the position of the top left corner according to the position of the door
-    door.room.topLeft.add(coord)
-    door.room.topLeft.sub(door.coord)
+    door.room.setOffset(coord, door.coord)
   }
   def checkOpen(enemies:Vector[Enemy], receptacles:Vector[Receptacle]):Unit=
   {
@@ -347,14 +351,17 @@ class Door(coord:Point, val room:Room) extends Tile(coord)
   def checkReceptacles(r:Vector[Receptacle]):Boolean=
   {
     var result = true
-    r.foreach( e => result = e.full && result )
+    r.foreach
+    {
+      e => result = e.full && result 
+    }
     return result
   }
 }
 
 class Receptacle(coord:Point, val room:Room) extends Tile(coord)
 {
-  val itemToPlace = "key" // name of the item to put in the receptacle
+  var itemToPlace = "key" // name of the item to put in the receptacle
   var full = false  // is the [itemToPlace] inside the receptacle
 
   override def placeItem(droppedItem:Item, from:Option[SentientEntity]=None):Unit=
@@ -367,9 +374,9 @@ class Receptacle(coord:Point, val room:Room) extends Tile(coord)
     }
     //TODO: change texture if the good item is in the receptacle
   }
-  override def show(offset:Point):Unit=
+  override def show():Unit=
   {
-    super.show(offset)
+    super.show()
     if(full)
       ()  // just show the good texture if the receptacle is full
   }
@@ -415,16 +422,22 @@ case class Room()
     var j = 0
     for (i <- 0 to 10; j <- 0 to 10)
     {
-      if (i == 10 || j == 10)
+      if (i == 10 || j == 10 || i == 0 || j == 0)
         tiles += (i, j) -> new Wall(new Point(i,j))
       else
         tiles += (i, j) -> new Tile(new Point(i,j))
     }
-    tiles((3, 10)) = new Door(new Point(3, 10), this){ openCondition="killAll"}
+    tiles((3, 10)) = new Door(new Point(3, 10), this){ openCondition="killAll" }
+    tiles((3,  0)) = new Door(new Point(3,  0), this){ openCondition="receptacles" }
+    tiles((5,  5)) = new Receptacle(new Point(5, 5), this){ itemToPlace="bandages" }
 
     doors = doors :+ tiles((3, 10)).asInstanceOf[Door]
+    doors = doors :+ tiles((3,  0)).asInstanceOf[Door]
+
+    receptacles = receptacles :+ tiles((5,5)).asInstanceOf[Receptacle]
     enemies = enemies :+ EnemyCreator.create()
-    enemies(0).move(new Point(5, 5))
+    tiles((5,5)).entity = Some(enemies(0))
+    enemies(0).pos.setPoint(new Point(5, 5))
   }
   def setOffset(ref:Point, p:Point)
   {
@@ -443,11 +456,18 @@ case class Room()
       d => d.checkOpen(enemies, receptacles)
     }
   }
+  def contains(p:Point):Boolean=
+  {
+    return tiles contains (p.x - topLeft.x, p.y-topLeft.y)
+  }
+  def load(p:Point):Tile=
+  {
+    return tiles((p.x - topLeft.x, p.y-topLeft.y))
+  }
 
   def update():Unit=
   {
     enemies = enemies.filter(_.curHP > 0)
-    //receptacles.filter(_.full)
     checkWin()
   }
   def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false, erase:Boolean=true, highlightPlayer:Boolean=false):Unit =
@@ -458,7 +478,7 @@ case class Room()
                 value.highlight = value.highlight && !erase     // erase previous highlight
                 value.highlightAttack = value.highlightAttack && !erase
               
-                if (zone(value.coord) && value.isVisible() && !value.isInstanceOf[Wall] && Map.inSight(Game.player.pos, new Point(key._1,key._2)))
+                if (zone(value.coord) && value.isVisible() && value.walkable && Map.inSight(Game.player.pos, new Point(value.coord)))
                 {
                     value.highlight = !attackHighlight
                     value.highlightAttack = attackHighlight
@@ -469,7 +489,7 @@ case class Room()
   {
     tiles.foreach
     {
-      case(key, tile) => tile.show(topLeft)
+      case(key, tile) => tile.show()
     }
   }
 }
