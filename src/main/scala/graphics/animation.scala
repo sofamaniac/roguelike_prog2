@@ -43,7 +43,7 @@ object Animation
   val defMargY = 0
 
   def loadJson(json:ujson.Value):Animation = {
-    val path    = JsonTools.load(json, "path", defPath)
+    val path    = JsonTools.load(json, "file", defPath)
     val nbFrame = JsonTools.load(json, "nbFrame", defNbFrame)
     val sizeX   = JsonTools.load(json, "sizeX", defSizeX)
     val sizeY   = JsonTools.load(json, "sizeY", defSizeY)

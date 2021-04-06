@@ -154,7 +154,8 @@ object Game
     {
         MessageHandler.clear()
         // generate map : already done for now
-        player.move(new Point(1, 1))
+        player.pos.setPoint(new Point(1, 1))
+        Map.fromPoint(new Point(1,1)).entity = Some(player)
         player.inventory.add(WeaponCreator.create())
         player.inventory.add(WeaponCreator.create("Fire Ball"))
         player.inventory.add(WeaponCreator.create("sword"))
