@@ -14,7 +14,7 @@ object MessageHandler
   var cellInfo = new MessageZone()
   var genInfo = new MessageZone()
   var itemInfo = new MessageZone()
-  var selectionMenu = new MessageZone()
+  var tradeZone = new MessageZone()
 
   var textSize = IntegerProperty(20)
 
@@ -29,9 +29,11 @@ object MessageHandler
   help.addDefaults("select item using arrow keys, and press 'Space'")
   help.addDefaults("Press 'F' to drop item")
   help.addDefaults("Use 'G' to pick up item")
+  help.addDefaults("Use 'S' with cursor on NPC whislt standing next to them to speak / buy from them")
+  help.addDefaults("Use 'T' with cursor on NPC whilst standing next to them to sell item")
 
   playerInfo.addDefaults("Player stats: ")
-  playerInfo.maxMessages() = 7 // TODO to adjust
+  playerInfo.maxMessages() = 9 // TODO to adjust
   
   inventory.addDefaults("Inventory: ")
   inventory.maxMessages() = 11 // 10 items + header
@@ -42,10 +44,8 @@ object MessageHandler
   itemInfo.addDefaults("Item's description: ")
   itemInfo.maxMessages() = 2
 
-  selectionMenu.addDefaults("Chat box: ")
-  itemInfo.maxMessages() = 6 // for the merchant : 5 items + header
-
-  clear()
+  tradeZone.addDefaults("Speak: ")
+  tradeZone.maxMessages() = 11
 
   val one = IntegerProperty(1)
 
@@ -54,8 +54,9 @@ object MessageHandler
   cellInfo.yOffset <== inventory.yOffset + textSize * (inventory.maxMessages + one)
   genInfo.yOffset <== cellInfo.yOffset + textSize * (cellInfo.maxMessages + one)
   itemInfo.yOffset <== genInfo.yOffset + textSize * (genInfo.nbMessages + one)
-  selectionMenu.yOffset <== itemInfo.yOffset + textSize * (itemInfo.maxMessages + one)
-
+  // tradeZone.yOffset <== itemInfo.yOffset + textSize * (itemInfo.maxMessages + one)
+  tradeZone.yOffset = IntegerProperty(500)
+  
   def setCellMessage(s:String):Unit =
   {
     cellInfo.clear()
@@ -78,7 +79,7 @@ object MessageHandler
     if (Game.currentPhase == "inventory")
       itemInfo.show()
     if (Game.currentPhase == "speak")
-      selectionMenu.show()
+      tradeZone.show()
   }
 
   def clear():Unit =
@@ -95,7 +96,7 @@ object MessageHandler
   {
     if (help.maxMessages() == 1) // help is not visible
     {
-      help.maxMessages() = 9
+      help.maxMessages() = help.messages.length
     }
     else
     {

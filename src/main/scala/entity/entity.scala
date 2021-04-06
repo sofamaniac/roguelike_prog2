@@ -27,6 +27,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     val name:String
     var maxHP:Int           // health points
     var curHP:Int           // current hp
+    var currentRoomCoords = new Point(0, 0) // keep the coordinate of the current room in which the entity is
 
     var curWeight = 0
     var maxWeight = 25
@@ -49,7 +50,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var modifPow:Int
 
     var weapon:Weapon       // equipped weapon
-    var inventory:Inventory = new Inventory(this)
+    var inventory:Inventory = new Inventory(this, MessageHandler.tradeZone)
 
     var poisonDuration:Int  = 0 // number of turn before end of poison effect
     var poisonDamage:Int    = 0
@@ -68,7 +69,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var regenDuration:Int   = 0
     var regenHP:Int         = 0
 
-    // We setup the armor // TODO: define some default armor
+    // We setup the armor
     var helmet:Helmet = new Helmet
     var chestplate:Chestplate = new Chestplate
     var leggings:Leggings = new Leggings
@@ -282,6 +283,7 @@ class Player()
     extends SentientEntity(Animation.load("character.png", 4, sizeY=64), new Point(0,0))
 {
     val name = "Player"
+        inventory = new Inventory(this, MessageHandler.inventory)
 
     var maxHP = 100
     var curHP = 100
@@ -324,12 +326,21 @@ class Player()
       super.damage(dam, from)
       displayInfo()
     }
+    override def heal(hp:Int):Unit=
+    {
+      super.heal(hp)
+      displayInfo()
+    }
     override def applyMagicCost(cost:Int):Unit =
     {
       super.applyMagicCost(cost:Int)
       displayInfo()
     }
-
+    override def applyEffects():Unit =
+    {
+      super.applyEffects()
+      displayInfo()
+    }
     def dodge():Boolean = {return false}
 
     def getSeeRange():Int = 
@@ -357,11 +368,13 @@ class Player()
       zone.addMessage("Pow:%d(+%d)\t\t\tWeight:%d/%d".format(basePow, modifPow, curWeight, maxWeight))
       zone.addMessage("Helmet:%s(+%d)\t\tChesplate:%s(+%d)".format(helmet.name, helmet.armorClass, chestplate.name, chestplate.armorClass))
       zone.addMessage("Leggings:%s(+%d)\t\tBoots:%s(+%d)".format(leggings.name, leggings.armorClass, boots.name, boots.armorClass))
+      zone.addMessage("Weapon:%s".format(weapon.name))
     }
 }
-class SelectionMenu(val zone:MessageZone)
+
+class Inventory(val owner:SentientEntity, val zone:MessageZone=MessageHandler.tradeZone)
 {
-    var inventory:Vector[Item] = Vector() // maybe move inventory into its own class/object
+    var inventory:Vector[Item] = Vector() 
     var invStart = 0  // index of first element to be displayed
     var invSize = 10  // number of element to display at once
     var curInv = 0    // index of currently selected item
@@ -376,14 +389,15 @@ class SelectionMenu(val zone:MessageZone)
         if (invStart <= i && i < invStart+invSize)
         {
           if (i == curInv){
-            zone.addMessage("> "+j.getInfo()) 
+            zone.addMessage("> "+j.getInfo())
             MessageHandler.setItemInfo(j.getDescription())
           }
-          else 
+          else
             zone.addMessage(j.getInfo())
         }
         i+=1
       }
+      zone.show()
     }
     def prevPage():Unit =
     {
@@ -426,80 +440,13 @@ class SelectionMenu(val zone:MessageZone)
     def drop():Unit =
     {
       inventory(curInv).pos.setPoint(owner.pos)
-      Map.fromPoint(owner.pos).item = Some(inventory(curInv)) // override current item on tile
-      remove(inventory(curInv))
+      Map.fromPoint(owner.pos).placeItem(inventory(curInv), Some(owner))
     }
-}
-
-class Inventory(val owner:SentientEntity)
-{
-    var inventory:Vector[Item] = Vector() // maybe move inventory into its own class/object
-    var invStart = 0  // index of first element to be displayed
-    var invSize = 10  // number of element to display at once
-    var curInv = 0    // index of currently selected item
-    var nbItem = 0    // number of item in inventory
-
-    def display():Unit =
+    def sell(dest:SentientEntity):Unit =
     {
-      MessageHandler.inventory.clear()
-      Game.player.displayInfo()   // TODO: not great of referencing the player directly
-      var i = 0
-      for(j <- inventory)
-      {
-        if (invStart <= i && i < invStart+invSize)
-        {
-          if (i == curInv){
-            MessageHandler.inventory.addMessage("> "+j.getInfo()) 
-            MessageHandler.setItemInfo(j.getDescription())
-          }
-          else 
-            MessageHandler.inventory.addMessage(j.getInfo())
-        }
-        i+=1
-      }
-    }
-    def prevPage():Unit =
-    {
-      if (invStart != 0)
-        invStart -= invSize
-      display()
-    }
-    def nextPage():Unit =
-    {
-      if (invStart+invSize < nbItem)
-        invStart += invSize
-      display()
-    }
-    def moveItem(d:Int):Unit =
-    {
-      if (invStart <= curInv + d && curInv + d < nbItem.min(invStart + invSize))
-        curInv += d
-      display()
-    }
-    def useItem():Unit =
-    {
-      inventory(curInv).onUse(owner)
-      display()
-    }
-    def remove(i:Item):Unit =
-    {
-      inventory = inventory.filterNot(_ == i)
-      nbItem -= 1
-      owner.curWeight -= i.weight
-      curInv = curInv.min(nbItem -1)
-      display()
-    }
-    def add(i:Item):Unit=
-    {
-      inventory = inventory :+ i
-      nbItem += 1
-      owner.curWeight += i.weight
-      display()
-    }
-    def drop():Unit =
-    {
-      inventory(curInv).pos.setPoint(owner.pos)
-      Map.fromPoint(owner.pos).item = Some(inventory(curInv)) // override current item on tile
+      dest.inventory.add(inventory(curInv))
+      dest.gold -= inventory(curInv).price
+      owner.gold += inventory(curInv).price
       remove(inventory(curInv))
     }
 }

@@ -28,7 +28,7 @@ object Animation
     {
       val frame = new ImageView
       frame.image = image
-      frame.setViewport(new Rectangle2D(x, 0, _sizeX, _sizeY)) // we use viewport to define sub pictures
+      frame.setViewport(new Rectangle2D(x, marginY, _sizeX, _sizeY)) // we use viewport to define sub pictures
       animation(i) = frame
       x = x + _sizeX + marginX
     }

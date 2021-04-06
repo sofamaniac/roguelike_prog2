@@ -8,8 +8,7 @@
 		"modif": "str",
 		"zone": "classic",
 		"innerRange": 1,
-		"outerRange": 1,
-		"range": 1,
+		"outerRange": 2,
 		"numberRoll": 2
 	},
 	{
@@ -21,7 +20,6 @@
 		"zone": "classic",
 		"innerRange": 1,
 		"outerRange": 5,
-		"range": 5,
 		"numberRoll": 2,
 		"damageRoll": 4
 	},
@@ -33,8 +31,7 @@
 		"modif": "dex",
 		"zone": "cone",
 		"innerRange": 1,
-		"outerRange": 0,
-		"range": 4,
+		"outerRange": 4,
 		"numberRoll": 1,
 		"damageRoll": 4
 	},
@@ -46,8 +43,7 @@
 		"modif": "pow",
 		"zone": "ray",
 		"innerRange": 1,
-		"outerRange": 0,
-		"range": 4,
+		"outerRange": 4,
 		"fireDuration": 3,
 		"fireDamage": 7,
 		"spellCost": 5,

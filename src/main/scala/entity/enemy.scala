@@ -57,7 +57,7 @@ object Enemy
     else
       json = json(index)
     
-    var args = MapObject[Int]()
+    var args = MapObject[String, Int]()
 
     val animation   = if (JsonTools.contains(json, "animation")) Animation.loadJson(json("animation")) else defAnimation
     val name        = JsonTools.load(json, "name", defName)
@@ -75,12 +75,14 @@ object Enemy
     val weapon      = if (JsonTools.contains(json, "weapon")) WeaponCreator.create(json("weapon").str) else defWea
     val loot        = if (JsonTools.contains(json, "lootTable")) read[LootTable](json("lootTable")) else defLT
     val behaviour   = JsonTools.load(json, "behaviourType", defBeh)
-    // TODO differentiate based on behaviour
+
     behaviour match
     {
+      case "merchant" => new Merchant(animation, new Point(8,8), name, fly, weapon, loot, args) // TODO: add possibility to define trades in json
       case "neutral"  => new NeutralNPC(animation, new Point(6,7), name, fly, weapon, loot, args)
       case "coward"   => new CowardNPC(animation, new Point(2,3), name, fly, weapon, loot, args)
-      case _          => Enemy(animation, new Point(5, 3), name, fly, weapon, loot, args)
+      case _          => new Enemy(animation, new Point(5, 3), name, fly, weapon, loot, args)
+    }
   }
 }
 // I don't know why I need to overwrite pos and animation
@@ -88,9 +90,9 @@ object Enemy
 case class Enemy(override val animation:Animation, override val pos:Point, val name:String, var maxHP:Int, var armorClass:Int, var baseAP:Int, var modifAP:Int, var baseStr:Int, var modifStr:Int, var baseDex:Int, var modifDex:Int, var basePow:Int, var modifPow:Int, var fly:Boolean, var weapon:Weapon, var lootTable:LootTable)
     extends SentientEntity(animation, pos)
 {
-  def this(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, lootTable:LootTable, map:MapObject[Int])
+  def this(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, lootTable:LootTable, map:MapObject[String, Int])=
   {
-    this(animation, pos, name, map("maxHP"), map("armorClass"), map("baseAP"), map("modifAP"), map("baseStr"), map("modifStr"), map("baseDex"), map("modifDex"), map("basePow")
+    this(animation, pos, name, map("maxHP"), map("armorClass"), map("baseAP"), map("modifAP"), map("baseStr"), map("modifStr"), map("baseDex"), map("modifDex"), map("basePow"),
           map("modifPow"), fly, weapon, lootTable)
   }
   var curHP = maxHP
@@ -103,9 +105,9 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
     var i = 0
     for(i <- 0 until dirArray.size)
     {
-      if(curAP > 0 && weapon.zone(weapon.innerRange, weapon.range, i, pos, Game.player.pos))
+      if(curAP > 0 && weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, Game.player.pos))
       {
-        // the fun consequence of this way of attacking is that enemies can damage other enemies
+        // launch the attack to the player position, so adjacent tiles can be affected to
         weapon.attack(Game.player.pos, this, i)
         curAP = 0
       }
@@ -119,7 +121,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // if player is in range, does not move
         for(i <- 0 until dirArray.size)
         {
-            if(weapon.zone(weapon.innerRange, weapon.range, i, pos, Game.player.pos))
+            if(weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, Game.player.pos))
             {
                 return pos
             }
@@ -128,12 +130,15 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // in the future, enemies will have like the player a detection range,
         // outside of which they are unable to see the player
         val curD = pos.distance(Game.player.pos)
-        Map.tileMap.foreach
+        Map.rooms.foreach
         {
-            case(key, value) =>
-                if(value.coord.distance(Game.player.pos) < curD
-                    && value.coord.distance(pos) < curAP)
-                return value.coord
+            case(key, r) =>
+              r.tiles.foreach
+              {
+                case (k, t) =>
+                  if(t.coord.distance(Game.player.pos) < curD && t.coord.distance(pos) < curAP)
+                    return t.coord
+              }
         }
         return pos
   }
@@ -142,11 +147,11 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
   {
     val item = lootTable.loot()
     item.pos.setPoint(pos)
-    Map.fromPoint(pos).item = Some(item)
+    Map.fromPoint(pos).placeItem(item)
   }
 }
 
-class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[Int])
+class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[String, Int])
   extends Enemy(animation, pos, name, fly, weapon, loot, map)
 {
   var neutral:Boolean = true
@@ -155,11 +160,52 @@ class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapo
   {
     if (!neutral || lastHitBy == Game.player)
     {
-      neutral = true
+      neutral = false
       super.IA()
     }
   }
 }
+
+class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[String,Int])
+  extends Enemy(animation, pos, name, fly, weapon, loot, map)
+{
+  // Coward NPCs cannot attack and run away from the player
+
+  override def IA():Unit=
+  {
+    // TODO: run away only when player is visible
+    
+    // The entity look for a tile that will increase its distance from the player
+    val curD = pos.distance(Game.player.pos)
+    Map.rooms.foreach
+    {
+        case(key, r) =>
+          r.tiles.foreach
+          {
+            case(k, t) =>
+            if(t.coord.distance(Game.player.pos) >= curD && t.coord.distance(pos) < curAP)
+                  move(t.coord)
+          }
+    }
+  }
+}
+
+class Merchant(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[String, Int])
+  extends Enemy(animation, pos, name, fly, weapon, loot, map)
+{
+  inventory = new Inventory(this){
+    override def useItem():Unit =
+    {
+      Game.player.inventory.add(inventory(curInv))
+      Game.player.gold -= inventory(curInv).price
+      println(inventory(curInv).price)
+      remove(inventory(curInv))
+    }
+  }
+  inventory.add(ItemCreator.create("shotgun"))
+  inventory.add(ItemCreator.create("bandages"))
+}
+
 
 object LootTable {
 
@@ -183,7 +229,7 @@ case class LootTable() {
   // We store the tuple (itemName, weight)
   // an item is create only when loot is called
   var table:Vector[(String, Int)] = Vector()
-  var totalWeight:Int = 0
+  var totalWeight:Int = 1
 
   def loot():Item = {
 
@@ -195,6 +241,7 @@ case class LootTable() {
       s += table(i)._2
       i += 1
     }
+    i = i.max(0).min(table.length - 1)
     return ItemCreator.create(table(i)._1)
   }
 
