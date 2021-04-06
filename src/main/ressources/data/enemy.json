@@ -62,4 +62,31 @@
 			}
 		]
 	}
+
+    {
+		"name": "Merchant",
+		"animation":
+			{
+				"file": "goblin.png",
+				"nbFrame": 11,
+				"sizeY": 58
+			},
+		"maxHP": 100,
+		"armorClass": 30,
+		"baseAP": 5,
+		"modifAP": 0,
+		"baseStr": 10,
+		"modifStr": 0,
+		"baseDex": 10,
+		"modifDex": 0,
+		"basePow": 10,
+		"modifPow": 0,
+		"weapon":	"shotgun",
+		"loot_table": [
+			{
+				"item": "bandages",
+				"weight": 100
+			}
+		]
+	}
 ]

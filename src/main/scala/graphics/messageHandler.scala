@@ -14,6 +14,7 @@ object MessageHandler
   var cellInfo = new MessageZone()
   var genInfo = new MessageZone()
   var itemInfo = new MessageZone()
+  var selectionMenu = new MessageZone()
 
   var textSize = IntegerProperty(20)
 
@@ -41,6 +42,9 @@ object MessageHandler
   itemInfo.addDefaults("Item's description: ")
   itemInfo.maxMessages() = 2
 
+  selectionMenu.addDefaults("Chat box: ")
+  itemInfo.maxMessages() = 6 // for the merchant : 5 items + header
+
   clear()
 
   val one = IntegerProperty(1)
@@ -50,6 +54,7 @@ object MessageHandler
   cellInfo.yOffset <== inventory.yOffset + textSize * (inventory.maxMessages + one)
   genInfo.yOffset <== cellInfo.yOffset + textSize * (cellInfo.maxMessages + one)
   itemInfo.yOffset <== genInfo.yOffset + textSize * (genInfo.nbMessages + one)
+  selectionMenu.yOffset <== itemInfo.yOffset + textSize * (itemInfo.maxMessages + one)
 
   def setCellMessage(s:String):Unit =
   {
@@ -72,6 +77,8 @@ object MessageHandler
     genInfo.show()
     if (Game.currentPhase == "inventory")
       itemInfo.show()
+    if (Game.currentPhase == "speak")
+      selectionMenu.show()
   }
 
   def clear():Unit =

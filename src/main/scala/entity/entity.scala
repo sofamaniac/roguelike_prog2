@@ -361,17 +361,19 @@ class Player()
 }
 class SelectionMenu(val zone:MessageZone)
 {
-    var messageStart = 0  // index of first element to be displayed
-    var messagesSize = 10  // number of element to display at once
-    var curMessage = 0    // index of currently selected item
+    var inventory:Vector[Item] = Vector() // maybe move inventory into its own class/object
+    var invStart = 0  // index of first element to be displayed
+    var invSize = 10  // number of element to display at once
+    var curInv = 0    // index of currently selected item
+    var nbItem = 0    // number of item in inventory
 
     def display():Unit =
     {
-      zone.inventory.clear()
+      zone.clear()
       var i = 0
       for(j <- inventory)
       {
-        if (messageStart <= i && i < messageStart+messageSize)
+        if (invStart <= i && i < invStart+invSize)
         {
           if (i == curInv){
             zone.addMessage("> "+j.getInfo()) 
@@ -385,21 +387,47 @@ class SelectionMenu(val zone:MessageZone)
     }
     def prevPage():Unit =
     {
-      if (messageStart != 0)
-        messageStart -= messageSize
+      if (invStart != 0)
+        invStart -= invSize
       display()
     }
     def nextPage():Unit =
     {
-      if (messageStart+messageSize < zone.nbMessages)
-        messageStart += messageSize
+      if (invStart+invSize < nbItem)
+        invStart += invSize
       display()
     }
     def moveItem(d:Int):Unit =
     {
-      if (messageStart <= curMessage + d && curMessage + d < nbItem.min(messageStart + messageSize))
-        curMessage += d
+      if (invStart <= curInv + d && curInv + d < nbItem.min(invStart + invSize))
+        curInv += d
       display()
+    }
+    def useItem():Unit =
+    {
+      inventory(curInv).onUse(owner)
+      display()
+    }
+    def remove(i:Item):Unit =
+    {
+      inventory = inventory.filterNot(_ == i)
+      nbItem -= 1
+      owner.curWeight -= i.weight
+      curInv = curInv.min(nbItem -1)
+      display()
+    }
+    def add(i:Item):Unit=
+    {
+      inventory = inventory :+ i
+      nbItem += 1
+      owner.curWeight += i.weight
+      display()
+    }
+    def drop():Unit =
+    {
+      inventory(curInv).pos.setPoint(owner.pos)
+      Map.fromPoint(owner.pos).item = Some(inventory(curInv)) // override current item on tile
+      remove(inventory(curInv))
     }
 }
 
