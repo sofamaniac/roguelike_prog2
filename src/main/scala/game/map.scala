@@ -116,6 +116,7 @@ class Tile(val coord:Point)
       MessageHandler.setCellMessage("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
     }
 
+    // returns true iff a tile is in the player's see range and not visually blocked by a wall or a door
     def isVisible(offset:Point=new Point(0,0)):Boolean = 
     {
         val d = coord.distance(Game.player.pos)
@@ -493,7 +494,7 @@ object Room
 
 case class Room()
 {
-  var topLeft = new Point(0, 0)  // coordinates of the top left corner of the smallest box containing the room
+  var topLeft = new Point(0, 0)  // coordinates of the top left corner of the smallest bounding box containing the room
 
   var tiles = MapObject[(Int, Int), Tile]()
 
