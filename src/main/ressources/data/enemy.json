@@ -4,9 +4,9 @@
 		"behaviourType": "classic",
 		"animation":
 			{
-				"file": "goblin.png",
-				"nbFrame": 11,
-				"sizeY": 58
+				"file": "bat.png",
+				"nbFrame": 4,
+				"sizeY": 64
 			},
 		"flying": true,
 		"maxHP": 100,
@@ -22,23 +22,51 @@
 		"weapon":	"sword",
 		"lootTable": [
 			{
-				"item":"simple_key",
-				"weight": 50
-			},
-			{
 				"item": "bandages",
-				"weight": 50
+				"weight": 100
+			}
+		]
+	},
+
+    {
+		"name": "Beaver",
+		"behaviourType": "coward",
+		"animation":
+			{
+				"file": "beaver.png",
+				"nbFrame": 4,
+				"sizeY": 64,
+                "marginY" : 64
+			},
+		"flying": true,
+		"maxHP": 100,
+		"armorClass": 30,
+		"baseAP": 5,
+		"modifAP": 0,
+		"baseStr": 10,
+		"modifStr": 0,
+		"baseDex": 10,
+		"modifDex": 0,
+		"basePow": 10,
+		"modifPow": 0,
+		"weapon":	"sword",
+		"lootTable": [
+			{
+				"item": "simplekey",
+				"weight": 100
 			}
 		]
 	},
 
 	{
 		"name": "Cultist Brawler",
+        "behaviourType": "classic",
 		"animation":
 			{
-				"file": "goblin.png",
-				"nbFrame": 11,
-				"sizeY": 58
+				"file": "cultist.png",
+				"nbFrame": 10,
+				"sizeY": 64,
+                "marginY": 384
 			},
 		"maxHP": 100,
 		"armorClass": 30,
@@ -53,12 +81,35 @@
 		"weapon":	"sword",
 		"loot_table": [
 			{
-				"item":"simple_key",
-				"weight": 50
+				"item": "bandages",
+				"weight": 100
+			}
+		]
+	},
+    {
+		"name": "Skeleton",
+        "behaviourType": "classic",
+		"animation":
+			{
+				"file": "skeleton.png",
+				"nbFrame": 13,
+				"sizeY": 64
 			},
+		"maxHP": 100,
+		"armorClass": 30,
+		"baseAP": 5,
+		"modifAP": 0,
+		"baseStr": 10,
+		"modifStr": 0,
+		"baseDex": 10,
+		"modifDex": 0,
+		"basePow": 10,
+		"modifPow": 0,
+		"weapon":	"sword",
+		"loot_table": [
 			{
 				"item": "bandages",
-				"weight": 50
+				"weight": 100
 			}
 		]
 	},
@@ -67,40 +118,10 @@
 		"behaviourType": "merchant",
 		"animation":
 			{
-				"file": "goblin.png",
-				"nbFrame": 11,
-				"sizeY": 58
-			},
-		"maxHP": 100,
-		"armorClass": 30,
-		"baseAP": 5,
-		"modifAP": 0,
-		"baseStr": 10,
-		"modifStr": 0,
-		"baseDex": 10,
-		"modifDex": 0,
-		"basePow": 10,
-		"modifPow": 0,
-		"weapon":	"sword",
-		"loot_table": [
-			{
-				"item":"simple_key",
-				"weight": 50
-			},
-			{
-				"item": "bandages",
-				"weight": 50
-			}
-		]
-	}
-
-    {
-		"name": "Merchant",
-		"animation":
-			{
-				"file": "goblin.png",
-				"nbFrame": 11,
-				"sizeY": 58
+				"file": "merchant.png",
+				"nbFrame": 9,
+				"sizeY": 64,
+                "marginY": 640
 			},
 		"maxHP": 100,
 		"armorClass": 30,
@@ -118,6 +139,11 @@
 				"item": "bandages",
 				"weight": 100
 			}
-		]
+		],
+        "inventory": [
+            {
+                "item": "gem"
+            }
+        ]
 	}
 ]
