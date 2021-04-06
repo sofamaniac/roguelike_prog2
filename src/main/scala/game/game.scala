@@ -17,6 +17,7 @@ object Game
     val cursor = new Cursor(GameWindow.contextGame)
     var currentPhase = ""
     var currentWeapon = player.weapon
+    var speakingTo:SentientEntity = player
 
     var enemiesVector:Vector[Enemy] = Vector()
 
@@ -32,6 +33,8 @@ object Game
         case "E"      => setPhase("inventory")
         case "F"      => player.inventory.drop()
         case "G"      => pickUp()
+        case "S"      => speak()
+        case "T"      => trade()
         case "Enter"  => loop()
         case "F1"     => MessageHandler.setHelp()
         case _        => ()
@@ -44,7 +47,7 @@ object Game
         var selectionPhase = true // Are we selcting a tile on the map
         if(phase == "move")
         {
-            Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP))
+          Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP && player.curAP > 0), highlightPlayer=true)
             cursor.limitation = true
         }
         else if(phase == "attack")
@@ -66,9 +69,10 @@ object Game
             cursor.limitation = false // cursor can move freely on all visible tiles
             Map.setHighlight((p:Point)=>false)
         }
-        else if(phase == "inventory")
+        else if(phase == "inventory" || phase == "speak" || phase == "trade")
         {
           selectionPhase = false
+          speakingTo = if(phase == "inventory") player else speakingTo
         }
         if(selectionPhase && phase != currentPhase)
         {
@@ -97,21 +101,23 @@ object Game
                              setPhase("move")
 
             case "info"   => ()
-            case "inventory" => player.inventory.useItem()
+            case "inventory" | "speak" => speakingTo.inventory.useItem()
+            case "trade"  => sell()
             case _ => println(currentPhase)
       }
     }
 
     def handleArrow(event:String):Unit = 
     {
-      if(currentPhase == "inventory")
+      if(currentPhase == "inventory" || currentPhase == "speak" || currentPhase == "trade")
       {
+        val entity = if(currentPhase == "speak") speakingTo else player
         event match
         {
-          case "Right"  => player.inventory.nextPage()
-          case "Left"   => player.inventory.prevPage()
-          case "Up"     => player.inventory.moveItem(-1)
-          case "Down"   => player.inventory.moveItem(1)
+          case "Right"  => entity.inventory.nextPage()
+          case "Left"   => entity.inventory.prevPage()
+          case "Up"     => entity.inventory.moveItem(-1)
+          case "Down"   => entity.inventory.moveItem(1)
         }
       }
       else
@@ -146,28 +152,31 @@ object Game
 
     def initialization() =
     {
+        MessageHandler.clear()
         // generate map : already done for now
-        player.move(new Point(0, 0))
+        player.move(new Point(1, 1))
         player.inventory.add(WeaponCreator.create())
         player.inventory.add(WeaponCreator.create("Fire Ball"))
         player.inventory.add(WeaponCreator.create("sword"))
         player.inventory.add(new Bandages)
 
         setPhase("move")
-        MessageHandler.clear()
         player.inventory.display()
         player.inventory.curInv = 0
+        // player.endTurn()
 
         // creating and placing enemies :
         enemiesVector = Map.getEnemies()
 
         // creating and placing items :
+        MessageHandler.clear()
     }
 
     def loop() = 
     {
         player.endTurn()
         player.inventory.display()
+        speakingTo.inventory.display()
 
         changeWeapon(player.weapon)
 
@@ -206,7 +215,7 @@ object Game
       setPhase(currentPhase)
     }
 
-    def pickUp() =
+    def pickUp():Unit =
     {
       Map.fromPoint(player.pos).item match
       {
@@ -217,5 +226,35 @@ object Game
                           Map.fromPoint(player.pos).item = None
                         }
       }
+    }
+
+    def speak():Unit =
+    {
+      Map.fromPoint(cursor.pos).entity match
+      {
+        case Some(e) => if(player.pos.distance(e.pos) <= 1)
+                        {
+                          speakingTo = e
+                          setPhase("speak")
+                        }
+        case _       => ()
+      }
+    }
+    def trade():Unit =
+    {
+      Map.fromPoint(cursor.pos).entity match
+      {
+        case Some(e) => if(player.pos.distance(e.pos) <= 1)
+                        {
+                          speakingTo = e
+                          setPhase("trade")
+                        }
+        case _       => ()
+      }
+    }
+
+    def sell():Unit =
+    {
+      player.inventory.sell(speakingTo)
     }
 }

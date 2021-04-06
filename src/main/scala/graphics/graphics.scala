@@ -36,14 +36,13 @@ class GraphicEntity(val animation:Animation, val pos:Point, var dest:GraphicsCon
   val w = GameWindow.canvasGame.width
   val h = GameWindow.canvasGame.height
 
-  def show(offset:Point=new Point(0,0)) : Unit =
+  def show() : Unit =
   {
     val viewport = animation(currentFrame).getViewport()
     val frame = animation(currentFrame).getImage()
 
     // We set the offset based on the offset given as a parameter and the player position
-    val off = new Point(offset)
-    off.add(Game.player.pos)
+    val off = new Point(Game.player.pos)
     
     val x = w.value/2 + GameWindow.tileSize * (sqrt(3) * (pos.x-off.x)  +  sqrt(3)/2 * (pos.y - off.y))
     val y = h.value/2 + GameWindow.tileSize * (                                3.0/2 * (pos.y - off.y))

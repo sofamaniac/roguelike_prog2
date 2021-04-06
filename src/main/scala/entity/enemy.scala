@@ -78,6 +78,7 @@ object Enemy
 
     behaviour match
     {
+      case "merchant" => new Merchant(animation, new Point(8,8), name, fly, weapon, loot, args) // TODO: add possibility to define trades in json
       case "neutral"  => new NeutralNPC(animation, new Point(6,7), name, fly, weapon, loot, args)
       case "coward"   => new CowardNPC(animation, new Point(2,3), name, fly, weapon, loot, args)
       case _          => new Enemy(animation, new Point(5, 3), name, fly, weapon, loot, args)
@@ -159,7 +160,7 @@ class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapo
   {
     if (!neutral || lastHitBy == Game.player)
     {
-      neutral = true
+      neutral = false
       super.IA()
     }
   }
@@ -189,6 +190,23 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
   }
 }
 
+class Merchant(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[String, Int])
+  extends Enemy(animation, pos, name, fly, weapon, loot, map)
+{
+  inventory = new Inventory(this){
+    override def useItem():Unit =
+    {
+      Game.player.inventory.add(inventory(curInv))
+      Game.player.gold -= inventory(curInv).price
+      println(inventory(curInv).price)
+      remove(inventory(curInv))
+    }
+  }
+  inventory.add(ItemCreator.create("shotgun"))
+  inventory.add(ItemCreator.create("bandages"))
+}
+
+
 object LootTable {
 
   implicit val rw: ReadWriter[LootTable] = 
@@ -211,7 +229,7 @@ case class LootTable() {
   // We store the tuple (itemName, weight)
   // an item is create only when loot is called
   var table:Vector[(String, Int)] = Vector()
-  var totalWeight:Int = 0
+  var totalWeight:Int = 1
 
   def loot():Item = {
 
@@ -223,6 +241,7 @@ case class LootTable() {
       s += table(i)._2
       i += 1
     }
+    i = i.max(0).min(table.length - 1)
     return ItemCreator.create(table(i)._1)
   }
 

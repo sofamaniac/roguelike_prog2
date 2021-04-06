@@ -82,7 +82,8 @@ case class Key() extends Item
   val weight = 0
   def onUse(user:SentientEntity) =
   {
-    if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable)
+    if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable
+      && Map.fromPoint(Game.cursor.pos).asInstanceOf[Door].keyType == name)
     {
       Map.fromPoint(Game.cursor.pos).asInstanceOf[Door].open()
       user.inventory.remove(this)
