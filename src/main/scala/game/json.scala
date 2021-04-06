@@ -113,3 +113,15 @@ object WeaponCreator{
     return result
   }
 }
+
+object RoomCreator{
+  val path = "src/main/ressources/data/"
+  val data = Source.fromFile(path+"room.json").getLines.mkString
+
+  def create(name:String=""):Room={
+    Room.nameToCreate = name
+    val result = read[Room](data)
+    Room.nameToCreate = ""
+    return result
+  }
+}

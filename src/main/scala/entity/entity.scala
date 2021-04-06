@@ -70,15 +70,15 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var regenHP:Int         = 0
 
     // We setup the armor
-    var helmet:Helmet = new Helmet
-    var chestplate:Chestplate = new Chestplate
-    var leggings:Leggings = new Leggings
-    var boots:Boots = new Boots
+    var helmet:Helmet = ItemCreator.create("chainmail helmet").asInstanceOf[Helmet]
+    var chestplate:Chestplate = ItemCreator.create("chainmail chestplate").asInstanceOf[Chestplate]
+    var leggings:Leggings = ItemCreator.create("chainmail leggings").asInstanceOf[Leggings]
+    var boots:Boots = ItemCreator.create("chainmail boots").asInstanceOf[Boots]
 
     // And the jewelry
-    var ring1:Item = new Jewel
-    var ring2:Item = new Jewel
-    var Pendant:Item = new Jewel
+    // var ring1:Item = new Jewel
+    // var ring2:Item = new Jewel
+    // var Pendant:Item = new Jewel
     
     val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
 

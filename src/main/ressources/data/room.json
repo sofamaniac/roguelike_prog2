@@ -1,0 +1,88 @@
+[
+	{
+		"name":"room1",
+		"size":
+		[
+			"x": 13
+		],
+		"doors": [
+			{
+				"openCondition": "key",
+				"x": 3,
+				"y": 10
+			},
+			{
+				"openCondition": "receptacles",
+				"x": 10,
+				"y": 5
+			}
+		],
+		"enemies":
+		[
+			{
+				"name": "bat",
+				"x":5,
+				"y":5
+			}
+		],
+		"receptacles":
+		[
+			{
+				"item": "chainmail helmet",
+				"x":7,
+				"y":7
+			}
+		]
+	},
+	{
+		"name": "room2",
+		"size":
+		[
+			"x": 7
+		],
+		"doors":
+		[
+			{
+				"openCondition": "key",
+				"x": 5,
+				"y": 0
+			}
+		],
+		"npcs":
+		[
+			{
+				"name": "Jeam-Michel",
+				"x": 3,
+				"y": 3
+			}
+		]
+	},
+	{
+		"name": "room3",
+		"size":
+		[
+			"x": 20
+		],
+		"doors":
+		[
+			{
+				"openCondition": "key",
+				"x": 0,
+				"y": 10
+			},
+			{
+				"openCondition": "killAll",
+				"x": 20,
+				"y": 10
+			}
+		],
+		"enemies":
+		[
+			{
+				"name": "bat",
+				"x":5,
+				"y":5
+			}
+		]
+	}
+]
