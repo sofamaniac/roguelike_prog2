@@ -38,7 +38,6 @@
 		"damRoll": 4,
 		"price": 10
 	},
-<<<<<<< HEAD
 	{
 		"type": "armor",
 		"part": "chestplate",
@@ -62,14 +61,13 @@
 		"part": "boots",
 		"name": "chainmail boots",
 		"armorClass": 5
-=======
-
+	},
     {
+		"type": "gem",
 		"name": "gem",
 		"description": "a nice, hand-crafted shiny gem",
 		"weight": 4,
 		"price": 10
->>>>>>> 6e3c00c879ef92ead380d3fc84ed1162e74a8615
 	}
 
 ]

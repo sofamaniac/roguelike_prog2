@@ -116,7 +116,6 @@ class Tile(val coord:Point)
       MessageHandler.setCellMessage("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
     }
 
-    // returns true iff a tile is in the player's see range and not visually blocked by a wall or a door
     def isVisible(offset:Point=new Point(0,0)):Boolean = 
     {
         val d = coord.distance(Game.player.pos)
@@ -190,6 +189,9 @@ object Map
     rooms += (0,0) -> RoomCreator.create("room1")
     rooms += (0,1) -> RoomCreator.create("room2")
     rooms += (1,0) -> RoomCreator.create("room3")
+
+    rooms((0,0)).tiles((5,13)).asInstanceOf[Door].connectDoor(rooms((0,1)).tiles((5,0)).asInstanceOf[Door])
+    rooms((0,0)).tiles((13,5)).asInstanceOf[Door].connectDoor(rooms((1,0)).tiles((0,10)).asInstanceOf[Door])
 
     /** Display the entirety of the map on the screen */
     def show() = 
@@ -404,7 +406,7 @@ object Room
       json = json(index)
 
     val shape = "square"
-    val size = MapObject("x" -> JsonTools.load(json, "size", 10))  // TODO: in the future the shape of a room could depend on several parameters
+    val size = MapObject("x" -> JsonTools.load(json("size"), "x", 10))  // TODO: in the future the shape of a room could depend on several parameters
     val enemies = loadEnemies(json)
     val doors = loadDoors(json)
     val items = loadItems(json)
@@ -416,13 +418,13 @@ object Room
   }
   def loadEnemies(json:ujson.Value):MapObject[(Int, Int), Enemy]=
   {
-    val array = json("enemies")
+    val array = if(JsonTools.contains(json, "enemies")) json("enemies") else ujson.Arr()
     var result = MapObject[(Int, Int), Enemy]()
     var i = 0
-    for(i<-0 to JsonTools.length(array))
+    for(i<-0 to JsonTools.length(array)-1)
     {
-      val x = JsonTools.load(json, "x", 0)
-      val y = JsonTools.load(json, "y", 0)
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
       val enemy = EnemyCreator.create(JsonTools.load(json, "name", "bat"))
 
       result += (x, y) -> enemy
@@ -432,13 +434,13 @@ object Room
   }
   def loadDoors(json:ujson.Value):MapObject[(Int, Int), String]=
   {
-    val array = json("doors")
+    val array = if(JsonTools.contains(json, "doors")) json("doors") else ujson.Arr()
     var result = MapObject[(Int, Int), String]()
     var i = 0
-    for(i<-0 to JsonTools.length(array))
+    for(i<-0 to JsonTools.length(array)-1)
     {
-      val x = JsonTools.load(json, "x", 0)
-      val y = JsonTools.load(json, "y", 0)
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
       val condition = JsonTools.load(json, "openCondition", "killAll")
 
       result += (x, y) -> condition
@@ -447,13 +449,13 @@ object Room
   }
   def loadItems(json:ujson.Value):MapObject[(Int, Int), Item]=
   {
-    val array = JsonTools.load(json, "enemies", Vector[ujson.Value]())
+    val array = if(JsonTools.contains(json, "items")) json("items") else ujson.Arr()
     var result = MapObject[(Int, Int), Item]()
     var i = 0
-    for(i<-0 to JsonTools.length(array))
+    for(i<-0 to JsonTools.length(array)-1)
     {
-      val x = JsonTools.load(json, "x", 0)
-      val y = JsonTools.load(json, "y", 0)
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
       val item = ItemCreator.create(JsonTools.load(json, "name", "chainmail helmet"))
 
       result += (x, y) -> item
@@ -462,13 +464,13 @@ object Room
   }
   def loadNPC(json:ujson.Value):MapObject[(Int, Int), SentientEntity]=
   {
-    val array = json("npcs")
+    val array = if(JsonTools.contains(json, "npcs")) json("npcs") else ujson.Arr()
     var result = MapObject[(Int, Int), SentientEntity]()
     var i = 0
-    for(i<-0 to JsonTools.length(array))
+    for(i<-0 to JsonTools.length(array)-1)
     {
-      val x = JsonTools.load(json, "x", 0)
-      val y = JsonTools.load(json, "y", 0)
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
       val enemy = EnemyCreator.create(JsonTools.load(json, "name", "Jean-Michel"))
 
       result += (x, y) -> enemy
@@ -477,13 +479,13 @@ object Room
   }
   def loadReceptacles(json:ujson.Value):MapObject[(Int, Int), String]=
   {
-    val array = json("receptacles")
+    val array = if(JsonTools.contains(json, "receptacles")) json("receptacles") else ujson.Arr()
     var result = MapObject[(Int, Int), String]()
     var i = 0
-    for(i<-0 to JsonTools.length(array))
+    for(i<-0 to JsonTools.length(array)-1)
     {
-      val x = JsonTools.load(json, "x", 0)
-      val y = JsonTools.load(json, "y", 0)
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
       val item = JsonTools.load(json, "item", "chainmail helmet")
 
       result += (x, y) -> item
@@ -494,7 +496,7 @@ object Room
 
 case class Room()
 {
-  var topLeft = new Point(0, 0)  // coordinates of the top left corner of the smallest bounding box containing the room
+  var topLeft = new Point(0, 0)  // coordinates of the top left corner of the smallest box containing the room
 
   var tiles = MapObject[(Int, Int), Tile]()
 

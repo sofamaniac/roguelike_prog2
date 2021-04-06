@@ -1,26 +1,26 @@
 [
 	{
-		"name":"room1",
+		"name": "room1",
 		"size":
-		[
+		{
 			"x": 13
-		],
+		},
 		"doors": [
 			{
 				"openCondition": "key",
-				"x": 3,
-				"y": 10
+				"x": 5,
+				"y": 13
 			},
 			{
 				"openCondition": "receptacles",
-				"x": 10,
+				"x": 13,
 				"y": 5
 			}
 		],
 		"enemies":
 		[
 			{
-				"name": "bat",
+				"name": "Beaver",
 				"x":5,
 				"y":5
 			}
@@ -28,7 +28,7 @@
 		"receptacles":
 		[
 			{
-				"item": "chainmail helmet",
+				"item": "gem",
 				"x":7,
 				"y":7
 			}
@@ -37,9 +37,9 @@
 	{
 		"name": "room2",
 		"size":
-		[
+		{
 			"x": 7
-		],
+		},
 		"doors":
 		[
 			{
@@ -60,9 +60,9 @@
 	{
 		"name": "room3",
 		"size":
-		[
+		{
 			"x": 20
-		],
+		},
 		"doors":
 		[
 			{
@@ -79,7 +79,7 @@
 		"enemies":
 		[
 			{
-				"name": "bat",
+				"name": "Skeleton",
 				"x":5,
 				"y":5
 			}

@@ -50,6 +50,7 @@ object Item {
       case "key"      => new Key(name, description, price, rarity, weight)
       case "bandages" => new Bandages(name, description, price, rarity, weight)
       case "armor"    => Armor.create(json, name, description, price, rarity, weight)
+      case "gem"      => new Gem(name, description, price, rarity, weight)
     }
     return result
   }
@@ -112,6 +113,12 @@ case class Jewel(val name:String, val description:String, val price:Int, val rar
       Map.fromPoint(Game.cursor.pos).asInstanceOf[Door].open()
       user.inventory.remove(this)
     }
+  }
+}
+class Gem(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item()
+{
+  def onUse(user:SentientEntity)=
+  {
   }
 }
 
