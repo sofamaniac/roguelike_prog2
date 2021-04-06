@@ -50,7 +50,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     var modifPow:Int
 
     var weapon:Weapon       // equipped weapon
-    var inventory:Inventory = new Inventory(this)
+    var inventory:Inventory = new Inventory(this, MessageHandler.tradeZone)
 
     var poisonDuration:Int  = 0 // number of turn before end of poison effect
     var poisonDamage:Int    = 0
@@ -283,6 +283,7 @@ class Player()
     extends SentientEntity(Animation.load("character.png", 4, sizeY=64), new Point(0,0))
 {
     val name = "Player"
+        inventory = new Inventory(this, MessageHandler.inventory)
 
     var maxHP = 100
     var curHP = 100
@@ -325,12 +326,21 @@ class Player()
       super.damage(dam, from)
       displayInfo()
     }
+    override def heal(hp:Int):Unit=
+    {
+      super.heal(hp)
+      displayInfo()
+    }
     override def applyMagicCost(cost:Int):Unit =
     {
       super.applyMagicCost(cost:Int)
       displayInfo()
     }
-
+    override def applyEffects():Unit =
+    {
+      super.applyEffects()
+      displayInfo()
+    }
     def dodge():Boolean = {return false}
 
     def getSeeRange():Int = 
@@ -358,12 +368,13 @@ class Player()
       zone.addMessage("Pow:%d(+%d)\t\t\tWeight:%d/%d".format(basePow, modifPow, curWeight, maxWeight))
       zone.addMessage("Helmet:%s(+%d)\t\tChesplate:%s(+%d)".format(helmet.name, helmet.armorClass, chestplate.name, chestplate.armorClass))
       zone.addMessage("Leggings:%s(+%d)\t\tBoots:%s(+%d)".format(leggings.name, leggings.armorClass, boots.name, boots.armorClass))
+      zone.addMessage("Weapon:%s".format(weapon.name))
     }
 }
 
-class Inventory(val owner:SentientEntity)
+class Inventory(val owner:SentientEntity, val zone:MessageZone=MessageHandler.tradeZone)
 {
-      var inventory:Vector[Item] = Vector() // maybe move inventory into its own class/object
+    var inventory:Vector[Item] = Vector() 
     var invStart = 0  // index of first element to be displayed
     var invSize = 10  // number of element to display at once
     var curInv = 0    // index of currently selected item
@@ -371,22 +382,22 @@ class Inventory(val owner:SentientEntity)
 
     def display():Unit =
     {
-      MessageHandler.inventory.clear()
-      Game.player.displayInfo()   // TODO: not great of referencing the player directly
+      zone.clear()
       var i = 0
       for(j <- inventory)
       {
         if (invStart <= i && i < invStart+invSize)
         {
           if (i == curInv){
-            MessageHandler.inventory.addMessage("> "+j.getInfo())
+            zone.addMessage("> "+j.getInfo())
             MessageHandler.setItemInfo(j.getDescription())
           }
           else
-            MessageHandler.inventory.addMessage(j.getInfo())
+            zone.addMessage(j.getInfo())
         }
         i+=1
       }
+      zone.show()
     }
     def prevPage():Unit =
     {
@@ -430,5 +441,12 @@ class Inventory(val owner:SentientEntity)
     {
       inventory(curInv).pos.setPoint(owner.pos)
       Map.fromPoint(owner.pos).placeItem(inventory(curInv), Some(owner))
+    }
+    def sell(dest:SentientEntity):Unit =
+    {
+      dest.inventory.add(inventory(curInv))
+      dest.gold -= inventory(curInv).price
+      owner.gold += inventory(curInv).price
+      remove(inventory(curInv))
     }
 }

@@ -315,9 +315,9 @@ class Door(coord:Point, val room:Room) extends Tile(coord)
   seeThrough = false
   flyable = false
   var openCondition = "key"
-  val keyType = "simple key"  // We can specify that a specific key is needed to open the door
+  val keyType = ""                      // We can specify that a specific key is needed to open the door
 
-  var nextDoor:Option[Door] = None       // which door it is linked to in the nextRoom
+  var nextDoor:Option[Door] = None      // which door it is linked to in the nextRoom
 
   def open():Unit = { 
     if(walkable)
@@ -363,6 +363,7 @@ class Receptacle(coord:Point, val room:Room) extends Tile(coord)
 {
   var itemToPlace = "key" // name of the item to put in the receptacle
   var full = false  // is the [itemToPlace] inside the receptacle
+  frontTexture = Some(new GraphicEntity(Animation.load("receptacleOff.png", 1), coord, GameWindow.contextGame))
 
   override def placeItem(droppedItem:Item, from:Option[SentientEntity]=None):Unit=
   {
@@ -378,7 +379,7 @@ class Receptacle(coord:Point, val room:Room) extends Tile(coord)
   {
     super.show()
     if(full)
-      ()  // just show the good texture if the receptacle is full
+      frontTexture = Some(new GraphicEntity(Animation.load("receptacleOn.png", 1), coord, GameWindow.contextGame))
   }
 
 }
@@ -435,9 +436,14 @@ case class Room()
     doors = doors :+ tiles((3,  0)).asInstanceOf[Door]
 
     receptacles = receptacles :+ tiles((5,5)).asInstanceOf[Receptacle]
+
     enemies = enemies :+ EnemyCreator.create()
     tiles((5,5)).entity = Some(enemies(0))
     enemies(0).pos.setPoint(new Point(5, 5))
+
+    otherNPCs = otherNPCs :+ EnemyCreator.create("Jean-Michel")
+    tiles((2,8)).entity = Some(otherNPCs(0))
+    otherNPCs(0).pos.setPoint(new Point(2, 8))
   }
   def setOffset(ref:Point, p:Point)
   {
