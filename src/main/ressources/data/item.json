@@ -37,5 +37,12 @@
 		"nbRoll": 1,
 		"damRoll": 4,
 		"price": 10
+	},
+
+    {
+		"name": "gem",
+		"description": "a nice, hand-crafted shiny gem",
+		"weight": 4,
+		"price": 10
 	}
 ]
