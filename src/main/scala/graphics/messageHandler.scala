@@ -18,7 +18,6 @@ object MessageHandler
 
   var textSize = IntegerProperty(20)
 
-
   help.addDefaults("Press F1 to display help")
   help.addDefaults("Use Left/Right arrow to change orientation and Up/Down to move")
   help.addDefaults("Enter to end turn")
@@ -46,6 +45,8 @@ object MessageHandler
 
   tradeZone.addDefaults("Speak: ")
   tradeZone.maxMessages() = 11
+
+  genInfo.maxMessages() = 1
 
   val one = IntegerProperty(1)
 

@@ -116,7 +116,6 @@ class Tile(val coord:Point)
       MessageHandler.setCellMessage("Tile at (%d, %d) : %s, %s".format(coord.x, coord.y, se, si))
     }
 
-    // returns true iff a tile is in the player's see range and not visually blocked by a wall or a door
     def isVisible(offset:Point=new Point(0,0)):Boolean = 
     {
         val d = coord.distance(Game.player.pos)
@@ -186,10 +185,13 @@ class Wall(coord:Point) extends Tile(coord)
 object Map
 {
     var rooms = MapObject[(Int, Int), Room]()
-    rooms += (0,0) -> Room.create()
-    rooms += (0,1) -> Room.create()
 
-    rooms((0, 0)).tiles((3, 10)).asInstanceOf[Door].connectDoor(rooms((0, 1)).tiles((3, 0)).asInstanceOf[Door])
+    rooms += (0,0) -> RoomCreator.create("room1")
+    rooms += (0,1) -> RoomCreator.create("room2")
+    rooms += (1,0) -> RoomCreator.create("room3")
+
+    rooms((0,0)).tiles((5,13)).asInstanceOf[Door].connectDoor(rooms((0,1)).tiles((5,0)).asInstanceOf[Door])
+    rooms((0,0)).tiles((13,5)).asInstanceOf[Door].connectDoor(rooms((1,0)).tiles((0,10)).asInstanceOf[Door])
 
     /** Display the entirety of the map on the screen */
     def show() = 
@@ -301,13 +303,13 @@ object Map
       var result = Vector[Enemy]()
       rooms.foreach
       {
-        case(key, room) => result = result ++ room.enemies
+        case(key, room) => result = result ++ room.enemies ++ room.otherNPCs.asInstanceOf[Vector[Enemy]]
       }
       return result
     }
 }
 
-class Door(coord:Point, val room:Room) extends Tile(coord)
+class Door(coord:Point, val room:Room, val openCondition:String) extends Tile(coord)
 {
   // [room] is the room on which depends the opening condition
 
@@ -315,7 +317,6 @@ class Door(coord:Point, val room:Room) extends Tile(coord)
   walkable = false
   seeThrough = false
   flyable = false
-  var openCondition = "key"
   val keyType = ""                      // We can specify that a specific key is needed to open the door
 
   var nextDoor:Option[Door] = None      // which door it is linked to in the nextRoom
@@ -360,9 +361,9 @@ class Door(coord:Point, val room:Room) extends Tile(coord)
   }
 }
 
-class Receptacle(coord:Point, val room:Room) extends Tile(coord)
+class Receptacle(coord:Point, val room:Room, val itemToPlace:String) extends Tile(coord)
 {
-  var itemToPlace = "key" // name of the item to put in the receptacle
+  // [itemToPlace] is the name of the item to put in the receptacle
   var full = false  // is the [itemToPlace] inside the receptacle
   frontTexture = Some(new GraphicEntity(Animation.load("receptacleOff.png", 1), coord, GameWindow.contextGame))
 
@@ -390,24 +391,112 @@ object Room
   implicit val rw: ReadWriter[Room] =
     readwriter[ujson.Value].bimap[Room](
       e => ujson.Arr(),
-      json => createJson(json)
+      json => create(json)
     )
 
-  def createJson(json:ujson.Value):Room=
+  var nameToCreate = ""
+
+  def create(_json:ujson.Value):Room=
   {
-    return new Room()
+    var json = _json
+    var index = JsonTools.find(json, "name", nameToCreate)
+    if (index == -1)
+      json = JsonTools.getRandom(json)
+    else
+      json = json(index)
+
+    val shape = "square"
+    val size = MapObject("x" -> JsonTools.load(json("size"), "x", 10))  // TODO: in the future the shape of a room could depend on several parameters
+    val enemies = loadEnemies(json)
+    val doors = loadDoors(json)
+    val items = loadItems(json)
+    val npcs  = loadNPC(json)
+    val recep = loadReceptacles(json)
+    val result = new Room()
+    result.create(shape, size, enemies, doors, items, npcs, recep)
+    return result
   }
-  def create():Room=
+  def loadEnemies(json:ujson.Value):MapObject[(Int, Int), Enemy]=
   {
-    var room = new Room()
-    room.create()
-    return room
+    val array = if(JsonTools.contains(json, "enemies")) json("enemies") else ujson.Arr()
+    var result = MapObject[(Int, Int), Enemy]()
+    var i = 0
+    for(i<-0 to JsonTools.length(array)-1)
+    {
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
+      val enemy = EnemyCreator.create(JsonTools.load(json, "name", "bat"))
+
+      result += (x, y) -> enemy
+    }
+    return result
+
+  }
+  def loadDoors(json:ujson.Value):MapObject[(Int, Int), String]=
+  {
+    val array = if(JsonTools.contains(json, "doors")) json("doors") else ujson.Arr()
+    var result = MapObject[(Int, Int), String]()
+    var i = 0
+    for(i<-0 to JsonTools.length(array)-1)
+    {
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
+      val condition = JsonTools.load(json, "openCondition", "killAll")
+
+      result += (x, y) -> condition
+    }
+    return result
+  }
+  def loadItems(json:ujson.Value):MapObject[(Int, Int), Item]=
+  {
+    val array = if(JsonTools.contains(json, "items")) json("items") else ujson.Arr()
+    var result = MapObject[(Int, Int), Item]()
+    var i = 0
+    for(i<-0 to JsonTools.length(array)-1)
+    {
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
+      val item = ItemCreator.create(JsonTools.load(json, "name", "chainmail helmet"))
+
+      result += (x, y) -> item
+    }
+    return result
+  }
+  def loadNPC(json:ujson.Value):MapObject[(Int, Int), SentientEntity]=
+  {
+    val array = if(JsonTools.contains(json, "npcs")) json("npcs") else ujson.Arr()
+    var result = MapObject[(Int, Int), SentientEntity]()
+    var i = 0
+    for(i<-0 to JsonTools.length(array)-1)
+    {
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
+      val enemy = EnemyCreator.create(JsonTools.load(json, "name", "Jean-Michel"))
+
+      result += (x, y) -> enemy
+    }
+    return result
+  }
+  def loadReceptacles(json:ujson.Value):MapObject[(Int, Int), String]=
+  {
+    val array = if(JsonTools.contains(json, "receptacles")) json("receptacles") else ujson.Arr()
+    var result = MapObject[(Int, Int), String]()
+    var i = 0
+    for(i<-0 to JsonTools.length(array)-1)
+    {
+      val x = JsonTools.load(array(i), "x", 0)
+      val y = JsonTools.load(array(i), "y", 0)
+      val item = JsonTools.load(json, "item", "chainmail helmet")
+
+      result += (x, y) -> item
+    }
+    return result
   }
 }
 
 case class Room()
 {
-  var topLeft = new Point(0, 0)  // coordinates of the top left corner of the smallest bounding box containing the room
+  var topLeft = new Point(0, 0)  // coordinates of the top left corner of the smallest box containing the room
 
   var tiles = MapObject[(Int, Int), Tile]()
 
@@ -415,36 +504,50 @@ case class Room()
   var doors       = Vector[Door]()
   var receptacles = Vector[Receptacle]()
   var otherNPCs   = Vector[SentientEntity]()
+  var items       = Vector[Item]()
 
-  //def create(shape:String, size:MapObject[String, Int], doors:MapObject[(Int, Int), Door], enemies:MapObject[(Int, Int), Enemy], items:MapObject[(Int, Int), Item]):Room =
-  def create():Unit=
+  def create(shape:String, size:MapObject[String, Int], enemy:MapObject[(Int, Int), Enemy], door:MapObject[(Int, Int), String], 
+    item:MapObject[(Int, Int), Item], npcs:MapObject[(Int, Int), SentientEntity], recep:MapObject[(Int, Int), String]) =
   {
-    // TODO
     var i = 0
     var j = 0
-    for (i <- 0 to 10; j <- 0 to 10)
+    for (i <- 0 to size("x"); j <- 0 to size("x"))
     {
-      if (i == 10 || j == 10 || i == 0 || j == 0)
+      if (i == size("x") || j == size("x") || i == 0 || j == 0)
         tiles += (i, j) -> new Wall(new Point(i,j))
       else
         tiles += (i, j) -> new Tile(new Point(i,j))
     }
-    tiles((3, 10)) = new Door(new Point(3, 10), this){ openCondition="killAll" }
-    tiles((3,  0)) = new Door(new Point(3,  0), this){ openCondition="receptacles" }
-    tiles((5,  5)) = new Receptacle(new Point(5, 5), this){ itemToPlace="bandages" }
-
-    doors = doors :+ tiles((3, 10)).asInstanceOf[Door]
-    doors = doors :+ tiles((3,  0)).asInstanceOf[Door]
-
-    receptacles = receptacles :+ tiles((5,5)).asInstanceOf[Receptacle]
-
-    enemies = enemies :+ EnemyCreator.create()
-    tiles((5,5)).entity = Some(enemies(0))
-    enemies(0).pos.setPoint(new Point(5, 5))
-
-    otherNPCs = otherNPCs :+ EnemyCreator.create("Jean-Michel")
-    tiles((2,8)).entity = Some(otherNPCs(0))
-    otherNPCs(0).pos.setPoint(new Point(2, 8))
+    enemy.foreach
+    {
+      case (key, e) =>
+        tiles(key).entity = Some(e)
+        enemies = enemies :+ e
+    }
+    door.foreach
+    {
+      case(key, d) =>
+        tiles(key) = new Door(new Point(key._1, key._2), this, d)
+        doors = doors :+ tiles(key).asInstanceOf[Door]
+    }
+    recep.foreach
+    {
+      case(key, r) =>
+        tiles(key) = new Receptacle(new Point(key._1, key._2), this, r)
+        receptacles = receptacles :+ tiles(key).asInstanceOf[Receptacle]
+    }
+    npcs.foreach
+    {
+      case(key, n) =>
+        tiles(key).entity = Some(n)
+        otherNPCs = otherNPCs :+ n
+    }
+    item.foreach
+    {
+      case(key, i) =>
+        tiles(key).item = Some(i)
+        items = items :+ i
+    }
   }
   def setOffset(ref:Point, p:Point)
   {

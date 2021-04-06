@@ -1,0 +1,88 @@
+[
+	{
+		"name": "room1",
+		"size":
+		{
+			"x": 13
+		},
+		"doors": [
+			{
+				"openCondition": "key",
+				"x": 5,
+				"y": 13
+			},
+			{
+				"openCondition": "receptacles",
+				"x": 13,
+				"y": 5
+			}
+		],
+		"enemies":
+		[
+			{
+				"name": "Beaver",
+				"x":5,
+				"y":5
+			}
+		],
+		"receptacles":
+		[
+			{
+				"item": "gem",
+				"x":7,
+				"y":7
+			}
+		]
+	},
+	{
+		"name": "room2",
+		"size":
+		{
+			"x": 7
+		},
+		"doors":
+		[
+			{
+				"openCondition": "key",
+				"x": 5,
+				"y": 0
+			}
+		],
+		"npcs":
+		[
+			{
+				"name": "Jeam-Michel",
+				"x": 3,
+				"y": 3
+			}
+		]
+	},
+	{
+		"name": "room3",
+		"size":
+		{
+			"x": 20
+		},
+		"doors":
+		[
+			{
+				"openCondition": "key",
+				"x": 0,
+				"y": 10
+			},
+			{
+				"openCondition": "killAll",
+				"x": 20,
+				"y": 10
+			}
+		],
+		"enemies":
+		[
+			{
+				"name": "Skeleton",
+				"x":5,
+				"y":5
+			}
+		]
+	}
+]

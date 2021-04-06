@@ -21,6 +21,12 @@ object Item {
       json => createItem(json)
     )
 
+  val defName ="item"
+  val defDescription = "description"
+  val defPrice = 0
+  val defRarity = 0
+  val defWeight = 0
+
   var nameToCreate = ""
   def createItem(_json:ujson.Value):Item = {
     var json = _json
@@ -30,14 +36,21 @@ object Item {
     else
       json = json(index)
 
+    val name = JsonTools.load(json, "name", defName)
+    val description = JsonTools.load(json, "description", defDescription)
+    val price = JsonTools.load(json, "price", defPrice)
+    val rarity = JsonTools.load(json, "rarity", defRarity)
+    val weight = JsonTools.load(json, "weight", defWeight)
+
     var result = json("type").str match
     {
       case "weapon"   => WeaponCreator.create(json("name").str)
       case "scroll"   => WeaponCreator.create(json("name").str)
       case "grimoire" => WeaponCreator.create(json("name").str)
-      case "key"      => read[Key](json)
-      case "bandages" => read[Bandages](json)
-      case "armor"    => read[Armor](json)
+      case "key"      => new Key(name, description, price, rarity, weight)
+      case "bandages" => new Bandages(name, description, price, rarity, weight)
+      case "armor"    => Armor.create(json, name, description, price, rarity, weight)
+      case "gem"      => new Gem(name, description, price, rarity, weight)
     }
     return result
   }
@@ -48,7 +61,6 @@ abstract class Item()
 {
   val name:String
   val description:String
-    
   val price:Int
   val rarity:Int
   val weight:Int
@@ -67,19 +79,14 @@ abstract class Item()
 }
 
 object Key{
-  implicit val rw : ReadWriter[Key] =
-    readwriter[ujson.Value].bimap[Key](
-      e=> ujson.Arr(e.name, e.price),
-      json => new Key
-    )
+  //implicit val rw : ReadWriter[Key] =
+    //readwriter[ujson.Value].bimap[Key](
+      //e=> ujson.Arr(e.name, e.price),
+      //json => new Key
+    //)
 }
-case class Key() extends Item
+case class Key(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item()
 {
-  val name = "simple key"
-  val description = ""
-  val price = 0
-  val rarity = 0
-  val weight = 0
   def onUse(user:SentientEntity) =
   {
     if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable
@@ -91,19 +98,14 @@ case class Key() extends Item
   }
 }
 object Jewel{
-  implicit val rw : ReadWriter[Jewel] =
-    readwriter[ujson.Value].bimap[Jewel](
-      e=> ujson.Arr(e.name, e.price),
-      json => new Jewel // TODO differentiate based on armor piece type
-    )
+  //implicit val rw : ReadWriter[Jewel] =
+    //readwriter[ujson.Value].bimap[Jewel](
+      //e=> ujson.Arr(e.name, e.price),
+      //json => new Jewel // TODO differentiate based on armor piece type
+    //)
 }
-case class Jewel() extends Item
+case class Jewel(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item()
 {
-  val name = "simple key"
-  val description = ""
-  val price = 0
-  val rarity = 0
-  val weight = 0
   def onUse(user:SentientEntity) =
   {
     if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable)
@@ -113,41 +115,44 @@ case class Jewel() extends Item
     }
   }
 }
+class Gem(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item()
+{
+  def onUse(user:SentientEntity)=
+  {
+  }
+}
 
 object Armor{
-  implicit val rw : ReadWriter[Armor] =
-    readwriter[ujson.Value].bimap[Armor](
-      e=> ujson.Arr(e.name, e.price),
-      json => create(json) // TODO differentiate based on armor piece type
-    )
 
-  def create(json:ujson.Value):Armor = {
-    json("part").str match
+  def create(json:ujson.Value, name:String, description:String, price:Int, rarity:Int, weight:Int):Armor = {
+    val armorClass = JsonTools.load(json, "armorClass", 0)
+    JsonTools.load(json, "part", "") match
     {
-      case "helmet"     => new Helmet
-      case "chestplate" => new Chestplate
-      case "leggings"   => new Leggings
-      case "boots"      => new Boots
+      case "helmet"     => new Helmet(name, description, price, rarity, weight, armorClass)
+      case "chestplate" => new Chestplate(name, description, price, rarity, weight, armorClass)
+      case "leggings"   => new Leggings(name, description, price, rarity, weight, armorClass)
+      case _            => new Boots(name, description, price, rarity, weight, armorClass)
     }
   }
 }
-abstract case class Armor() extends Item
+abstract case class Armor()
+  extends Item()
 {
-  val name = "armor"
-  val description = ""
-  val price = 0
-  val rarity = 0
-  val weight = 0
-  val armorClass = 0
+  val name:String
+  val description:String
+  val price:Int
+  val rarity:Int
+  val weight:Int
+  val armorClass:Int
   // TODO add more modif (fire resistance, ...)
   def onUse(user:SentientEntity):Unit 
   def defend(user:SentientEntity, attacker:SentientEntity):Unit=  // with this method, armor pieces can have effects on their owner and the attacker (eg thorns, heal,...)
   {
   }
 }
-class Helmet extends Armor 
+class Helmet(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int, val armorClass:Int)
+  extends Armor ()
 {
-  override val name = "basic helmet"
   def onUse(user:SentientEntity):Unit = 
   {
     user.armorClass = user.armorClass - user.helmet.armorClass
@@ -157,10 +162,9 @@ class Helmet extends Armor
   }
 
 }
-class Chestplate extends Armor
+class Chestplate(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int, val armorClass:Int)
+  extends Armor ()
 {
-  override val name = "basic chestplate"
-
   def onUse(user:SentientEntity):Unit = 
   {
     user.armorClass = user.armorClass - user.chestplate.armorClass
@@ -169,10 +173,9 @@ class Chestplate extends Armor
     user.armorClass = user.armorClass + armorClass
   }
 }
-class Leggings extends Armor
+class Leggings(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int, val armorClass:Int)
+  extends Armor ()
 {
-  override val name = "basic leggings"
-
   def onUse(user:SentientEntity):Unit = 
   {
     user.armorClass = user.armorClass - user.helmet.armorClass
@@ -181,10 +184,9 @@ class Leggings extends Armor
     user.armorClass = user.armorClass + armorClass
   }
 }
-class Boots extends Armor
+class Boots(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int, val armorClass:Int)
+  extends Armor ()
 {
-  override val name = "basic boots"
-
   override def onUse(user:SentientEntity):Unit = 
   {
     user.armorClass = user.armorClass - user.boots.armorClass
@@ -195,19 +197,14 @@ class Boots extends Armor
 }
 
 object Bandages{
-  implicit val rw : ReadWriter[Bandages] =
-    readwriter[ujson.Value].bimap[Bandages](
-      e=> ujson.Arr(e.name, e.price),
-      json => new Bandages
-    )
+  //implicit val rw : ReadWriter[Bandages] =
+    //readwriter[ujson.Value].bimap[Bandages](
+      //e=> ujson.Arr(e.name, e.price),
+      //json => new Bandages
+    //)
 }
-case class Bandages() extends Item
+case class Bandages(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item()
 {
-  val name = "bandages"
-  val description = ""
-  val price = 0
-  val rarity = 0
-  val weight = 0
   def onUse(user:SentientEntity) =
   {
     user.curHP = user.maxHP

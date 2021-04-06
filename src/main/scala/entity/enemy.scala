@@ -191,7 +191,7 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
 }
 
 class Merchant(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[String, Int])
-  extends Enemy(animation, pos, name, fly, weapon, loot, map)
+  extends NeutralNPC(animation, pos, name, fly, weapon, loot, map)
 {
   inventory = new Inventory(this){
     override def useItem():Unit =

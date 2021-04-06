@@ -38,11 +38,36 @@
 		"damRoll": 4,
 		"price": 10
 	},
-
+	{
+		"type": "armor",
+		"part": "chestplate",
+		"name": "chainmail chestplate",
+		"armorClass": 5
+	},
+	{
+		"type": "armor",
+		"part": "helmet",
+		"name": "chainmail helmet",
+		"armorClass": 5
+	},
+	{
+		"type": "armor",
+		"part": "leggings",
+		"name": "chainmail leggings",
+		"armorClass": 5
+	},
+	{
+		"type": "armor",
+		"part": "boots",
+		"name": "chainmail boots",
+		"armorClass": 5
+	},
     {
+		"type": "gem",
 		"name": "gem",
 		"description": "a nice, hand-crafted shiny gem",
 		"weight": 4,
 		"price": 10
 	}
+
 ]
