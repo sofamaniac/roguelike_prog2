@@ -183,7 +183,7 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
           r.tiles.foreach
           {
             case(k, t) =>
-            if(t.coord.distance(Game.player.pos) >= curD && t.coord.distance(pos) < curAP)
+            if(t.coord.distance(Game.player.pos) > curD && t.coord.distance(pos) < curAP)
                   move(t.coord)
           }
     }

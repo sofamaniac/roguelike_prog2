@@ -52,7 +52,7 @@
 		"weapon":	"sword",
 		"lootTable": [
 			{
-				"item": "simplekey",
+				"item": "simple key",
 				"weight": 100
 			}
 		]
