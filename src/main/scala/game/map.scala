@@ -317,7 +317,7 @@ class Door(coord:Point, val room:Room, val openCondition:String) extends Tile(co
   walkable = false
   seeThrough = false
   flyable = false
-  val keyType = ""                      // We can specify that a specific key is needed to open the door
+  val keyType = "simple key"                      // We can specify that a specific key is needed to open the door
 
   var nextDoor:Option[Door] = None      // which door it is linked to in the nextRoom
 
@@ -401,7 +401,10 @@ object Room
     var json = _json
     var index = JsonTools.find(json, "name", nameToCreate)
     if (index == -1)
+    {
+      println("room.json: name %s not found.".format(nameToCreate))
       json = JsonTools.getRandom(json)
+    }
     else
       json = json(index)
 
@@ -425,7 +428,7 @@ object Room
     {
       val x = JsonTools.load(array(i), "x", 0)
       val y = JsonTools.load(array(i), "y", 0)
-      val enemy = EnemyCreator.create(JsonTools.load(json, "name", "bat"))
+      val enemy = EnemyCreator.create(JsonTools.load(array(i), "name", "bat"))
 
       result += (x, y) -> enemy
     }
@@ -441,7 +444,7 @@ object Room
     {
       val x = JsonTools.load(array(i), "x", 0)
       val y = JsonTools.load(array(i), "y", 0)
-      val condition = JsonTools.load(json, "openCondition", "killAll")
+      val condition = JsonTools.load(array(i), "openCondition", "killAll")
 
       result += (x, y) -> condition
     }
@@ -456,7 +459,7 @@ object Room
     {
       val x = JsonTools.load(array(i), "x", 0)
       val y = JsonTools.load(array(i), "y", 0)
-      val item = ItemCreator.create(JsonTools.load(json, "name", "chainmail helmet"))
+      val item = ItemCreator.create(JsonTools.load(array(i), "name", "chainmail helmet"))
 
       result += (x, y) -> item
     }
@@ -471,7 +474,7 @@ object Room
     {
       val x = JsonTools.load(array(i), "x", 0)
       val y = JsonTools.load(array(i), "y", 0)
-      val enemy = EnemyCreator.create(JsonTools.load(json, "name", "Jean-Michel"))
+      val enemy = EnemyCreator.create(JsonTools.load(array(i), "name", "Jean-Michel"))
 
       result += (x, y) -> enemy
     }
@@ -486,7 +489,7 @@ object Room
     {
       val x = JsonTools.load(array(i), "x", 0)
       val y = JsonTools.load(array(i), "y", 0)
-      val item = JsonTools.load(json, "item", "chainmail helmet")
+      val item = JsonTools.load(array(i), "item", "chainmail helmet")
 
       result += (x, y) -> item
     }
@@ -523,6 +526,7 @@ case class Room()
       case (key, e) =>
         tiles(key).entity = Some(e)
         enemies = enemies :+ e
+        e.pos.setPoint(new Point(key._1, key._2))
     }
     door.foreach
     {
@@ -541,6 +545,7 @@ case class Room()
       case(key, n) =>
         tiles(key).entity = Some(n)
         otherNPCs = otherNPCs :+ n
+        n.pos.setPoint(new Point(key._1, key._2))
     }
     item.foreach
     {
@@ -588,7 +593,7 @@ case class Room()
                 value.highlight = value.highlight && !erase     // erase previous highlight
                 value.highlightAttack = value.highlightAttack && !erase
               
-                if (zone(value.coord) && value.isVisible() && value.walkable && Map.inSight(Game.player.pos, new Point(value.coord)))
+                if (zone(value.coord) && value.isVisible() && !value.isInstanceOf[Wall] && Map.inSight(Game.player.pos, new Point(value.coord)))
                 {
                     value.highlight = !attackHighlight
                     value.highlightAttack = attackHighlight

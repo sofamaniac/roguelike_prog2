@@ -95,7 +95,8 @@ abstract class SentientEntity(animation:Animation, pos:Point)
 
     def isMoveValid(next:Point):Boolean =
     {
-      return (Map.isInbound(next) && Map.fromPoint(next).entity == None && Map.fromPoint(next).walkable && pos.distance(next) <= curAP)
+      return (Map.isInbound(next) && Map.fromPoint(next).entity == None && Map.fromPoint(next).walkable && pos.distance(next) <= curAP
+              && Map.inSight(pos, next))
     }
 
 
@@ -306,7 +307,7 @@ class Player()
     var basePow = 100
     var modifPow = 0
     
-    var seeRange = 5
+    var seeRange = 9
     var modifSee = 0
 
 

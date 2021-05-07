@@ -53,7 +53,10 @@ object Enemy
     var json = _json
     var index = JsonTools.find(json, "name", nameToCreate)
     if (index == -1)
+    {
+      println("enemy.json: name %s not found.".format(nameToCreate))
       json = JsonTools.getRandom(json)
+    }
     else
       json = json(index)
     
@@ -136,7 +139,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
               r.tiles.foreach
               {
                 case (k, t) =>
-                  if(t.coord.distance(Game.player.pos) < curD && t.coord.distance(pos) < curAP)
+                  if(t.coord.distance(Game.player.pos) < curD && isMoveValid(t.coord))
                     return t.coord
               }
         }
@@ -183,7 +186,7 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
           r.tiles.foreach
           {
             case(k, t) =>
-            if(t.coord.distance(Game.player.pos) > curD && t.coord.distance(pos) < curAP)
+            if(t.coord.distance(Game.player.pos) >= curD && isMoveValid(t.coord))
                   move(t.coord)
           }
     }
@@ -204,6 +207,7 @@ class Merchant(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:
   }
   inventory.add(ItemCreator.create("shotgun"))
   inventory.add(ItemCreator.create("bandages"))
+  inventory.add(ItemCreator.create("gem"))
 }
 
 

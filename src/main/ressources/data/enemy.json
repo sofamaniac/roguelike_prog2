@@ -38,7 +38,7 @@
 				"sizeY": 64,
                 "marginY" : 64
 			},
-		"flying": true,
+		"flying": false,
 		"maxHP": 100,
 		"armorClass": 30,
 		"baseAP": 5,
