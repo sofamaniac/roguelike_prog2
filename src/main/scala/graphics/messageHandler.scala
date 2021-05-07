@@ -30,6 +30,7 @@ object MessageHandler
   help.addDefaults("Use 'G' to pick up item")
   help.addDefaults("Use 'S' with cursor on NPC whislt standing next to them to speak / buy from them")
   help.addDefaults("Use 'T' with cursor on NPC whilst standing next to them to sell item")
+  help.maxMessages() = 1
 
   playerInfo.addDefaults("Player stats: ")
   playerInfo.maxMessages() = 9 // TODO to adjust
