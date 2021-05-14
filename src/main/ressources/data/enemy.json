@@ -9,7 +9,7 @@
 				"sizeY": 64
 			},
 		"flying": true,
-		"maxHP": 100,
+		"maxHP": 10,
 		"armorClass": 30,
 		"baseAP": 5,
 		"modifAP": 0,
@@ -34,12 +34,12 @@
 		"animation":
 			{
 				"file": "beaver.png",
-				"nbFrame": 4,
+				"nbFrame": 3,
 				"sizeY": 64,
                 "marginY" : 64
 			},
 		"flying": false,
-		"maxHP": 100,
+		"maxHP": 1,
 		"armorClass": 30,
 		"baseAP": 5,
 		"modifAP": 0,
@@ -68,7 +68,7 @@
 				"sizeY": 64,
                 "marginY": 384
 			},
-		"maxHP": 100,
+		"maxHP": 50,
 		"armorClass": 30,
 		"baseAP": 5,
 		"modifAP": 0,
@@ -95,7 +95,7 @@
 				"nbFrame": 13,
 				"sizeY": 64
 			},
-		"maxHP": 100,
+		"maxHP": 80,
 		"armorClass": 30,
 		"baseAP": 5,
 		"modifAP": 0,

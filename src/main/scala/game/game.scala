@@ -159,7 +159,7 @@ object Game
         player.inventory.add(WeaponCreator.create())
         player.inventory.add(WeaponCreator.create("Fire Ball"))
         player.inventory.add(WeaponCreator.create("sword"))
-        player.inventory.add(ItemCreator.create("chainmail"))
+        player.inventory.add(ItemCreator.create("chainmail helmet"))
         // player.inventory.add(new Bandages)
 
         setPhase("move")

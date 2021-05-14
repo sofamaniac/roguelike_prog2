@@ -4,6 +4,7 @@ import entity._
 import graphics._
 import messageHandler._
 import animation._
+import animation.Animation.Animation
 import position._
 import map._
 import game._
@@ -56,8 +57,8 @@ object Item {
   }
 }
 
-abstract class Item()
-    extends Entity(Animation.load("item.png", 1), new Point(0,0), GameWindow.contextGame)
+abstract class Item(override val animation:Animation = Animation.load("item.png", 1))
+    extends Entity(animation, new Point(0,0), GameWindow.contextGame)
 {
   val name:String
   val description:String
@@ -85,7 +86,7 @@ object Key{
       //json => new Key
     //)
 }
-case class Key(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item()
+case class Key(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item(Animation.load("key.png", 1))
 {
   def onUse(user:SentientEntity) =
   {
@@ -104,7 +105,7 @@ object Jewel{
       //json => new Jewel // TODO differentiate based on armor piece type
     //)
 }
-case class Jewel(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item()
+case class Jewel(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item(Animation.load("jewel.png", 1))
 {
   def onUse(user:SentientEntity) =
   {
@@ -115,7 +116,7 @@ case class Jewel(val name:String, val description:String, val price:Int, val rar
     }
   }
 }
-class Gem(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item()
+class Gem(val name:String, val description:String, val price:Int, val rarity:Int, val weight:Int) extends Item(Animation.load("gem.png", 1))
 {
   def onUse(user:SentientEntity)=
   {
@@ -156,6 +157,7 @@ class Helmet(val name:String, val description:String, val price:Int, val rarity:
   def onUse(user:SentientEntity):Unit = 
   {
     user.armorClass = user.armorClass - user.helmet.armorClass
+    user.inventory.remove(this)
     user.inventory.add(user.helmet)
     user.helmet = this
     user.armorClass = user.armorClass + armorClass
@@ -168,6 +170,7 @@ class Chestplate(val name:String, val description:String, val price:Int, val rar
   def onUse(user:SentientEntity):Unit = 
   {
     user.armorClass = user.armorClass - user.chestplate.armorClass
+    user.inventory.remove(this)
     user.inventory.add(user.chestplate)
     user.chestplate = this
     user.armorClass = user.armorClass + armorClass
@@ -179,6 +182,7 @@ class Leggings(val name:String, val description:String, val price:Int, val rarit
   def onUse(user:SentientEntity):Unit = 
   {
     user.armorClass = user.armorClass - user.helmet.armorClass
+    user.inventory.remove(this)
     user.inventory.add(user.leggings)
     user.leggings = this
     user.armorClass = user.armorClass + armorClass
@@ -190,6 +194,7 @@ class Boots(val name:String, val description:String, val price:Int, val rarity:I
   override def onUse(user:SentientEntity):Unit = 
   {
     user.armorClass = user.armorClass - user.boots.armorClass
+    user.inventory.remove(this)
     user.inventory.add(user.boots)
     user.boots = this
     user.armorClass = user.armorClass + armorClass

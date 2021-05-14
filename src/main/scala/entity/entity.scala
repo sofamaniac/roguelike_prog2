@@ -402,15 +402,21 @@ class Inventory(val owner:SentientEntity, val zone:MessageZone=MessageHandler.tr
     }
     def prevPage():Unit =
     {
-      if (invStart != 0)
-        invStart -= invSize
-      display()
+        if (invStart != 0)
+        {
+            curInv -= invSize
+            invStart -= invSize
+        }
+        display()
     }
     def nextPage():Unit =
     {
-      if (invStart+invSize < nbItem)
-        invStart += invSize
-      display()
+        if (invStart+invSize < nbItem)
+        {
+            curInv += invSize
+            invStart += invSize
+        }
+        display()
     }
     def moveItem(d:Int):Unit =
     {
