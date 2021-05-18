@@ -1,44 +1,5 @@
 [
 	{
-		"type": "weapon",
-		"name": "sword",
-		"description": "a simple sword",
-		"weight": 5,
-		"modif": "str",
-		"zone": "classic",
-		"innerRange": 1,
-		"outerRange": 1,
-		"range": 1,
-		"nbRoll": 2
-	},
-	{
-		"type": "weapon",
-		"name": "gun",
-		"description": "a nice gun",
-		"wieght": 2,
-		"modif": "dex",
-		"zone": "classic",
-		"innerRange": 1,
-		"outerRange": 5,
-		"range": 5,
-		"nbRoll": 2,
-		"damRoll": 4
-	},
-	{
-		"type": "weapon",
-		"name": "shotgun",
-		"description": "well, it's a shotgun",
-		"weight": 4,
-		"modif": "dex",
-		"zone": "cone",
-		"innerRange": 2,
-		"outerRange": 6,
-		"range": 6,
-		"nbRoll": 1,
-		"damRoll": 4,
-		"price": 10
-	},
-	{
 		"type": "armor",
 		"part": "chestplate",
 		"name": "chainmail chestplate",
