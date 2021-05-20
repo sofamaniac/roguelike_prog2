@@ -141,8 +141,8 @@ object GameWindow
   def start():Unit =
   {
     Game.initialization()
-    loop.start()
     Map.map = Client.getMap()
     println("Client init done")
+    loop.start()
   }
 }
