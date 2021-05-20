@@ -11,7 +11,6 @@ import map.Map
 import messageHandler._
 import game._
 import animation._
-import animation.Animation.Animation
 import scala.collection.mutable.{Map => MapObject}
 
 // We simulate type disjunction
@@ -124,7 +123,7 @@ object Weapon{
 class Weapon(val name:String, val description:String,  val price:Int, val rarity:Int, val weight:Int, val modif:String, val zone:String,
              val innerRange:Int, val outerRange:Int, val numberRoll:Int, val damageRoll:Int,
              val fireDuration:Int, val fireDamage:Int, val poisonDuration:Int, val poisonDamage:Int,
-             val frozenDuration:Int, val frozenDamage:Int, val paralyzedDuration:Int, val paralyzedDamage:Int, val vampirism:Int) extends Item(Animation.load("gun.png", 1))
+             val frozenDuration:Int, val frozenDamage:Int, val paralyzedDuration:Int, val paralyzedDamage:Int, val vampirism:Int) extends Item(new Animation("gun.png", 1))
 {
     def this(map:MapObject[String, ArgsType])=
     {

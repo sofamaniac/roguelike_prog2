@@ -75,7 +75,7 @@ case class Tile(val coord:Point)
 
     var textureMap = MapObject[String, Option[GraphicEntity]]()
 
-    var backTexture:GraphicEntity = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity = new GraphicEntity(Animation.loadf"texture.png", 1), coord, GameWindow.contextGame)
 
     var frontTexture:Option[GraphicEntity] = None
     
