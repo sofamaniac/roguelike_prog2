@@ -18,7 +18,7 @@ object Item {
 
   implicit val rw: ReadWriter[Item] = 
     readwriter[ujson.Value].bimap[Item](
-      e=> ujson.Arr(e.name, e.price),
+      e=> JsonTools.write(e),
       json => createItem(json)
     )
 
@@ -56,6 +56,7 @@ object Item {
     return result
   }
 }
+
 
 abstract class Item(override val animation:Animation = Animation.load("item.png", 1))
     extends Entity(animation, new Point(0,0), GameWindow.contextGame)

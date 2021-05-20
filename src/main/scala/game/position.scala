@@ -5,7 +5,19 @@ import item._
 import weapon._
 import map._
 
-class Point(var x:Int, var y:Int)
+
+import upickle.default._
+import json._
+object Point
+{
+  implicit val rw: ReadWriter[Point] = 
+    readwriter[ujson.Value].bimap[Point](
+      p => s"""{"x":${p.x},"y":${p.y}}""",
+      json => new Point(JsonTools.load(json, "x", 0), JsonTools.load(json, "y", 0))
+    )
+}
+
+case class Point(var x:Int, var y:Int)
 {
   def this(p:Point)
   {

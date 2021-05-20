@@ -26,7 +26,7 @@ case class Str(val s:String) extends ArgsType{ override def str():String = {retu
 object Weapon{
   implicit val rw: ReadWriter[Weapon] =
     readwriter[ujson.Value].bimap[Weapon](
-      e => ujson.Arr(),
+      e => JsonTools.write(e),
       json => create(json)
     )
 
@@ -173,7 +173,7 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
             case "pow" => attacker.basePow + attacker.modifPow
         }
         
-        Map.rooms.foreach
+        Map.map.rooms.foreach
         {
           case(key, r) =>
             r.tiles.foreach

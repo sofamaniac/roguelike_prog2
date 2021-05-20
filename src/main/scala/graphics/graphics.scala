@@ -23,9 +23,22 @@ import position._
 import game._
 import map._
 import messageHandler._
-import animation.Animation.Animation
+import animation._
 
-class GraphicEntity(val animation:Animation, val pos:Point, var dest:GraphicsContext)
+import client._
+
+import upickle.default._
+import json._
+object GraphicEntity
+{
+  implicit val rw: ReadWriter[GraphicEntity] =
+      readwriter[ujson.Value].bimap[GraphicEntity](
+        e => JsonTools.write(e, List("animation", "pos", "animationDuration", "frameLength", "_freeze")),
+        json => read[GraphicEntity](json)
+    )
+}
+
+class GraphicEntity(val animation:Animation, val pos:Point, var dest:GraphicsContext) extends Serializable
 {
 
   var animationDuration : Int = 60 // duration in frame of the entire cycle
@@ -38,8 +51,8 @@ class GraphicEntity(val animation:Animation, val pos:Point, var dest:GraphicsCon
 
   def show() : Unit =
   {
-    val viewport = animation(currentFrame).getViewport()
-    val frame = animation(currentFrame).getImage()
+    val viewport = animation.frames(currentFrame).getViewport()
+    val frame = animation.frames(currentFrame).getImage()
 
     // We set the offset based on the offset given as a parameter and the player position
     val off = new Point(Game.player.pos)
@@ -129,5 +142,7 @@ object GameWindow
   {
     Game.initialization()
     loop.start()
+    Map.map = Client.getMap()
+    println("Client init done")
   }
 }
