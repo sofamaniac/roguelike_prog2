@@ -21,7 +21,7 @@ object CommonTextures
     val highlightAttack:GraphicEntity = new GraphicEntity(new Animation("highlightAttackTexture.png", 1), new Point(0,0), GameWindow.contextGame)
     val highlight:GraphicEntity = new GraphicEntity(new Animation("highlightTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
     val seen:GraphicEntity      = new GraphicEntity(new Animation("seenTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
-    val unseen:GraphicEntity    = new GraphicEntity(new Animation("unseenTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
+
 
     def show(texture:GraphicEntity, pos:Point)
     {
@@ -75,7 +75,8 @@ case class Tile(val coord:Point)
 
     var textureMap = MapObject[String, Option[GraphicEntity]]()
 
-    var backTexture:GraphicEntity      = new GraphicEntity(new Animation("texture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
+
     var frontTexture:Option[GraphicEntity] = None
     
     val infoDest = GameWindow.contextMenu
@@ -120,10 +121,6 @@ case class Tile(val coord:Point)
               case None => ()
               case Some(g) => g.show()
             }
-        }
-        else
-        {
-            textures.show(textures.unseen, coord)
         }
     }
 
