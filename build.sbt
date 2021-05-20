@@ -1,6 +1,10 @@
 // Add dependency on ScalaFX library
 libraryDependencies += "org.scalafx" %% "scalafx" % "15.0.1-R21"
 
+// Add dependency for socket management
+libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.12.0"
+
+
 // Add upickle for Json parsing
 libraryDependencies += "com.lihaoyi" %% "upickle" % "1.3.8"
 

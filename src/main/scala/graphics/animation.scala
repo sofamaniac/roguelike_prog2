@@ -8,9 +8,16 @@ import json._
 
 object Animation
 { 
-  type Animation = Array[ImageView]
+  type AnimationType = Array[ImageView]
+  
+  implicit val rw: ReadWriter[Animation] =
+    readwriter[ujson.Value].bimap[Animation](
+      e => writeJson(e),
+      json => loadJson(json)
+    )
+
   val ressource_folder = "file:src/main/ressources/graphics/"
-  def load(s:String, nbFrame: Int, sizeX:Int = -1, sizeY:Int = -1, marginX:Int = 0, marginY:Int = 0):Animation=
+  def load(s:String, nbFrame: Int, sizeX:Int = -1, sizeY:Int = -1, marginX:Int = 0, marginY:Int = 0):AnimationType=
   {
     var _sizeX = sizeX
     var _sizeY = sizeY
@@ -21,7 +28,7 @@ object Animation
     if(sizeY < 0){
       _sizeY = (image.getHeight()).toInt
     }
-    val animation = new Animation(nbFrame) // Array of length [nbFrame]
+    val animation = new AnimationType(nbFrame) // Array of length [nbFrame]
     var x = 0
     var i = 0
     for (i <- 0 until nbFrame)
@@ -49,10 +56,21 @@ object Animation
     val sizeY   = JsonTools.load(json, "sizeY", defSizeY)
     val margX   = JsonTools.load(json, "marginX", defMargX)
     val margY   = JsonTools.load(json, "marginY", defMargY)
-    return load(path, nbFrame, sizeX, sizeY, margX, margY)
+    return new Animation(path, nbFrame, sizeX, sizeY, margX, margY)
   }
 
   def loadDefault():Animation = {
-    return load(defPath, defNbFrame, defSizeX, defSizeY, defMargX, defMargY)
+    return new Animation(defPath, defNbFrame, defSizeX, defSizeY, defMargX, defMargY)
   }
+
+  def writeJson(a:Animation):ujson.Value =
+  {
+    return JsonTools.write(a, List("path", "nbFrame", "sizeX", "sizeY", "margX", "margY") )
+  }
+}
+
+case class Animation(val path:String, val nbFrame:Int, val sizeX:Int = -1, val sizeY:Int = -1, val margX:Int = 0, val margY:Int = 0)
+{
+  val frames = Animation.load(path, nbFrame, sizeX, sizeY, margX, margY)
+  val size = frames.size
 }

@@ -7,8 +7,12 @@ import graphics._
 import position._
 import item._
 import weapon._
+import entity._
+import enemy._
 import map._
+import animation._
 import scala.util.Random
+import scala.collection.mutable.{Map => MapObject}
 
 object JsonTools{
   def length(json:ujson.Value):Int={
@@ -74,7 +78,74 @@ object JsonTools{
     }
   }
 
+  def loadMap[Key, Value](json:ujson.Value)(implicit rwv: ReadWriter[Value], rwk: ReadWriter[Key]):MapObject[Key, Value]=
+  {
+    var res = MapObject[Key, Value]()
+    var i = 0
+    for (i <- 0 to length(json)-1)
+    {
+      println(json(i)(0), json(i)(1))
+      res += upickle.default.read[Key](json(i)(0)) -> upickle.default.read[Value](json(i)(1))
+    }
+    return res
+  }
 
+  def loadVect[T](json:ujson.Value)(implicit rw: ReadWriter[T]):Vector[T]=
+  {
+    var res = Vector[T]()
+    var i = 0
+    for (i <- 0 to length(json) -1)
+    {
+      res = res :+ upickle.default.read[T](json(i))
+    }
+    return res
+  }
+
+  import scala.reflect.ClassTag
+  import scala.reflect._
+
+  def writeType[T](obj:T):String=
+  {
+    obj match
+    {
+      case e:Int => upickle.default.write(e)
+      case e:String => upickle.default.write(e)
+      case e:Boolean => upickle.default.write(e)
+      case e:Animation => upickle.default.write(e)
+      case e:Weapon => upickle.default.write(e)
+      case e:Item => upickle.default.write(e)
+      case e:Tile => upickle.default.write(e)
+      case e:Room => upickle.default.write(e)
+      case e:Merchant => { println(obj.getClass.getName); upickle.default.write(e)}
+      case e:CowardNPC => upickle.default.write(e)
+      case e:NeutralNPC =>  upickle.default.write(e)
+      case e:Player => upickle.default.write(e)
+      case e:Point => upickle.default.write(e)
+      case e:Enemy => upickle.default.write(e)
+      case e:GraphicEntity => upickle.default.write(e)
+      case e:LootTable => upickle.default.write(e)
+      case _ => throw new IllegalArgumentException("writeType called with type : " + obj.getClass.getName)
+    }
+  }
+  def write[T: ClassTag](obj:T, attributes:List[String]=null)(implicit rw:ReadWriter[T]):String=
+  {
+    var fields:List[java.lang.reflect.Field] = null
+    if (attributes == null)
+      fields = classTag[T].runtimeClass.getDeclaredFields.toList
+    else
+      fields = attributes.map( (n:String) => classTag[T].runtimeClass.getDeclaredField(n) )
+    val couples = fields.map{ n => 
+        n.setAccessible(true)
+        val res = "\"" + n.getName + "\": "+ writeType(n.get(obj))
+        n.setAccessible(false)
+        res.replace("\\\\", "")
+      }
+    return "{" + couples.mkString(",") + "}"
+  }
+
+  def sanitize(json:String):String=
+    return json.replace("\\", "").replace("\"{", "{").replace("}\"", "}")
+      .replace("\"[", "[").replace("]\"", "]").replace("[\"", "[").replace(",\",", ",")
 }
 
 object EnemyCreator{

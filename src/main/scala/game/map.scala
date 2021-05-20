@@ -18,10 +18,10 @@ import enemy._
 object CommonTextures
 {
     // Some textures are used by all tiles, so we load them in memory only once
-    val highlightAttack:GraphicEntity = new GraphicEntity(Animation.load("highlightAttackTexture.png", 1), new Point(0,0), GameWindow.contextGame)
-    val highlight:GraphicEntity = new GraphicEntity(Animation.load("highlightTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
-    val seen:GraphicEntity      = new GraphicEntity(Animation.load("seenTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
-    val unseen:GraphicEntity    = new GraphicEntity(Animation.load("unseenTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
+    val highlightAttack:GraphicEntity = new GraphicEntity(new Animation("highlightAttackTexture.png", 1), new Point(0,0), GameWindow.contextGame)
+    val highlight:GraphicEntity = new GraphicEntity(new Animation("highlightTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
+    val seen:GraphicEntity      = new GraphicEntity(new Animation("seenTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
+    val unseen:GraphicEntity    = new GraphicEntity(new Animation("unseenTexture.png", 1), new Point(0, 0), GameWindow.contextGame)
 
     def show(texture:GraphicEntity, pos:Point)
     {
@@ -30,7 +30,36 @@ object CommonTextures
     }
 }
 
-class Tile(val coord:Point)
+object Tile
+{
+  implicit val rw: ReadWriter[Tile] =
+    readwriter[ujson.Value].bimap[Tile](
+      e => write(e),
+      json => load(json)
+    )
+
+  def write(t:Tile):ujson.Value =
+  {
+    var res = "{" 
+        res += s""""coord":${upickle.default.write(t.coord)},""""
+        res += s"""item":${upickle.default.write(t.item)},""""
+        res += s"""entity":${upickle.default.write(t.entity)},""""
+        res += s"""walkable":${upickle.default.write(t.walkable)},""""
+        res += s"""seeThrough":${upickle.default.write(t.seeThrough)},""""
+        res += s"""flyable":${upickle.default.write(t.flyable)},""""
+        res += s"""seen":${upickle.default.write(t.seen)},""""
+        res += s"""backTexture":${upickle.default.write(t.backTexture)},""""
+        res += s"""frontTexture":${upickle.default.write(t.frontTexture)}""""
+        res += s"}"
+    return res
+  }
+  def load(_json:ujson.Value):Tile =
+  {
+    return new Tile(new Point(0,0))
+  }
+}
+
+case class Tile(val coord:Point)
 {
     var item:Option[Item] = None
     var entity:Option[SentientEntity] = None
@@ -46,7 +75,7 @@ class Tile(val coord:Point)
 
     var textureMap = MapObject[String, Option[GraphicEntity]]()
 
-    var backTexture:GraphicEntity      = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity      = new GraphicEntity(new Animation("texture.png", 1), coord, GameWindow.contextGame)
     var frontTexture:Option[GraphicEntity] = None
     
     val infoDest = GameWindow.contextMenu
@@ -176,22 +205,75 @@ class Tile(val coord:Point)
 
 class Wall(coord:Point) extends Tile(coord)
 {
-  frontTexture = Some(new GraphicEntity(Animation.load("wall.png", 1), coord, GameWindow.contextGame))
+  frontTexture = Some(new GraphicEntity(new Animation("wall.png", 1), coord, GameWindow.contextGame))
   walkable = false
   seeThrough = false
   flyable = false
 }
 
-object Map
+object Map 
+{
+
+    var map = new Map
+
+    implicit val rw: ReadWriter[Map] =
+      readwriter[ujson.Value].bimap[Map](
+        m => write(m),
+        json => read(json)
+    )
+
+    def write(m:Map):ujson.Value=
+    {
+      var res = ""
+      m.rooms.foreach { case ((x,y), r) => res = res + s"[[${x}, ${y}], ${upickle.default.write(r)}]," } 
+      return """{ "rooms": [""" + s"""${JsonTools.sanitize(res)}""" + " ]}"
+    }
+
+    def read(_json:ujson.Value):Map =
+    {
+      val map = new Map()
+      val json = ujson.read(_json)
+      map.rooms = MapObject[(Int, Int), Room]()
+      /*
+      JsonTools.foreach(json("rooms"), ( j => println(upickle.default.read[(Int, Int)](j(0)))))
+      map.rooms = upickle.default.read[MapObject[(Int, Int), Room]](json("rooms"))
+      */
+      return map
+    }
+
+    def show() = map.show()
+    /** Update all the rooms of the map */
+    def update() = map.update()
+
+    def setHighlight(zone:(Point=>Boolean), attackHighlight:Boolean=false, erase:Boolean=true, highlightPlayer:Boolean=false):Unit =
+      map.setHighlight(zone, attackHighlight, erase, highlightPlayer)
+
+    def findHighlight():Point =
+      map.findHighlight()
+
+    def inSight(source:Point, dest:Point):Boolean =
+      map.inSight(source, dest)
+
+    def fromPoint(p:Point):Tile =
+      map.fromPoint(p)
+
+    def isInbound(p:Point):Boolean =
+      map.isInbound(p)
+
+    def getEnemies():Vector[Enemy] =
+      map.getEnemies()
+}
+
+class Map extends Serializable 
 {
     var rooms = MapObject[(Int, Int), Room]()
 
-    rooms += (0,0) -> RoomCreator.create("room1")
-    rooms += (0,1) -> RoomCreator.create("room2")
-    rooms += (1,0) -> RoomCreator.create("room3")
+    rooms += (0,0) -> RoomCreator.create("room2")
+    //rooms += (0,1) -> RoomCreator.create("room2")
+    //rooms += (1,0) -> RoomCreator.create("room3")
 
-    rooms((0,0)).tiles((5,13)).asInstanceOf[Door].connectDoor(rooms((0,1)).tiles((5,0)).asInstanceOf[Door])
-    rooms((0,0)).tiles((13,5)).asInstanceOf[Door].connectDoor(rooms((1,0)).tiles((0,10)).asInstanceOf[Door])
+    //rooms((0,0)).tiles((5,13)).asInstanceOf[Door].connectDoor(rooms((0,1)).tiles((5,0)).asInstanceOf[Door])
+    //rooms((0,0)).tiles((13,5)).asInstanceOf[Door].connectDoor(rooms((1,0)).tiles((0,10)).asInstanceOf[Door])
 
     /** Display the entirety of the map on the screen */
     def show() = 
@@ -309,11 +391,19 @@ object Map
     }
 }
 
+object Door
+{
+  implicit val rw: ReadWriter[Door] =
+    readwriter[ujson.Value].bimap[Door](
+      d => "",
+      json => upickle.default.read[Door](json)
+    )
+}
 class Door(coord:Point, val room:Room, val openCondition:String) extends Tile(coord)
 {
   // [room] is the room on which depends the opening condition
 
-  frontTexture = Some(new GraphicEntity(Animation.load("door.png", 1), coord, GameWindow.contextGame))
+  frontTexture = Some(new GraphicEntity(new Animation("door.png", 1), coord, GameWindow.contextGame))
   walkable = false
   seeThrough = false
   flyable = false
@@ -361,11 +451,19 @@ class Door(coord:Point, val room:Room, val openCondition:String) extends Tile(co
   }
 }
 
+object Receptacle
+{
+  implicit val rw: ReadWriter[Receptacle] =
+    readwriter[ujson.Value].bimap[Receptacle](
+      d => "",
+      json => upickle.default.read[Receptacle](json)
+    )
+}
 class Receptacle(coord:Point, val room:Room, val itemToPlace:String) extends Tile(coord)
 {
   // [itemToPlace] is the name of the item to put in the receptacle
   var full = false  // is the [itemToPlace] inside the receptacle
-  frontTexture = Some(new GraphicEntity(Animation.load("receptacleOff.png", 1), coord, GameWindow.contextGame))
+  frontTexture = Some(new GraphicEntity(new Animation("receptacleOff.png", 1), coord, GameWindow.contextGame))
 
   override def placeItem(droppedItem:Item, from:Option[SentientEntity]=None):Unit=
   {
@@ -381,7 +479,7 @@ class Receptacle(coord:Point, val room:Room, val itemToPlace:String) extends Til
   {
     super.show()
     if(full)
-      frontTexture = Some(new GraphicEntity(Animation.load("receptacleOn.png", 1), coord, GameWindow.contextGame))
+      frontTexture = Some(new GraphicEntity(new Animation("receptacleOn.png", 1), coord, GameWindow.contextGame))
   }
 
 }
@@ -390,15 +488,45 @@ object Room
 {
   implicit val rw: ReadWriter[Room] =
     readwriter[ujson.Value].bimap[Room](
-      e => ujson.Arr(),
+      e => write(e),
       json => create(json)
     )
 
   var nameToCreate = ""
 
+  def write(r:Room):ujson.Value=
+  {
+    var res = "{" + s""""topleft":${JsonTools.sanitize(upickle.default.write(r.topLeft))},"""
+        res += s""""tiles":${JsonTools.sanitize(upickle.default.write(r.tiles))},"""
+        res += s""""doors":${JsonTools.sanitize(upickle.default.write(r.doors))},"""
+        res += s""""enemies":${JsonTools.sanitize(upickle.default.write(r.enemies))},"""
+        res += s""""npcs":${JsonTools.sanitize(upickle.default.write(r.otherNPCs))},"""
+        res += s""""receptacles":${JsonTools.sanitize(upickle.default.write(r.receptacles))},"""
+        res += s""""items":${JsonTools.sanitize(upickle.default.write(r.items))}"""
+        res += "}"
+    return res
+  }
+
+  def loadJson(json:ujson.Value):Room =
+  {
+    val room = new Room()
+    room.topLeft = upickle.default.read[Point](json("topLeft"))
+    room.tiles = JsonTools.loadMap[(Int, Int), Tile](json("tiles"))
+    room.doors = JsonTools.loadVect[Door](json("doors"))
+    room.enemies = JsonTools.loadVect[Enemy](json("enemies"))
+    room.otherNPCs = JsonTools.loadVect[SentientEntity](json("npcs"))
+    room.receptacles = JsonTools.loadVect[Receptacle](json("receptacles"))
+    room.items = JsonTools.loadVect[Item](json("items"))
+    return room
+  }
+
   def create(_json:ujson.Value):Room=
   {
     var json = _json
+    if (JsonTools.length(json) == 0)
+    {
+      return loadJson(json)
+    }
     var index = JsonTools.find(json, "name", nameToCreate)
     if (index == -1)
     {

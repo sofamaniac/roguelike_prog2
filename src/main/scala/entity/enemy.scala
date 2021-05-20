@@ -8,7 +8,6 @@ import scalafx.scene.canvas._
 import scalafx.scene.image._
 import graphics._
 import animation._
-import animation.Animation.Animation
 import game._
 import map._
 import json._
@@ -37,14 +36,11 @@ object Enemy
   val defBeh = "classic"
   val defFly = false
   // we define how are object serialized, 
-  // for instance here, only the name and the maxHP would be save to Json
-  // whereas, we create a new Enemy using only the first field of the json as a name
   implicit val rw: ReadWriter[Enemy] = 
     readwriter[ujson.Value].bimap[Enemy](
-      e=> ujson.Arr(e.name, e.maxHP),
+      e => JsonTools.write(e),
       json => createEnemy(json)
     )
-
 
   var nameToCreate = "" // name of enemy to create (rw can't take any parameter so we need to pass them using an attribute)
 
@@ -79,14 +75,34 @@ object Enemy
     val loot        = if (JsonTools.contains(json, "lootTable")) read[LootTable](json("lootTable")) else defLT
     val behaviour   = JsonTools.load(json, "behaviourType", defBeh)
 
-    behaviour match
+    val res = behaviour match
     {
       case "merchant" => new Merchant(animation, new Point(8,8), name, fly, weapon, loot, args) // TODO: add possibility to define trades in json
       case "neutral"  => new NeutralNPC(animation, new Point(6,7), name, fly, weapon, loot, args)
       case "coward"   => new CowardNPC(animation, new Point(2,3), name, fly, weapon, loot, args)
       case _          => new Enemy(animation, new Point(5, 3), name, fly, weapon, loot, args)
     }
+    return handleAdditionalParameters(res, json)
   }
+
+  import scala.reflect.ClassTag
+  import scala.reflect._
+  def handleAdditionalParameters(res:Enemy, json:ujson.Value):Enemy=
+  {
+    val addParam = List("curHP", "curAP", "curWeight", "maxWeight", "gold",  "onFireDuration", "onFireDamage", 
+      "poisonDuration", "poisonDamage","paralyzedDuration", "paralyzedDamage", "frozenDuration", "frozenDamage")
+    addParam.foreach( n =>
+        if (JsonTools.contains(json, n))
+        {
+          val f = classTag[Enemy].runtimeClass.getDeclaredField(n)
+          f.setAccessible(true)
+          f.set(res, upickle.default.read[Int](json(n)))
+          f.setAccessible(false)
+        }
+      )
+    return res
+  }
+
 }
 // I don't know why I need to overwrite pos and animation
 // TODO: look up why it is the case
@@ -133,7 +149,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // in the future, enemies will have like the player a detection range,
         // outside of which they are unable to see the player
         val curD = pos.distance(Game.player.pos)
-        Map.rooms.foreach
+        Map.map.rooms.foreach
         {
             case(key, r) =>
               r.tiles.foreach
@@ -154,6 +170,15 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
   }
 }
 
+object NeutralNPC
+{
+  implicit val rw: ReadWriter[NeutralNPC] =
+    readwriter[ujson.Value].bimap[NeutralNPC](
+      e => { val s = upickle.default.write(e.asInstanceOf[Enemy]); s.dropRight(2) + """, "behaviourType":"neutral"}"""" },
+      json => Enemy.createEnemy(json).asInstanceOf[NeutralNPC]
+    )
+}
+
 class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[String, Int])
   extends Enemy(animation, pos, name, fly, weapon, loot, map)
 {
@@ -169,6 +194,15 @@ class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapo
   }
 }
 
+object CowardNPC
+{
+  implicit val rw: ReadWriter[CowardNPC] =
+    readwriter[ujson.Value].bimap[CowardNPC](
+      e => { val s = upickle.default.write(e.asInstanceOf[Enemy]); s.dropRight(2) + """, "behaviourType":"coward"}""" },
+      json => Enemy.createEnemy(json).asInstanceOf[CowardNPC]
+    )
+}
+
 class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[String,Int])
   extends Enemy(animation, pos, name, fly, weapon, loot, map)
 {
@@ -180,7 +214,7 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
     
     // The entity look for a tile that will increase its distance from the player
     val curD = pos.distance(Game.player.pos)
-    Map.rooms.foreach
+    Map.map.rooms.foreach
     {
         case(key, r) =>
           r.tiles.foreach
@@ -193,6 +227,15 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
   }
 }
 
+
+object Merchant
+{
+  implicit val rw: ReadWriter[Merchant] =
+    readwriter[ujson.Value].bimap[Merchant](
+      e => { val s = upickle.default.write(e.asInstanceOf[Enemy]); s.dropRight(2) + """, "behaviourType":"merchant"}""" },
+      json => Enemy.createEnemy(json).asInstanceOf[Merchant]
+    )
+}
 class Merchant(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:Weapon, loot:LootTable, map:MapObject[String, Int])
   extends NeutralNPC(animation, pos, name, fly, weapon, loot, map)
 {
@@ -215,7 +258,7 @@ object LootTable {
 
   implicit val rw: ReadWriter[LootTable] = 
     readwriter[ujson.Value].bimap[LootTable](
-      e=> ujson.Arr(e.totalWeight),
+      e => {var res = "["; e.table.foreach { case (n, w) => res += s"{item:$n, weight:$w}," }; res + "]," },
       json => createTable(json)
     )
   

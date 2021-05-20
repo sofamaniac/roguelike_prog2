@@ -3,7 +3,6 @@ package entity
 import graphics._
 import messageHandler._
 import animation._
-import animation.Animation.Animation
 import scalafx.Includes._
 import scalafx.scene.image._
 import scalafx.scene.canvas._
@@ -13,12 +12,93 @@ import game._
 import item._
 import weapon._
 import json._
+import upickle.default._
+import enemy._
 
 abstract class Entity(animation:Animation, pos:Point, dest:GraphicsContext) 
     extends GraphicEntity(animation, pos, dest)
 {
     val name:String
     def move(dir:Point):Unit
+}
+
+import scala.reflect.ClassTag
+import scala.reflect._
+object SentientEntity
+{
+  implicit val rw: ReadWriter[SentientEntity]=
+    readwriter[ujson.Value].bimap[SentientEntity](
+      e => write(e),
+      json => upickle.default.read[SentientEntity](json)
+    )
+
+  def write(e:SentientEntity):ujson.Value=
+  {
+    if (e.isInstanceOf[Merchant])
+      return upickle.default.write(e.asInstanceOf[Merchant])
+    else if (e.isInstanceOf[NeutralNPC])
+      return upickle.default.write(e.asInstanceOf[NeutralNPC])
+    else if (e.isInstanceOf[CowardNPC])
+      return upickle.default.write(e.asInstanceOf[CowardNPC])
+    else if (e.isInstanceOf[Player])
+      return upickle.default.write(e.asInstanceOf[Player])
+
+
+    var res = "{"
+        res += s"name:${upickle.default.write(e.name)},"
+        res += s"currentRoomCoords:${upickle.default.write(e.currentRoomCoords)},"
+        res += "lastHitBy:\"this\","
+        res += s"weapon:${upickle.default.write(e.weapon)},"
+        res += s"maxHP:${upickle.default.write(e.maxHP)},"
+        res += s"curHP:${upickle.default.write(e.curHP)},"
+        res += s"curWeight:${upickle.default.write(e.curWeight)},"
+        res += s"maxWeight:${upickle.default.write(e.maxWeight)},"
+        res += s"gold:${upickle.default.write(e.gold)},"
+        res += s"armorClass:${upickle.default.write(e.armorClass)},"
+        res += s"baseAP:${upickle.default.write(e.baseAP)},"
+        res += s"modifAP:${upickle.default.write(e.modifAP)},"
+        res += s"curAP:${upickle.default.write(e.curAP)},"
+        res += s"baseStr:${upickle.default.write(e.baseStr)},"
+        res += s"modifStr:${upickle.default.write(e.modifStr)},"
+        res += s"baseDex:${upickle.default.write(e.baseDex)},"
+        res += s"modifDex:${upickle.default.write(e.modifDex)},"
+        res += s"basePow:${upickle.default.write(e.basePow)},"
+        res += s"modifPow:${upickle.default.write(e.modifPow)},"
+        res += s"poisonDuration:${upickle.default.write(e.poisonDuration)},"
+        res += s"poisonDamage:${upickle.default.write(e.poisonDamage)},"
+        res += s"onFireDuration:${upickle.default.write(e.onFireDuration)},"
+        res += s"onFireDamage:${upickle.default.write(e.onFireDamage)},"
+        res += s"frozenDuration:${upickle.default.write(e.frozenDuration)},"
+        res += s"frozenDamage:${upickle.default.write(e.frozenDamage)},"
+        res += s"paralyzedDuration:${upickle.default.write(e.paralyzedDuration)},"
+        res += s"paralyzedDamage:${upickle.default.write(e.paralyzedDamage)},"
+        res += s"regenDuration:${upickle.default.write(e.regenDuration)},"
+        res += s"regenHP:${upickle.default.write(e.regenHP)},"
+        /*
+        res += s"inventory:${upickle.default.write(e.inventory)},"
+        res += s"helmet:${upickle.default.write(e.helmet)},"
+        res += s"chestplate:${upickle.default.write(e.chestplate)},"
+        res += s"leggings:${upickle.default.write(e.leggings)},"
+        res += s"boots:${upickle.default.write(e.boots)},"
+        */
+
+    /*
+    val intAttr = List("curHP", "curWeight", "maxWeight",  "gold", "armorClass", "baseAP", "modifAP", "curAP",
+      "baseStr", "modifStr", "baseDex", "modifDex", "basePow", "modifPow", "poisonDuration", "poisonDamage",
+      "onFireDuration", "onFireDamage", "frozenDuration", "frozenDamage", "paralyzedDuration", "paralyzedDamage",
+      "regenDuration", "regenHP")
+
+    intAttr.foreach( n =>
+        {
+        val f = classTag[SentientEntity].runtimeClass.getDeclaredField(n)
+        f.setAccessible(true)
+        res += s"$n:${upickle.default.write(f.get(e).asInstanceOf[Int])},"
+        f.setAccessible(false)
+        }
+      )
+    */
+    return res + "}"
+  }
 }
 
 abstract class SentientEntity(animation:Animation, pos:Point) 
@@ -203,9 +283,9 @@ abstract class SentientEntity(animation:Animation, pos:Point)
 
 
 class Cursor(dest:GraphicsContext)
-  extends Entity(Animation.load("cursor.png", 1), new Point(0,0), dest)
+  extends Entity(new Animation("cursor.png", 1), new Point(0,0), dest)
 {
-  val arrow = new GraphicEntity(Animation.load("arrow.png", 6), pos, dest)
+  val arrow = new GraphicEntity(new Animation("arrow.png", 6), pos, dest)
   arrow.freeze()
 
   val dirArray = Array(new Point(1, 0), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(0, -1), new Point(1, -1))
@@ -280,8 +360,19 @@ class Cursor(dest:GraphicsContext)
 
 }
 
-class Player()
-    extends SentientEntity(Animation.load("character.png", 4, sizeY=64), new Point(0,0))
+import upickle.default._
+import json._
+object Player
+{
+
+  implicit val rw: ReadWriter[Player] =
+      readwriter[ujson.Value].bimap[Player](
+        e => JsonTools.write(e),
+        json => read[Player](json)
+    )
+}
+class Player() 
+    extends SentientEntity(new Animation("character.png", 4, sizeY=64), new Point(0,0)) with Serializable
 {
     val name = "Player"
         inventory = new Inventory(this, MessageHandler.inventory)
