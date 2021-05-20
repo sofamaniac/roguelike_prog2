@@ -53,9 +53,17 @@ object Tile
         res += s"}"
     return res
   }
-  def load(_json:ujson.Value):Tile =
+  def load(json:ujson.Value):Tile =
   {
-    return new Tile(new Point(0,0))
+    val tile = new Tile(upickle.default.read[Point](json("coord")))
+    tile.item = upickle.default.read[Option[Item]](json("item"))
+    tile.entity = upickle.default.read[Option[SentientEntity]](json("entity"))
+    tile.walkable = upickle.default.read[Boolean](json("walkable"))
+    tile.seeThrough = upickle.default.read[Boolean](json("seeThrough"))
+    tile.seen = upickle.default.read[Boolean](json("seen"))
+    tile.backTexture = upickle.default.read[GraphicEntity](json("backTexture"))
+    tile.frontTexture = upickle.default.read[Option[GraphicEntity]](json("frontTexture"))
+    return tile
   }
 }
 
