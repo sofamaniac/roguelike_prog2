@@ -50,7 +50,7 @@ object Game
           Map.setHighlight((p:Point)=>(player.pos.distance(p) <= player.curAP && player.curAP > 0), highlightPlayer=true)
             cursor.limitation = true
         }
-        else if(phase == "attack")
+        else if(phase == "attack" && player.curAP > 0)
         {
             setAttackHighlight()
             val p = Map.findHighlight()
@@ -159,7 +159,7 @@ object Game
         player.inventory.add(WeaponCreator.create())
         player.inventory.add(WeaponCreator.create("Fire Ball"))
         player.inventory.add(WeaponCreator.create("sword"))
-        player.inventory.add(ItemCreator.create("chainmail"))
+        player.inventory.add(ItemCreator.create("chainmail helmet"))
         // player.inventory.add(new Bandages)
 
         setPhase("move")
