@@ -52,18 +52,22 @@ class ClientThread(val socket:Socket) extends Thread
       }
     }
   }
-
   def read():String =
   {
-    var b = in.read()
-    var res:Array[Byte] = new Array(0)
+    var b:Int = -2
+    var res:String = ""
     val endcode = end.getBytes
-    while (b.toInt != -1 && b != endcode(0))
+    var counter = 0
+    while ((b != -1 || res != "") && counter != endcode.length)
     {
-      res = (new String(res) + (b.toChar).toString).getBytes()
       b = in.read()
+      res = (res + (b.toChar).toString)
+      if (b == endcode(counter))
+        counter += 1
+      else
+        counter  = 0
     }
-    return new String(res)
+    return res
   }
 
   def parse(s:String):Unit=
@@ -83,8 +87,11 @@ class ClientThread(val socket:Socket) extends Thread
 
   def handle_request(s:String):Unit=
   {
-    val s = Gzip.compress((upickle.default.write(Map.map)+end).getBytes)
-    out.write(s)
+    s match
+    {
+      case "MAP" => {val s1 = Gzip.compress((upickle.default.write(Map.map)).getBytes)++(end.getBytes); out.write(s1)}
+      case _ => ()
+    }
   }
 
   def handle_command(s:String):Unit=

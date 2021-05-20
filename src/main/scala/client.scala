@@ -23,24 +23,22 @@ object Client {
   def read():String =
   {
     var b:Int = -2
-    var res:String = ""
+    var res:Array[Byte] = Array[Byte]()
     val endcode = end.getBytes
     var counter = 0
-    while ((b != -1 || res != "") && counter != endcode.length)
+    while ((b != -1 || res.length != 0) && counter != endcode.length)
     {
-      res = (res + (b.toChar).toString)
       b = in.read()
+      res = res :+ b.toByte
       if (b == endcode(counter))
         counter += 1
       else
         counter  = 0
-      println(counter)
     }
-    println(res.length)
-    val s = Gzip.decompress(res.getBytes)
+    val s = Gzip.decompress(res)
     s match
     {
-      case Some(str) => return str
+      case Some(str) => {println(StringContext treatEscapes (str));return StringContext treatEscapes (str)}
       case _ => return ""
     }
   }
@@ -48,7 +46,7 @@ object Client {
   def getMap():Map=
   {
     val out = socket.outputStream()
-    out.write(("REQUEST"+sep+"MAP"+end).getBytes())
+    out.write(("REQUEST"+sep+"MAP"+sep+end).getBytes())
     return upickle.default.read[Map](get_answer(TIMEOUT).substring(1).dropRight(1))
   }
   

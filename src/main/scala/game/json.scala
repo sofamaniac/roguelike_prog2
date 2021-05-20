@@ -144,8 +144,8 @@ object JsonTools{
   }
 
   def sanitize(json:String):String=
-    return json.replace("\\", "").replace("\"{", "{").replace("}\"", "}")
-      .replace("\"[", "[").replace("]\"", "]").replace("[\"", "[").replace(",\",", ",")
+    return json.filterNot((x: Char) => x.isWhitespace).replace("\\", "").replace("\"{", "{").replace("}\"", "}")
+      .replace("\"[", "[").replace("]\"", "]").replace("[\"", "[").replace(",\",", ",").replace(",]", "]")
 }
 
 object EnemyCreator{

@@ -83,7 +83,7 @@ case class Tile(val coord:Point)
 
     var textureMap = MapObject[String, Option[GraphicEntity]]()
 
-    var backTexture:GraphicEntity = new GraphicEntity(Animation.load("texture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity = new GraphicEntity(Animation.loadf"texture.png", 1), coord, GameWindow.contextGame)
 
     var frontTexture:Option[GraphicEntity] = None
     
@@ -231,7 +231,7 @@ object Map
     {
       var res = ""
       m.rooms.foreach { case ((x,y), r) => res = res + s"[[${x}, ${y}], ${upickle.default.write(r)}]," } 
-      return """{ "rooms": [""" + s"""${JsonTools.sanitize(res)}""" + " ]}"
+      return """{"rooms":[""" + s"""${JsonTools.sanitize(res).dropRight(1)}""" + "]}"
     }
 
     def read(_json:ujson.Value):Map =
@@ -239,8 +239,8 @@ object Map
       val map = new Map()
       val json = ujson.read(_json)
       map.rooms = MapObject[(Int, Int), Room]()
+      JsonTools.foreach(json("rooms"), j => map.rooms += (j(0)(0).num.toInt, j(0)(1).num.toInt) -> upickle.default.read[Room](j(1)))
       /*
-      JsonTools.foreach(json("rooms"), ( j => println(upickle.default.read[(Int, Int)](j(0)))))
       map.rooms = upickle.default.read[MapObject[(Int, Int), Room]](json("rooms"))
       */
       return map
