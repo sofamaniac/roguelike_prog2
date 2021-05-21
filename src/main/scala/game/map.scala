@@ -41,15 +41,15 @@ object Tile
   def write(t:Tile):ujson.Value =
   {
     var res = "{" 
-        res += s""""coord":${upickle.default.write(t.coord)},""""
-        res += s"""item":${upickle.default.write(t.item)},""""
-        res += s"""entity":${upickle.default.write(t.entity)},""""
-        res += s"""walkable":${upickle.default.write(t.walkable)},""""
-        res += s"""seeThrough":${upickle.default.write(t.seeThrough)},""""
-        res += s"""flyable":${upickle.default.write(t.flyable)},""""
-        res += s"""seen":${upickle.default.write(t.seen)},""""
-        res += s"""backTexture":${upickle.default.write(t.backTexture)},""""
-        res += s"""frontTexture":${upickle.default.write(t.frontTexture)}""""
+        res += s""""coord":${upickle.default.write(t.coord)},"""
+        res += s""""item":${upickle.default.write(t.item)},"""
+        res += s""""entity":${upickle.default.write(t.entity)},"""
+        res += s""""walkable":${upickle.default.write(t.walkable)},"""
+        res += s""""seeThrough":${upickle.default.write(t.seeThrough)},"""
+        res += s""""flyable":${upickle.default.write(t.flyable)},"""
+        res += s""""seen":${upickle.default.write(t.seen)},"""
+        res += s""""backTexture":${upickle.default.write(t.backTexture)},"""
+        res += s""""frontTexture":${upickle.default.write(t.frontTexture)}"""
         res += s"}"
     return res
   }
@@ -75,7 +75,7 @@ case class Tile(val coord:Point)
 
     var textureMap = MapObject[String, Option[GraphicEntity]]()
 
-    var backTexture:GraphicEntity = new GraphicEntity(Animation.loadf"texture.png", 1), coord, GameWindow.contextGame)
+    var backTexture:GraphicEntity = new GraphicEntity(new Animation("texture.png", 1), coord, GameWindow.contextGame)
 
     var frontTexture:Option[GraphicEntity] = None
     
@@ -231,7 +231,7 @@ object Map
       val map = new Map()
       val json = ujson.read(_json)
       map.rooms = MapObject[(Int, Int), Room]()
-      JsonTools.foreach(json("rooms"), j => map.rooms += (j(0)(0).num.toInt, j(0)(1).num.toInt) -> upickle.default.read[Room](j(1)))
+      JsonTools.foreach(json("rooms"), j => map.rooms += (j(0)(0).num.toInt, j(0)(1).num.toInt) -> Room.loadJson(j(1)))
       /*
       map.rooms = upickle.default.read[MapObject[(Int, Int), Room]](json("rooms"))
       */
@@ -392,11 +392,17 @@ object Door
 {
   implicit val rw: ReadWriter[Door] =
     readwriter[ujson.Value].bimap[Door](
-      d => "",
-      json => upickle.default.read[Door](json)
+      d => write(d),
+      json => new Door(read[Point](json("coord")), new Room(), read[String](json("openCondition"))){ keyType = read[String](json("keyType"))}
     )
+
+  def write(d:Door):ujson.Value=
+  {
+    val s = upickle.default.write(d.asInstanceOf[Tile])
+    s.dropRight(2) + s""","keyType":${upickle.default.write(d.keyType)},"openCondition":${upickle.default.write(d.openCondition)}}"""
+  }
 }
-class Door(coord:Point, val room:Room, val openCondition:String) extends Tile(coord)
+class Door(coord:Point, var room:Room, val openCondition:String) extends Tile(coord)
 {
   // [room] is the room on which depends the opening condition
 
@@ -404,7 +410,7 @@ class Door(coord:Point, val room:Room, val openCondition:String) extends Tile(co
   walkable = false
   seeThrough = false
   flyable = false
-  val keyType = "simple key"                      // We can specify that a specific key is needed to open the door
+  var keyType = "simple key"                      // We can specify that a specific key is needed to open the door
 
   var nextDoor:Option[Door] = None      // which door it is linked to in the nextRoom
 
@@ -493,7 +499,7 @@ object Room
 
   def write(r:Room):ujson.Value=
   {
-    var res = "{" + s""""topleft":${JsonTools.sanitize(upickle.default.write(r.topLeft))},"""
+    var res = "{" + s""""topLeft":${JsonTools.sanitize(upickle.default.write(r.topLeft))},"""
         res += s""""tiles":${JsonTools.sanitize(upickle.default.write(r.tiles))},"""
         res += s""""doors":${JsonTools.sanitize(upickle.default.write(r.doors))},"""
         res += s""""enemies":${JsonTools.sanitize(upickle.default.write(r.enemies))},"""
@@ -509,11 +515,12 @@ object Room
     val room = new Room()
     room.topLeft = upickle.default.read[Point](json("topLeft"))
     room.tiles = JsonTools.loadMap[(Int, Int), Tile](json("tiles"))
-    room.doors = JsonTools.loadVect[Door](json("doors"))
-    room.enemies = JsonTools.loadVect[Enemy](json("enemies"))
+    room.doors = upickle.default.read[Vector[Door]](json("doors"))
+    room.enemies = upickle.default.read[Vector[Enemy]](json("enemies"))
+    println(json("npcs")(0))
     room.otherNPCs = JsonTools.loadVect[SentientEntity](json("npcs"))
-    room.receptacles = JsonTools.loadVect[Receptacle](json("receptacles"))
-    room.items = JsonTools.loadVect[Item](json("items"))
+    room.receptacles = upickle.default.read[Vector[Receptacle]](json("receptacles"))
+    room.items = upickle.default.read[Vector[Item]](json("items"))
     return room
   }
 

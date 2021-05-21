@@ -84,7 +84,6 @@ object JsonTools{
     var i = 0
     for (i <- 0 to length(json)-1)
     {
-      println(json(i)(0), json(i)(1))
       res += upickle.default.read[Key](json(i)(0)) -> upickle.default.read[Value](json(i)(1))
     }
     return res
@@ -116,7 +115,7 @@ object JsonTools{
       case e:Item => upickle.default.write(e)
       case e:Tile => upickle.default.write(e)
       case e:Room => upickle.default.write(e)
-      case e:Merchant => { println(obj.getClass.getName); upickle.default.write(e)}
+      case e:Merchant => upickle.default.write(e)
       case e:CowardNPC => upickle.default.write(e)
       case e:NeutralNPC =>  upickle.default.write(e)
       case e:Player => upickle.default.write(e)
@@ -136,7 +135,7 @@ object JsonTools{
       fields = attributes.map( (n:String) => classTag[T].runtimeClass.getDeclaredField(n) )
     val couples = fields.map{ n => 
         n.setAccessible(true)
-        val res = "\"" + n.getName + "\": "+ writeType(n.get(obj))
+        val res = s""""${n.getName}":"""+ writeType(n.get(obj))
         n.setAccessible(false)
         res.replace("\\\\", "")
       }
@@ -144,8 +143,16 @@ object JsonTools{
   }
 
   def sanitize(json:String):String=
-    return json.filterNot((x: Char) => x.isWhitespace).replace("\\", "").replace("\"{", "{").replace("}\"", "}")
-      .replace("\"[", "[").replace("]\"", "]").replace("[\"", "[").replace(",\",", ",").replace(",]", "]")
+  {
+    var s = json.replace("\\", "").replace("\"{", "{").replace("}\"", "}")
+      .replace("\"[", "[").replace("]\"", "]").replace("[\"", "[").replace(",\",", ",").replace(",\\s]", "]")
+    s = "([\\{,])([a-zA-Z])".r.replaceAllIn(s, """$1"$2""")
+    s = "([a-zA-Z]):".r.replaceAllIn(s, """$1":""")
+    s = s.replace(",}", "}")
+    s = "([a-zA-Z])\"\"".r.replaceAllIn(s, """$1\"""")
+    return s
+    }
+      
 }
 
 object EnemyCreator{

@@ -35,10 +35,10 @@ object Client {
       else
         counter  = 0
     }
-    val s = Gzip.decompress(res)
+    val s = Gzip.decompress(res.dropRight(endcode.length))
     s match
     {
-      case Some(str) => {println(StringContext treatEscapes (str));return StringContext treatEscapes (str)}
+      case Some(str) => {println((StringContext treatEscapes str)); return StringContext treatEscapes (str)}
       case _ => return ""
     }
   }

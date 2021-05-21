@@ -89,7 +89,7 @@ class ClientThread(val socket:Socket) extends Thread
   {
     s match
     {
-      case "MAP" => {val s1 = Gzip.compress((upickle.default.write(Map.map)).getBytes)++(end.getBytes); out.write(s1)}
+      case "MAP" => {val s1 = Gzip.compress((upickle.default.write(Map.map)).getBytes)++(end.getBytes);println(s1.length); out.write(s1)}
       case _ => ()
     }
   }

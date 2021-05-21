@@ -29,7 +29,13 @@ object SentientEntity
   implicit val rw: ReadWriter[SentientEntity]=
     readwriter[ujson.Value].bimap[SentientEntity](
       e => write(e),
-      json => upickle.default.read[SentientEntity](json)
+      json => {
+        json("entityType").str.toString match
+        {
+          case "Enemy" => upickle.default.read[Enemy](json)
+          case "Player" => new Player()
+        }
+      }
     )
 
   def write(e:SentientEntity):ujson.Value=
@@ -367,7 +373,7 @@ object Player
 
   implicit val rw: ReadWriter[Player] =
       readwriter[ujson.Value].bimap[Player](
-        e => JsonTools.write(e),
+        e => JsonTools.write(e).dropRight(1) + ""","entityType":"Player"}""",
         json => read[Player](json)
     )
 }

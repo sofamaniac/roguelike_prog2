@@ -38,7 +38,7 @@ object Enemy
   // we define how are object serialized, 
   implicit val rw: ReadWriter[Enemy] = 
     readwriter[ujson.Value].bimap[Enemy](
-      e => JsonTools.write(e),
+      e => JsonTools.write(e).dropRight(1) + ""","entityType":"Enemy"}""",
       json => createEnemy(json)
     )
 
@@ -58,22 +58,39 @@ object Enemy
     
     var args = MapObject[String, Int]()
 
+    println("1")
     val animation   = if (JsonTools.contains(json, "animation")) Animation.loadJson(json("animation")) else defAnimation
+    println("2")
     val name        = JsonTools.load(json, "name", defName)
+    println("3")
     args += "maxHP" -> JsonTools.load(json, "maxHP", defMHP)
+    println("4")
     args += "armorClass" -> JsonTools.load(json, "armorClass", defAC)
+    println("5")
     args += "baseAP" -> JsonTools.load(json, "baseAP", defBAP)
+    println("6")
     args += "modifAP" -> JsonTools.load(json, "modifAP", defMAP)
+    println("7")
     args += "baseStr" -> JsonTools.load(json, "baseStr", defBST)
+    println("8")
     args += "modifStr" -> JsonTools.load(json, "modifStr", defMST) 
+    println("9")
     args += "baseDex" -> JsonTools.load(json, "baseDex", defBDE)
+    println("0")
     args += "modifDex" -> JsonTools.load(json, "modifDex", defMDE)
+    println("1")
     args += "basePow" -> JsonTools.load(json, "basePow", defBPO)
+    println("2")
     args += "modifPow" -> JsonTools.load(json, "modifPow", defMPO)
+    println("3")
     val fly         = JsonTools.load(json, "fly", defFly)
+    println("4")
     val weapon      = if (JsonTools.contains(json, "weapon")) WeaponCreator.create(json("weapon").str) else defWea
+    println("5")
     val loot        = if (JsonTools.contains(json, "lootTable")) read[LootTable](json("lootTable")) else defLT
+    println("6")
     val behaviour   = JsonTools.load(json, "behaviourType", defBeh)
+    println("7")
 
     val res = behaviour match
     {
@@ -94,6 +111,7 @@ object Enemy
     addParam.foreach( n =>
         if (JsonTools.contains(json, n))
         {
+          println(n)
           val f = classTag[Enemy].runtimeClass.getDeclaredField(n)
           f.setAccessible(true)
           f.set(res, upickle.default.read[Int](json(n)))
