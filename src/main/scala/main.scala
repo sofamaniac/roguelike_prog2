@@ -16,14 +16,16 @@ object Program extends JFXApp
     if(what == 0)
     {
       println("Starting server.")
-      Game.initialization()
+      GameServer.initialization()
       Server.start()
+      println("Server started.")
     }
 
     else
     {
       println("Starting client.")
-      GameWindow.start()
       Client.init()
+      GameWindow.start()
+      println("Client started.")
     }
 }

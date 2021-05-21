@@ -1,7 +1,7 @@
 package socket
 
 import java.io.{ IOException, InputStreamReader, BufferedReader, PrintWriter, Closeable }
-import java.io.{ BufferedOutputStream, BufferedReader }
+import java.io.{ BufferedOutputStream, BufferedReader, InputStream, OutputStream }
 import java.io.{ ByteArrayOutputStream, ByteArrayInputStream, ObjectOutputStream, ObjectInputStream }
 import java.net.{ ServerSocket, SocketException, SocketTimeoutException, InetAddress, Socket => JSocket }
 import scala.io.Codec
@@ -11,6 +11,36 @@ object Request
 {
   val sep = "<"
   val end = "END_REQUEST"
+
+  def send(request:Array[String], out:OutputStream):Unit =
+  {
+    val s1 = Gzip.compress(request.mkString(sep).getBytes)++((sep+end).getBytes)
+    out.write(s1)
+  }
+
+  def receive(in:InputStream):String =
+  {
+    var b:Int = -2
+    var res:Array[Byte] = Array[Byte]()
+    val endcode = end.getBytes
+    var counter = 0
+    while ((b != -1 || res.length != 0) && counter != endcode.length)
+    {
+      b = in.read()
+      res = res :+ b.toByte
+      if (b == endcode(counter))
+        counter += 1
+      else
+        counter  = 0
+    }
+    val s = Gzip.decompress(res.dropRight(endcode.length + sep.getBytes.length))
+    s match
+    {
+      case Some(str) => {return StringContext treatEscapes (str)}
+      case _ => return ""
+    }
+  }
+
 }
 
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
@@ -54,7 +84,7 @@ object Socket {
   def apply(host: String, port: Int)      = new Box(() => new Socket(new JSocket(host, port)))
 }
 
-class Socket(jsocket: JSocket) extends Streamable.Bytes with Closeable {
+class Socket(val jsocket: JSocket) extends Streamable.Bytes with Closeable {
   def inputStream()  = jsocket.getInputStream()
   def outputStream() = jsocket.getOutputStream()
   def getPort()      = jsocket.getPort()

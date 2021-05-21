@@ -1,5 +1,8 @@
 package enemy
 
+import server._
+import client._
+
 import entity._
 import item._
 import weapon._
@@ -58,39 +61,22 @@ object Enemy
     
     var args = MapObject[String, Int]()
 
-    println("1")
     val animation   = if (JsonTools.contains(json, "animation")) Animation.loadJson(json("animation")) else defAnimation
-    println("2")
     val name        = JsonTools.load(json, "name", defName)
-    println("3")
     args += "maxHP" -> JsonTools.load(json, "maxHP", defMHP)
-    println("4")
     args += "armorClass" -> JsonTools.load(json, "armorClass", defAC)
-    println("5")
     args += "baseAP" -> JsonTools.load(json, "baseAP", defBAP)
-    println("6")
     args += "modifAP" -> JsonTools.load(json, "modifAP", defMAP)
-    println("7")
     args += "baseStr" -> JsonTools.load(json, "baseStr", defBST)
-    println("8")
     args += "modifStr" -> JsonTools.load(json, "modifStr", defMST) 
-    println("9")
     args += "baseDex" -> JsonTools.load(json, "baseDex", defBDE)
-    println("0")
     args += "modifDex" -> JsonTools.load(json, "modifDex", defMDE)
-    println("1")
     args += "basePow" -> JsonTools.load(json, "basePow", defBPO)
-    println("2")
     args += "modifPow" -> JsonTools.load(json, "modifPow", defMPO)
-    println("3")
     val fly         = JsonTools.load(json, "fly", defFly)
-    println("4")
     val weapon      = if (JsonTools.contains(json, "weapon")) WeaponCreator.create(json("weapon").str) else defWea
-    println("5")
     val loot        = if (JsonTools.contains(json, "lootTable")) read[LootTable](json("lootTable")) else defLT
-    println("6")
     val behaviour   = JsonTools.load(json, "behaviourType", defBeh)
-    println("7")
 
     val res = behaviour match
     {
@@ -111,7 +97,6 @@ object Enemy
     addParam.foreach( n =>
         if (JsonTools.contains(json, n))
         {
-          println(n)
           val f = classTag[Enemy].runtimeClass.getDeclaredField(n)
           f.setAccessible(true)
           f.set(res, upickle.default.read[Int](json(n)))
@@ -142,10 +127,10 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
     var i = 0
     for(i <- 0 until dirArray.size)
     {
-      if(curAP > 0 && weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, Game.player.pos))
+      if(curAP > 0 && weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, GameServer.player.pos))
       {
         // launch the attack to the player position, so adjacent tiles can be affected to
-        weapon.attack(Game.player.pos, this, i)
+        weapon.attack(GameServer.player.pos, this, i)
         curAP = 0
       }
     }
@@ -158,7 +143,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // if player is in range, does not move
         for(i <- 0 until dirArray.size)
         {
-            if(weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, Game.player.pos))
+            if(weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, GameServer.player.pos))
             {
                 return pos
             }
@@ -166,14 +151,14 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // else find a position that move it closer to the player 
         // in the future, enemies will have like the player a detection range,
         // outside of which they are unable to see the player
-        val curD = pos.distance(Game.player.pos)
+        val curD = pos.distance(GameServer.player.pos)
         Map.map.rooms.foreach
         {
             case(key, r) =>
               r.tiles.foreach
               {
                 case (k, t) =>
-                  if(t.coord.distance(Game.player.pos) < curD && isMoveValid(t.coord))
+                  if(t.coord.distance(GameServer.player.pos) < curD && isMoveValid(t.coord))
                     return t.coord
               }
         }
@@ -204,7 +189,7 @@ class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapo
   
   override def IA()
   {
-    if (!neutral || lastHitBy == Game.player)
+    if (!neutral || lastHitBy != this)
     {
       neutral = false
       super.IA()
@@ -231,14 +216,14 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
     // TODO: run away only when player is visible
     
     // The entity look for a tile that will increase its distance from the player
-    val curD = pos.distance(Game.player.pos)
+    val curD = pos.distance(GameServer.player.pos)
     Map.map.rooms.foreach
     {
         case(key, r) =>
           r.tiles.foreach
           {
             case(k, t) =>
-            if(t.coord.distance(Game.player.pos) >= curD && isMoveValid(t.coord))
+            if(t.coord.distance(GameServer.player.pos) >= curD && isMoveValid(t.coord))
                   move(t.coord)
           }
     }
@@ -260,9 +245,10 @@ class Merchant(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:
   inventory = new Inventory(this){
     override def useItem():Unit =
     {
-      Game.player.inventory.add(inventory(curInv))
-      Game.player.gold -= inventory(curInv).price
-      println(inventory(curInv).price)
+      // TODO change to get the right player
+      GameServer.player.inventory.add(inventory(curInv))
+      GameServer.player.gold -= inventory(curInv).price
+      Server.sendAction(s"INVETORY/GOLD/${GameServer.player.gold}")
       remove(inventory(curInv))
     }
   }

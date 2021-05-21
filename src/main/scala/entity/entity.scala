@@ -1,5 +1,8 @@
 package entity
 
+import server._
+import client._
+
 import graphics._
 import messageHandler._
 import animation._
@@ -172,6 +175,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
     {
       if (isMoveValid(next))
       {
+        Server.sendAction(s"MOVE/${pos.x},${pos.y}/${next.x},${next.y}")
         Map.fromPoint(pos).entity = None
         Map.fromPoint(next).entity = Some(this)
         curAP -= pos.distance(next)
@@ -200,6 +204,7 @@ abstract class SentientEntity(animation:Animation, pos:Point)
       {
         kill()
       }
+      Server.sendAction(s"DAMAGE/${pos.x},${pos.y}/$dam")
     }
 
     def heal(hp:Int):Unit = 
@@ -316,7 +321,7 @@ class Cursor(dest:GraphicsContext)
   }
   override def show() = 
   {
-    if(visible && Game.player.curAP > 0)
+    if(visible && GameClient.player.curAP > 0)
     {
       arrow.show()
       super.show()
@@ -450,7 +455,7 @@ class Player()
     {
       if(curAP > 0) {
         curAP = 0
-        Game.currentWeapon.attack(dest, this, Game.cursor.currentDir)
+        GameServer.currentWeapon.attack(dest, this, GameServer.cursor.currentDir)
       }
       displayInfo()
     }
@@ -524,14 +529,16 @@ class Inventory(val owner:SentientEntity, val zone:MessageZone=MessageHandler.tr
     def useItem():Unit =
     {
       inventory(curInv).onUse(owner)
+      Server.sendAction(s"${owner.pos.x},${owner.pos.y}/INVENTORY/USE/${curInv}")
       display()
     }
     def remove(i:Item):Unit =
     {
-      inventory = inventory.filterNot(_ == i)
+      inventory = inventory.filterNot(_ == (inventory.find(_.name == i.name)))
       nbItem -= 1
       owner.curWeight -= i.weight
       curInv = curInv.min(nbItem -1)
+      Server.sendAction(s"${owner.pos.x},${owner.pos.y}/INVENTORY/REMOVE/${i.name}")
       display()
     }
     def add(i:Item):Unit=
@@ -539,18 +546,21 @@ class Inventory(val owner:SentientEntity, val zone:MessageZone=MessageHandler.tr
       inventory = inventory :+ i
       nbItem += 1
       owner.curWeight += i.weight
+      Server.sendAction(s"${owner.pos.x},${owner.pos.y}/INVENTORY/ADD/${i.name}")
       display()
     }
     def drop():Unit =
     {
       inventory(curInv).pos.setPoint(owner.pos)
       Map.fromPoint(owner.pos).placeItem(inventory(curInv), Some(owner))
+      Server.sendAction(s"${owner.pos.x},${owner.pos.y}/INVENTORY/DROP/${curInv}")
     }
     def sell(dest:SentientEntity):Unit =
     {
       dest.inventory.add(inventory(curInv))
       dest.gold -= inventory(curInv).price
       owner.gold += inventory(curInv).price
+      Server.sendAction(s"${owner.pos.x},${owner.pos.y}/INVENTORY/SELL/${curInv}:${dest.pos.x},${dest.pos.y}")
       remove(inventory(curInv))
     }
 }

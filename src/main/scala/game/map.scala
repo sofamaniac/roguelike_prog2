@@ -144,8 +144,8 @@ case class Tile(val coord:Point)
 
     def isVisible(offset:Point=new Point(0,0)):Boolean = 
     {
-        val d = coord.distance(Game.player.pos)
-        val b:Boolean = d <= Game.player.getSeeRange() && Map.inSight(Game.player.pos, coord)
+        val d = coord.distance(GameClient.player.pos)
+        val b:Boolean = d <= GameClient.player.getSeeRange() && Map.inSight(GameClient.player.pos, coord)
         if(!seen && b)
         {
             seen = true
@@ -265,7 +265,7 @@ class Map extends Serializable
 {
     var rooms = MapObject[(Int, Int), Room]()
 
-    rooms += (0,0) -> RoomCreator.create("room2")
+    rooms += (0,0) -> RoomCreator.create("room3")
     //rooms += (0,1) -> RoomCreator.create("room2")
     //rooms += (1,0) -> RoomCreator.create("room3")
 
@@ -302,14 +302,14 @@ class Map extends Serializable
         {
           case (key, room) => room.setHighlight(zone, attackHighlight, erase, highlightPlayer)
         }
-        Map.fromPoint(Game.player.pos).highlight = Map.fromPoint(Game.player.pos).highlight && highlightPlayer
+        Map.fromPoint(GameClient.player.pos).highlight = Map.fromPoint(GameClient.player.pos).highlight && highlightPlayer
     }
 
     def findHighlight():Point =
     {
       // TODO: iterate over each room, which iterates over its tiles
-        if (fromPoint(Game.cursor.pos).highlight)
-          return Game.cursor.pos
+        if (fromPoint(GameClient.cursor.pos).highlight)
+          return GameClient.cursor.pos
 
         rooms.foreach
         {
@@ -517,7 +517,6 @@ object Room
     room.tiles = JsonTools.loadMap[(Int, Int), Tile](json("tiles"))
     room.doors = upickle.default.read[Vector[Door]](json("doors"))
     room.enemies = upickle.default.read[Vector[Enemy]](json("enemies"))
-    println(json("npcs")(0))
     room.otherNPCs = JsonTools.loadVect[SentientEntity](json("npcs"))
     room.receptacles = upickle.default.read[Vector[Receptacle]](json("receptacles"))
     room.items = upickle.default.read[Vector[Item]](json("items"))
@@ -725,7 +724,7 @@ case class Room()
                 value.highlight = value.highlight && !erase     // erase previous highlight
                 value.highlightAttack = value.highlightAttack && !erase
               
-                if (zone(value.coord) && value.isVisible() && !value.isInstanceOf[Wall] && Map.inSight(Game.player.pos, new Point(value.coord)))
+                if (zone(value.coord) && value.isVisible() && !value.isInstanceOf[Wall] && Map.inSight(GameClient.player.pos, new Point(value.coord)))
                 {
                     value.highlight = !attackHighlight
                     value.highlightAttack = attackHighlight

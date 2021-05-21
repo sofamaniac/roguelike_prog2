@@ -90,10 +90,10 @@ case class Key(val name:String, val description:String, val price:Int, val rarit
 {
   def onUse(user:SentientEntity) =
   {
-    if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable
-      && Map.fromPoint(Game.cursor.pos).asInstanceOf[Door].keyType == name)
+    if(Map.fromPoint(GameClient.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(GameClient.cursor.pos).walkable
+      && Map.fromPoint(GameClient.cursor.pos).asInstanceOf[Door].keyType == name)
     {
-      Map.fromPoint(Game.cursor.pos).asInstanceOf[Door].open()
+      Map.fromPoint(GameClient.cursor.pos).asInstanceOf[Door].open()
       user.inventory.remove(this)
     }
   }
@@ -109,9 +109,9 @@ case class Jewel(val name:String, val description:String, val price:Int, val rar
 {
   def onUse(user:SentientEntity) =
   {
-    if(Map.fromPoint(Game.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(Game.cursor.pos).walkable)
+    if(Map.fromPoint(GameClient.cursor.pos).isInstanceOf[Door] && !Map.fromPoint(GameClient.cursor.pos).walkable)
     {
-      Map.fromPoint(Game.cursor.pos).asInstanceOf[Door].open()
+      Map.fromPoint(GameClient.cursor.pos).asInstanceOf[Door].open()
       user.inventory.remove(this)
     }
   }
