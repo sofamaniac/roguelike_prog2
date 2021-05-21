@@ -190,8 +190,8 @@ class Weapon(val name:String, val description:String,  val price:Int, val rarity
       owner.inventory.add(owner.weapon)
       owner.weapon = this
       owner.inventory.remove(this)
-      if(owner == Game.player)
-        Game.currentWeapon = this
+      if(owner == GameClient.player)
+        GameClient.currentWeapon = this
     }
     def getZone():Zones.definition =
     {
@@ -209,8 +209,8 @@ abstract class MagicWeapon(args:MapObject[String, ArgsType], val cost:Int)  exte
   override def onUse(owner:SentientEntity):Unit = 
   {
     // Only the player can call this function
-    Game.changeWeapon(this)
-    Game.setPhase("attack")
+    GameClient.changeWeapon(this)
+    GameClient.setPhase("attack")
   }
   override def attack(dest:Point, attacker:SentientEntity, dir:Int) =
   {

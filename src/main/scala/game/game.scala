@@ -1,5 +1,8 @@
 package game
 
+import server._
+import client._
+
 import enemy._
 import entity._
 import item._
@@ -10,8 +13,117 @@ import graphics._
 import messageHandler._
 import scalafx.scene.input.KeyCode
 import json._
+import scala.collection.mutable.{Map => MapObject}
 
-object Game
+object GameServer
+{
+  var playerVect:MapObject[String, Player] = MapObject[String, Player]()
+  var hasEndedTurn:MapObject[String, Boolean] = MapObject()
+  var enemiesVector:Vector[Enemy] = Vector()
+  var player = new Player()
+  val cursor = new Cursor(GameWindow.contextGame)
+  var currentPhase = ""
+  var currentWeapon = player.weapon
+  var speakingTo:SentientEntity = player
+
+  def createPlayer(id:String):Unit =
+  {
+    playerVect += id -> new Player()
+    playerVect(id).pos.setPoint(new Point(1, 1))
+    hasEndedTurn += id -> false
+    Map.fromPoint(new Point(1, 1)).entity = Some(playerVect(id))
+  }
+
+  def initialization():Unit = 
+  {
+    player.pos.setPoint(new Point(1, 1))
+    Map.fromPoint(new Point(1,1)).entity = Some(player)
+    enemiesVector = Map.getEnemies()
+
+  }
+
+  def pickUp():Unit =
+  {
+    Map.fromPoint(player.pos).item match
+    {
+      case None    => ()
+      case Some(i) => if (player.curWeight + i.weight <= player.maxWeight)
+                      {
+                        player.inventory.add(i)
+                        Map.fromPoint(player.pos).item = None
+                      }
+    }
+  }
+
+  def loop():Unit=
+  {
+    var end = true
+    hasEndedTurn.foreach{ case (i,b) => end = end && b}
+    if(!end) return
+
+    playerVect.foreach{ case (i,p) => p.endTurn()}
+    hasEndedTurn.foreach{ case (i,p) => hasEndedTurn(i) = false}
+
+    enemiesVector = enemiesVector.filter(_.curHP > 0) // We remove enemies killed by the player
+    enemiesVector.foreach
+    { e =>
+        e.curAP = e.baseAP + e.modifAP
+        e.IA()
+    }
+    // We separate in case we add animation to display the damage done
+    enemiesVector.foreach
+    {
+      e => e.applyEffects()
+    }
+    enemiesVector.foreach
+    {
+      e => e.endTurn()
+    }
+    enemiesVector = enemiesVector.filter(_.curHP > 0) // We remove enemies dying of other causes than the player
+
+
+    if(player.curHP <= 0)
+    {
+      // TODO:: change
+      // for now on game over, the game is just reset
+      player.curHP = player.maxHP
+    }
+    Map.update()  // We update the rooms of the map
+
+    Server.sendAction("END_TURN")
+
+  }
+
+  def speak():Unit =
+  {
+    Map.fromPoint(cursor.pos).entity match
+    {
+      case Some(e) => if(player.pos.distance(e.pos) <= 1)
+                      {
+                        speakingTo = e
+                      }
+      case _       => ()
+    }
+  }
+  def trade():Unit =
+  {
+    Map.fromPoint(cursor.pos).entity match
+    {
+      case Some(e) => if(player.pos.distance(e.pos) <= 1)
+                      {
+                        speakingTo = e
+                      }
+      case _       => ()
+    }
+  }
+
+  def sell():Unit =
+  {
+    player.inventory.sell(speakingTo)
+  }
+}
+
+object GameClient
 {
     val player = new Player()
     val cursor = new Cursor(GameWindow.contextGame)
@@ -31,11 +143,11 @@ object Game
         case "Space"  => handleSelection()
         case "Esc"    => setPhase("move")
         case "E"      => setPhase("inventory")
-        case "F"      => player.inventory.drop()
+        case "F"      => Client.sendAction(s"INVENTORY/DROP/${player.inventory.curInv}")//player.inventory.drop()
         case "G"      => pickUp()
         case "S"      => speak()
         case "T"      => trade()
-        case "Enter"  => loop()
+        case "Enter"  => Client.sendAction("END_TURN")
         case "F1"     => MessageHandler.setHelp()
         case _        => ()
       }
@@ -92,16 +204,16 @@ object Game
     {
         currentPhase match
         {
-            case "move"   => player.move(cursor.pos)
+            case "move"   => Client.sendAction(s"MOVE/${cursor.pos.x},${cursor.pos.y}")
                              setPhase("move")
-                             //MessageHandler.clear()
 
             case "attack" => MessageHandler.clear()
-                             player.attack(cursor.pos)
+                             Client.sendAction(s"ATTACK/${cursor.pos.x},${cursor.pos.y},${cursor.currentDir}/${currentWeapon.name}")
                              setPhase("move")
 
             case "info"   => ()
-            case "inventory" | "speak" => speakingTo.inventory.useItem()
+            case "inventory" => Client.sendAction(s"INVENTORY/USE/${player.inventory.curInv}")
+            case "speak" => Client.sendAction(s"SPEAK/USE/${cursor.pos.x},${cursor.pos.y}:${speakingTo.inventory.curInv}")
             case "trade"  => sell()
             case _ => println(currentPhase)
       }
@@ -156,16 +268,11 @@ object Game
         // generate map : already done for now
         player.pos.setPoint(new Point(1, 1))
         Map.fromPoint(new Point(1,1)).entity = Some(player)
-        player.inventory.add(WeaponCreator.create())
-        player.inventory.add(WeaponCreator.create("Fire Ball"))
-        player.inventory.add(WeaponCreator.create("sword"))
-        player.inventory.add(ItemCreator.create("chainmail helmet"))
-        // player.inventory.add(new Bandages)
+        Client.sendAction(s"INVENTORY/ADD/${WeaponCreator.create().name}")
 
         setPhase("move")
         player.inventory.display()
         player.inventory.curInv = 0
-        // player.endTurn()
 
         // creating and placing enemies :
         enemiesVector = Map.getEnemies()
@@ -186,7 +293,6 @@ object Game
         enemiesVector.foreach
         { e =>
             e.curAP = e.baseAP + e.modifAP
-            e.IA()
         }
         // We separate in case we add animation to display the damage done
         enemiesVector.foreach
@@ -224,8 +330,11 @@ object Game
         case None    => ()
         case Some(i) => if (player.curWeight + i.weight <= player.maxWeight)
                         {
+                          /*
                           player.inventory.add(i)
                           Map.fromPoint(player.pos).item = None
+                          */
+                         Client.sendAction(s"INVENTORY/PICKUP/${player.pos.x},${player.pos.y}")
                         }
       }
     }
@@ -257,6 +366,7 @@ object Game
 
     def sell():Unit =
     {
-      player.inventory.sell(speakingTo)
+      Client.sendAction(s"INVENTORY/SELL/${player.inventory.curInv}:${speakingTo.pos.x},${speakingTo.pos.y}")
     }
 }
+

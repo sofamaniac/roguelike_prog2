@@ -98,7 +98,7 @@ object Zones
     def classic(minRange:Int, maxRange:Int, dir:Int, start:Point, dest:Point):Boolean =
     {
       val d = start.distance(dest)
-      (dest.equals(Game.cursor.pos) || dest.equals(Game.player.pos)) && // 2nd case is here to allow enemy to use single tile weapon
+      (dest.equals(GameServer.cursor.pos) || dest.equals(GameServer.player.pos)) && // 2nd case is here to allow enemy to use single tile weapon
         minRange <= d && d <= maxRange
     }
 

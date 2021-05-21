@@ -1,5 +1,8 @@
 package enemy
 
+import server._
+import client._
+
 import entity._
 import item._
 import weapon._
@@ -38,7 +41,7 @@ object Enemy
   // we define how are object serialized, 
   implicit val rw: ReadWriter[Enemy] = 
     readwriter[ujson.Value].bimap[Enemy](
-      e => JsonTools.write(e),
+      e => JsonTools.write(e).dropRight(1) + ""","entityType":"Enemy"}""",
       json => createEnemy(json)
     )
 
@@ -124,10 +127,10 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
     var i = 0
     for(i <- 0 until dirArray.size)
     {
-      if(curAP > 0 && weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, Game.player.pos))
+      if(curAP > 0 && weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, GameServer.player.pos))
       {
         // launch the attack to the player position, so adjacent tiles can be affected to
-        weapon.attack(Game.player.pos, this, i)
+        weapon.attack(GameServer.player.pos, this, i)
         curAP = 0
       }
     }
@@ -140,7 +143,7 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // if player is in range, does not move
         for(i <- 0 until dirArray.size)
         {
-            if(weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, Game.player.pos))
+            if(weapon.getZone()(weapon.innerRange, weapon.outerRange, i, pos, GameServer.player.pos))
             {
                 return pos
             }
@@ -148,14 +151,14 @@ case class Enemy(override val animation:Animation, override val pos:Point, val n
         // else find a position that move it closer to the player 
         // in the future, enemies will have like the player a detection range,
         // outside of which they are unable to see the player
-        val curD = pos.distance(Game.player.pos)
+        val curD = pos.distance(GameServer.player.pos)
         Map.map.rooms.foreach
         {
             case(key, r) =>
               r.tiles.foreach
               {
                 case (k, t) =>
-                  if(t.coord.distance(Game.player.pos) < curD && isMoveValid(t.coord))
+                  if(t.coord.distance(GameServer.player.pos) < curD && isMoveValid(t.coord))
                     return t.coord
               }
         }
@@ -186,7 +189,7 @@ class NeutralNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapo
   
   override def IA()
   {
-    if (!neutral || lastHitBy == Game.player)
+    if (!neutral || lastHitBy != this)
     {
       neutral = false
       super.IA()
@@ -213,14 +216,14 @@ class CowardNPC(animation:Animation, pos:Point, name:String, fly:Boolean, weapon
     // TODO: run away only when player is visible
     
     // The entity look for a tile that will increase its distance from the player
-    val curD = pos.distance(Game.player.pos)
+    val curD = pos.distance(GameServer.player.pos)
     Map.map.rooms.foreach
     {
         case(key, r) =>
           r.tiles.foreach
           {
             case(k, t) =>
-            if(t.coord.distance(Game.player.pos) >= curD && isMoveValid(t.coord))
+            if(t.coord.distance(GameServer.player.pos) >= curD && isMoveValid(t.coord))
                   move(t.coord)
           }
     }
@@ -242,9 +245,10 @@ class Merchant(animation:Animation, pos:Point, name:String, fly:Boolean, weapon:
   inventory = new Inventory(this){
     override def useItem():Unit =
     {
-      Game.player.inventory.add(inventory(curInv))
-      Game.player.gold -= inventory(curInv).price
-      println(inventory(curInv).price)
+      // TODO change to get the right player
+      GameServer.player.inventory.add(inventory(curInv))
+      GameServer.player.gold -= inventory(curInv).price
+      Server.sendAction(s"INVETORY/GOLD/${GameServer.player.gold}")
       remove(inventory(curInv))
     }
   }

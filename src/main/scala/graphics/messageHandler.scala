@@ -78,9 +78,9 @@ object MessageHandler
     inventory.show()
     cellInfo.show()
     genInfo.show()
-    if (Game.currentPhase == "inventory")
+    if (GameClient.currentPhase == "inventory")
       itemInfo.show()
-    if (Game.currentPhase == "speak")
+    if (GameClient.currentPhase == "speak")
       tradeZone.show()
   }
 
@@ -88,7 +88,7 @@ object MessageHandler
   {
     help.clear()
     playerInfo.clear()
-    Game.player.displayInfo()
+    GameClient.player.displayInfo()
     // inventory.clear()  // inventory must be cleared manually by the user
     cellInfo.clear()
     genInfo.clear()
